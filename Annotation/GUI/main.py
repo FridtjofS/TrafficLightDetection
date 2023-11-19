@@ -1,5 +1,6 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget
-from PyQt6.QtGui import QImage, QPixmap
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QGridLayout
+from PyQt6.QtGui import QImage, QPixmap, QPen, QColor, QPainter
+from PyQt6.QtCore import Qt, QPoint
 
 import sys
 import os
@@ -23,21 +24,18 @@ class MainWindow(QWidget):
         self.next = QPushButton("Next Image")
         self.last = QPushButton("Previous Image")
         
-        self.layout = QVBoxLayout()
+        self.layout = QGridLayout()
         self.setLayout(self.layout)
-        self.layout.addWidget(self.next)
-        self.layout.addWidget(self.last)
+        self.layout.addWidget(self.next, 2, 1)
+        self.layout.addWidget(self.last, 2, 0)
+        self.next.clicked.connect(self.next_image)
+        self.last.clicked.connect(self.previous_image)
+        self.last.setEnabled(False)
+        self.origin = None
+        self.end = None
+        self.state = 1
 
-        
-        # remove pixmap from layout
-        # remove label from layout
-
-        #self.layout.removeWidget(label)
-        #label.deleteLater()
-        #del label
-        #del pixmap
-        #del path
-        #self.update()
+        self.next_image()
 
         
 
@@ -47,17 +45,43 @@ class MainWindow(QWidget):
         # allowed, if image is not first image
         # current input is not saved
         if event.key() == 16777219:
-            self.previous_image()
+            if self.last:
+                self.previous_image()
+            else:
+                print("This is the first image")
 
         # if hit enter, start next_image
         # only allowed if bounding box and traffic light state are set
         elif event.key() == 16777220:
-            self.next_image()
+            if self.origin and self.end and self.state:
+                self.next_image()
+            else:
+                print("Please set bounding box and traffic light state")
 
-        else:
-            pass
+        elif event.key() == 49: # 1
+            self.state = 1
+            print("State: Red")
+        elif event.key() == 50: # 2
+            self.state = 2
+            print("State: Red-Yellow")
+        elif event.key() == 51: # 3
+            self.state = 3
+            print("State: Yellow")
+        elif event.key() == 52: # 4
+            self.state = 4
+            print("State: Green")
+        elif event.key() == 16777216: # ESC
+            self.close()
+            print("Close")
+        if self.origin and self.end:
+                self.next.setEnabled(True)
 
     def next_image(self):
+        self.next.setEnabled(False)
+        self.state = None
+        self.origin = None
+        self.end = None
+        self.load_image(self.get_path())
         # get filepath of next image
         # load in next image
         # get user input for bounding box and traffic light state
@@ -77,16 +101,88 @@ class MainWindow(QWidget):
     
     # load image into GUI
     def load_image(self, path):
-        label = QLabel(self)
-        pixmap = QPixmap(path)
-        pixmap = pixmap.scaled(const.IMAGE_WIDTH, const.IMAGE_HEIGHT)
-        label.setPixmap(pixmap)
-        self.layout.addWidget(label)
+        self.label = QLabel(self)
+        self.label.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.pixmap = QPixmap(path)
+        self.pixmap = self.pixmap.scaled(const.IMAGE_WIDTH, const.IMAGE_HEIGHT)
+
+        self.label.setPixmap(self.pixmap)
+        self.layout.addWidget(self.label, 0, 0, 1, 2)
         self.show()
-        return label, pixmap
+
+    def mousePressEvent(self, event):
+        # check if it was click on image (self.label)
+        # if yes, get coordinates of click
+        # relative to the pixmap
+
+        if event.button() != Qt.MouseButton.LeftButton or not self.label.underMouse():
+            return
+        
+        self.origin = event.pos()
+        self.origin = self.label.mapFrom(self, self.origin)
+
+        if self.origin.x() > self.pixmap.width() or self.origin.y() > self.pixmap.height():
+            self.origin = None
+            return
+
+
+    def mouseMoveEvent(self, event):
+        if not self.origin:
+            return
+        
+        self.end = event.pos()
+        self.end = self.label.mapFrom(self, self.end)
+
+        if self.end.x() > self.pixmap.width() or self.end.y() > self.pixmap.height():
+            self.end = None
+            return
+        
+        self.update_bounding_box()
+
+    def mouseReleaseEvent(self, event):
+        if not self.origin and not self.end:
+            return
+        
+        self.end = event.pos()
+        self.end = self.label.mapFrom(self, self.end)
+
+        if self.end.x() > self.pixmap.width() or self.end.y() > self.pixmap.height():
+            self.end = None
+            return
+        
+
+        self.update_bounding_box()
+        if self.origin and self.end and self.state:
+                self.next.setEnabled(True)
+
+        print(self.origin, self.end)
+
+
+        #self.origin = self.label.mapFrom(self, self.origin)
+        #self.origin = self.pixmap.mapFrom(self.label, self.origin)
+        
+    
+
+    def update_bounding_box(self):
+        x1 = min(self.origin.x(), self.end.x())
+        y1 = min(self.origin.y(), self.end.y())
+        x2 = max(self.origin.x(), self.end.x())
+        y2 = max(self.origin.y(), self.end.y())
+        
+        canvas = self.pixmap.copy()
+        painter = QPainter(canvas)
+        pen2 = QPen(QColor(255, 255, 255))
+        pen2.setStyle(Qt.PenStyle.DotLine)
+        pen2.setWidth(2)
+        painter.setPen(pen2)
+        painter.drawRect(x1, y1, x2-x1, y2-y1)
+        self.label.setPixmap(canvas)
+        del painter
+        del canvas
+        self.update()
     
     # upon mouse drag, draw bounding box and save coordinates
-    def get_bounding_box(self):
+    def get_bounding_box(self, pixmap):
         pass
 
     # upon click of 1, 2, 3, or 4, save traffic light state
