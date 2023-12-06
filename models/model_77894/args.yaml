@@ -1,0 +1,11 @@
+!!python/object:argparse.Namespace
+batch_size: 64
+device: !!python/object/apply:torch.device
+- cpu
+log_interval: 30
+lr: 0.001
+mode: train
+model_dir: models\model_77894
+num_epochs: 30
+num_workers: 4
+seed: 0
