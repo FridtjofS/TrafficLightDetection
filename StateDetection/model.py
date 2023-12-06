@@ -43,37 +43,39 @@ class StateDetection(nn.Module):
         self.net = nn.Sequential(
             nn.Conv2d(channel_size, 32, kernel_size=3, padding=1),
             nn.ReLU(),
-            #nn.Dropout(0.2),
+            nn.Dropout(0.2),
             nn.Conv2d(32, 32, kernel_size=3, padding=1),
             nn.ReLU(),
-            #nn.Dropout(0.2),
+            nn.Dropout(0.2),
             nn.MaxPool2d(2), # [input_size, input_size, 3] -> [input_size/2, input_size/2, 32]
             nn.Conv2d(32, 64, kernel_size=3, padding=1),
             nn.ReLU(),
-            #nn.Dropout(0.2),
+            nn.Dropout(0.2),
             nn.Conv2d(64, 64, kernel_size=3, padding=1),
             nn.ReLU(),
-            #nn.Dropout(0.2),
+            nn.Dropout(0.2),
             nn.MaxPool2d(2), # [input_size/2, input_size/2, 32] -> [input_size/4, input_size/4, 64]
             nn.Conv2d(64, 128, kernel_size=3, padding=1),
             nn.ReLU(),
-            #nn.Dropout(0.2),
+            nn.Dropout(0.2),
             nn.Conv2d(128, 128, kernel_size=3, padding=1),
             nn.ReLU(),
-            #nn.Dropout(0.2),
+            nn.Dropout(0.2),
             nn.MaxPool2d(2), # [input_size/4, input_size/4, 64] -> [input_size/8, input_size/8, 128]
             nn.Flatten(),
             nn.Linear(128 * int(np.ceil(input_size[0]/8) * np.ceil(input_size[1]/8)), 128),
             nn.ReLU(),
-            #nn.Dropout(0.2),
+            nn.Dropout(0.2),
             nn.Linear(128, 128),
             nn.ReLU(),
-            #nn.Dropout(0.2),
+            nn.Dropout(0.2),
             nn.Linear(128, num_classes),
             nn.Softmax(dim=1),
         ).to(self.device)
 
         print("Total number of parameters: ", sum(p.numel() for p in self.net.parameters() if p.requires_grad))
+
+    
     def forward(self, x):
         '''
         Forward pass of the CNN model.

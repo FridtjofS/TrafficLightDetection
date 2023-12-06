@@ -107,4 +107,12 @@ class StateDetectionDataset(Dataset):
             image = plt.imread(os.path.join(self.data_dir, file))
             data.append(image)
 
+        # Load the label
+        label = []
+        with open(self.label_dir, 'rb') as f:
+            label = pickle.load(f)
+
+        return data, label
+    
+
 
