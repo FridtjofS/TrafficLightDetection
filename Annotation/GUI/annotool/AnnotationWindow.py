@@ -18,7 +18,7 @@ import annotool.constants as const
 
 
 
-class MainWindow(QWidget):
+class AnnotationWindow(QWidget):
 
     def __init__(self):
         super().__init__()
@@ -35,8 +35,6 @@ class MainWindow(QWidget):
         self.layout.addWidget(self.last, 2, 0)
         
         self.last.setEnabled(False)
-
-        self.annotated = []
 
         # bounding box coordinates
         self.origin = None
@@ -57,24 +55,20 @@ class MainWindow(QWidget):
         # allowed, if image is not first image
         # current input is not saved
         if event.key() == 16777219:
-            self.last_annotation()
-
-            #if self.last:
-            #    self.previous_image()
-            #else:
-            #    print("This is the first image")
-            #return
+            if self.last:
+                self.previous_image()
+            else:
+                print("This is the first image")
+            return
 
         # if hit enter, start next_image
         # only allowed if bounding box and traffic light state are set
         elif event.key() == 16777220:
-            self.lock_in_bbox()
-
-            #if self.origin and self.end and self.state:
-            #    self.next_image()
-            #else:
-            #    print("Please set bounding box and traffic light state")
-            #return
+            if self.origin and self.end and self.state:
+                self.next_image()
+            else:
+                print("Please set bounding box and traffic light state")
+            return
 
         # if press down space, move origin
         elif event.key() == 32:
@@ -102,8 +96,6 @@ class MainWindow(QWidget):
         elif event.key() == 16777216: # ESC
             self.close()
             print("Close")
-        
-        self.update_bounding_box()
 
         # if all conditions are met, enable next button
         if self.origin and self.end and self.state and self.origin != self.end:
@@ -120,7 +112,6 @@ class MainWindow(QWidget):
         self.state = None
         self.origin = None
         self.end = None
-        self.annotated = []
         self.load_image(self.get_path())
         # get filepath of next image
         # load in next image
@@ -217,9 +208,6 @@ class MainWindow(QWidget):
     
     # draw bounding box on image
     def update_bounding_box(self):
-        if not self.origin or not self.end:
-            return
-
         x1 = min(self.origin.x(), self.end.x())
         y1 = min(self.origin.y(), self.end.y())
         x2 = max(self.origin.x(), self.end.x())
@@ -228,124 +216,40 @@ class MainWindow(QWidget):
         canvas = self.pixmap.copy()
         painter = QPainter(canvas)
 
-        pen = QPen(self.get_color(self.state))
+        pen = QPen(QColor(255, 255, 255))
         pen.setStyle(Qt.PenStyle.DashLine)
         pen.setWidth(1)
 
         painter.setPen(pen)
         painter.drawRect(x1, y1, x2-x1, y2-y1)
-
-        for annotation in self.annotated:
-            pen = QPen(self.get_color(annotation['state']))
-            pen.setStyle(Qt.PenStyle.SolidLine)
-            pen.setWidth(2)
-
-            painter.setPen(pen)
-            painter.drawRect(annotation['x1'], annotation['y1'], annotation['x2']-annotation['x1'], annotation['y2']-annotation['y1'])
-
         self.label.setPixmap(canvas)
         del painter
         del canvas
         self.update()
-
-    def get_color(self, state):
-        if state == None:
-            return QColor(255, 255, 255)
-        elif state == 1:
-            return QColor(255, 0, 0)
-        elif state == 2:
-            return QColor(255, 140, 0)
-        elif state == 3:
-            return QColor(255, 255, 0)
-        elif state == 4:
-            return QColor(0, 255, 0)
-        return QColor(255, 255, 255)
-    
-    def lock_in_bbox(self):
-        # if bounding box is not set, return
-        if not self.origin or not self.end or self.origin == self.end:
-            return
-
-        # if traffic light state is not set, return
-        if not self.state:
-            return
-        
-        bbox = {
-            'x1': min(self.origin.x(), self.end.x()),
-            'y1': min(self.origin.y(), self.end.y()),
-            'x2': max(self.origin.x(), self.end.x()),
-            'y2': max(self.origin.y(), self.end.y()),
-            'state': self.state
-        }
-
-        self.annotated.append(bbox)
-
-        self.update_bounding_box()
-
-        # clear bounding box
-        self.origin = None
-        self.end = None
-        self.state = None
-
-    def last_annotation(self):
-        if len(self.annotated) == 0:
-            print("No annotations to delete")
-            return
-        
-        bbox = self.annotated.pop()
-        self.origin = QPoint(bbox['x1'], bbox['y1'])
-        self.end = QPoint(bbox['x2'], bbox['y2'])
-        self.state = bbox['state']
-
-        self.update_bounding_box()
-
-
     
     
     # copy image into "annotations" directory, and save bounding box coordinates and traffic light state in json file
     def save_image_with_annotations(self, path):
-        if self.annotated == []:
+        if not self.origin or not self.end or not self.state or self.origin == self.end:
             return
-            #TODO open extra window to ask if user wants to save image without annotations
-
         
         # save image in "annotations" directory
         shutil.copy(path, os.path.join("annotations", os.path.basename(path)))
 
         # save bounding box coordinates and traffic light state in json file with same name as image
-        json_data = {}
-        for i in range(len(self.annotated)):
-            json_data['traffic_light_' + str(i)] = {
-                'x1': self.annotated[i]['x1'],
-                'y1': self.annotated[i]['y1'],
-                'x2': self.annotated[i]['x2'],
-                'y2': self.annotated[i]['y2'],
-                'state' : self.annotated[i]['state']
-            }
-
         with open(os.path.join("annotations", Path(path).stem + ".json" ), 'w') as f:
-            json.dump(json_data, f)
-
-                #'bounding_box': {
-                #    'x1': min(self.origin.x(), self.end.x()),
-                #    'y1': min(self.origin.y(), self.end.y()),
-                #    'x2': max(self.origin.x(), self.end.x()),
-                #    'y2': max(self.origin.y(), self.end.y())
-                #},
-                #'state': self.state
-            
+            json.dump({
+                'bounding_box': {
+                    'x1': min(self.origin.x(), self.end.x()),
+                    'y1': min(self.origin.y(), self.end.y()),
+                    'x2': max(self.origin.x(), self.end.x()),
+                    'y2': max(self.origin.y(), self.end.y())
+                },
+                'state': self.state
+            }, f)
 
 
     # delete image from "frames" directory
     def delete_image(self):
         pass
-
-    
-
-
-
-app = QApplication(sys.argv)
-window = MainWindow()
-window.show()
-sys.exit(app.exec())
 
