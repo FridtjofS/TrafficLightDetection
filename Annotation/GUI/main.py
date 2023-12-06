@@ -1,5 +1,5 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QGridLayout
-from PyQt6.QtGui import QImage, QPixmap, QPen, QColor, QPainter
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QGridLayout, QLineEdit, QCheckBox, QScrollArea
+from PyQt6.QtGui import QImage, QPixmap, QPen, QColor, QPainter, QIntValidator
 from PyQt6.QtCore import Qt, QPoint
 import shutil
 import json
@@ -31,8 +31,8 @@ class MainWindow(QWidget):
         
         self.layout = QGridLayout()
         self.setLayout(self.layout)
-        self.layout.addWidget(self.next, 2, 1)
-        self.layout.addWidget(self.last, 2, 0)
+        self.layout.addWidget(self.next, 1, 2)
+        self.layout.addWidget(self.last, 1, 1)
         
         self.last.setEnabled(False)
 
@@ -48,6 +48,9 @@ class MainWindow(QWidget):
 
         # load the first image into the GUI
         self.next_image()
+
+        self.annotation_window = AnnotationWindow(self)
+        self.layout.addWidget(self.annotation_window, 0, 0, 2, 1)
 
         
 
@@ -97,6 +100,9 @@ class MainWindow(QWidget):
         elif event.key() == 52: # 4
             self.state = 4
             print("State: Green")
+        elif event.key() == 53: # 5
+            self.state = 5
+            print("State: Off")
 
         # if press ESC, close window
         elif event.key() == 16777216: # ESC
@@ -104,6 +110,7 @@ class MainWindow(QWidget):
             print("Close")
         
         self.update_bounding_box()
+        self.update_annotation_window()
 
         # if all conditions are met, enable next button
         if self.origin and self.end and self.state and self.origin != self.end:
@@ -137,7 +144,19 @@ class MainWindow(QWidget):
     
     # get path of next image in directory "frames"
     def get_path(self):
-        return "frames/django.jpg"
+        # get the first image in the directory const.IMAGE_DIR
+
+        # check if directory is empty
+        if len(os.listdir(const.IMAGE_DIR)) == 0:
+            print("Directory is empty")
+            return
+        
+        images = os.listdir(const.IMAGE_DIR)
+        return os.path.join(const.IMAGE_DIR, images[0])
+        
+
+
+        #return "frames/django.jpg"
     
     # load image into GUI
     def load_image(self, path):
@@ -147,12 +166,18 @@ class MainWindow(QWidget):
         self.label.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         # load image and scale it to fit into GUI
-        self.pixmap = QPixmap(path)
+        if path == None:
+            self.pixmap = QPixmap()
+        else:
+            self.pixmap = QPixmap(path)
         self.pixmap = self.pixmap.scaled(const.IMAGE_WIDTH, const.IMAGE_HEIGHT)
+
+        # set focus to label, so that key press events are registered
+        self.label.setFocus()
 
         # set image as label
         self.label.setPixmap(self.pixmap)
-        self.layout.addWidget(self.label, 0, 0, 1, 2)
+        self.layout.addWidget(self.label, 0, 1, 1, 2)
         self.show()
 
     def mousePressEvent(self, event):
@@ -195,6 +220,7 @@ class MainWindow(QWidget):
             self.end = QPoint(min(self.pixmap.width(), self.end.x()), min(self.pixmap.height(), self.end.y()))
         
         self.update_bounding_box()
+        self.update_annotation_window()
 
 
     def mouseReleaseEvent(self, event):
@@ -210,6 +236,8 @@ class MainWindow(QWidget):
         
         # draw bounding box
         self.update_bounding_box()
+        self.update_annotation_window()
+
         # enable next button if all conditions are met
         if self.origin and self.end and self.state and self.origin != self.end:
                 self.next.setEnabled(True)
@@ -235,31 +263,59 @@ class MainWindow(QWidget):
         painter.setPen(pen)
         painter.drawRect(x1, y1, x2-x1, y2-y1)
 
+        # fill bounding box with color (10% opacity)
+        painter.setOpacity(0.1)
+        painter.fillRect(x1, y1, x2-x1, y2-y1, self.get_color(self.state))
+        painter.setOpacity(1)
+
         for annotation in self.annotated:
-            pen = QPen(self.get_color(annotation['state']))
+            color = self.get_color(annotation['state'])
+            pen = QPen(color)
             pen.setStyle(Qt.PenStyle.SolidLine)
             pen.setWidth(2)
 
             painter.setPen(pen)
             painter.drawRect(annotation['x1'], annotation['y1'], annotation['x2']-annotation['x1'], annotation['y2']-annotation['y1'])
+            
+            # fill bounding box with color (10% opacity)
+            painter.setOpacity(0.1)
+            painter.fillRect(annotation['x1'], annotation['y1'], annotation['x2']-annotation['x1'], annotation['y2']-annotation['y1'], color)
+            painter.setOpacity(1)
 
         self.label.setPixmap(canvas)
         del painter
         del canvas
         self.update()
+        self.show()
+
+    def update_annotation_window(self):
+        if self.origin and self.end:
+            # clear current annotation
+            for i in reversed(range(self.annotation_window.current_annotation.count())):
+                self.annotation_window.current_annotation.itemAt(i).widget().setParent(None)
+            self.annotation_window.draw_annotation({'x1': min(self.origin.x(), self.end.x()), 'y1': min(self.origin.y(), self.end.y()), 'x2': max(self.origin.x(), self.end.x()), 'y2': max(self.origin.y(), self.end.y()), 'state': self.state}, self.annotation_window.current_annotation)
+        # clear previous annotations
+        for i in reversed(range(self.annotation_window.previous_annotations.count())): 
+            self.annotation_window.previous_annotations.itemAt(i).widget().setParent(None)
+        for annotation in self.annotated:
+            self.annotation_window.draw_annotation(annotation, self.annotation_window.previous_annotations)
+
+        self.annotation_window.show()
 
     def get_color(self, state):
         if state == None:
-            return QColor(255, 255, 255)
+            return const.COLORS['none']
         elif state == 1:
-            return QColor(255, 0, 0)
+            return const.COLORS['red']
         elif state == 2:
-            return QColor(255, 140, 0)
+            return const.COLORS['red-yellow']
         elif state == 3:
-            return QColor(255, 255, 0)
+            return const.COLORS['yellow']
         elif state == 4:
-            return QColor(0, 255, 0)
-        return QColor(255, 255, 255)
+            return const.COLORS['green']
+        elif state == 5:
+            return const.COLORS['off']
+        return const.COLORS['none']
     
     def lock_in_bbox(self):
         # if bounding box is not set, return
@@ -304,7 +360,7 @@ class MainWindow(QWidget):
     
     # copy image into "annotations" directory, and save bounding box coordinates and traffic light state in json file
     def save_image_with_annotations(self, path):
-        if self.annotated == []:
+        if self.annotated == [] or not path:
             return
             #TODO open extra window to ask if user wants to save image without annotations
 
@@ -340,7 +396,158 @@ class MainWindow(QWidget):
     def delete_image(self):
         pass
 
-    
+
+class AnnotationWindow(QWidget):
+    '''
+    This is where the annotations of the current image are displayed.
+    One on the top of the one to be locked in,
+    and a history of the ones already locked in below.
+    '''
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        self.setWindowTitle("Annotations")
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        self.layout.addWidget(scroll_area)
+
+        scroll_content = QWidget()
+        scroll_layout = QVBoxLayout(scroll_content)
+        scroll_content.setLayout(scroll_layout)
+
+        self.current_annotation = QVBoxLayout()
+        scroll_layout.addLayout(self.current_annotation)
+
+        self.previous_annotations = QVBoxLayout()
+        scroll_layout.addLayout(self.previous_annotations)
+
+        scroll_area.setWidget(scroll_content)
+
+        # set width of window to fit the contents
+        self.setFixedWidth(int(const.IMAGE_WIDTH / 3))
+
+        self.draw_annotation({'x1': 100, 'y1': 200, 'x2': 300, 'y2': 400, 'state': None}, self.previous_annotations)
+
+        self.show()
+
+        # self.draw_annotation(self.parent().bbox, self.current_annotation)
+        for annotation in self.parent().annotated:
+            self.draw_annotation(annotation, self.previous_annotations)
+
+
+    def draw_annotation(self, bbox, parent):
+        '''
+        An annotation has 4 text inputs for x1, y1, x2, y2 coordinates
+        and one dropdown menu for the traffic light state.
+        '''
+
+
+        # create new annotation
+        annotation = QWidget()
+        parent.addWidget(annotation)
+        annotation_layout = QGridLayout()
+        annotation.setLayout(annotation_layout)
+
+        # set Title
+        title = QLabel("Traffic Light " + str(parent.count()-1) + ":")
+        annotation_layout.addWidget(title, 0, 0, 1, 2)
+
+        # x1
+        x1_input = QLineEdit(str(bbox['x1']))
+        x1_input.setValidator(QIntValidator())
+        annotation_layout.addWidget(x1_input, 1, 0)
+        x1_input.returnPressed.connect(lambda: x1_input.clearFocus())
+
+        # y1
+        y1_input = QLineEdit(str(bbox['y1']))
+        y1_input.setValidator(QIntValidator())
+        annotation_layout.addWidget(y1_input, 1, 1)
+        y1_input.returnPressed.connect(lambda: y1_input.clearFocus())
+
+        # x2
+        x2_input = QLineEdit(str(bbox['x2']))
+        x2_input.setValidator(QIntValidator())
+        annotation_layout.addWidget(x2_input, 2, 0)
+        x2_input.returnPressed.connect(lambda: x2_input.clearFocus())
+
+        # y2
+        y2_input = QLineEdit(str(bbox['y2']))
+        y2_input.setValidator(QIntValidator())
+        annotation_layout.addWidget(y2_input, 2, 1)
+        y2_input.returnPressed.connect(lambda: y2_input.clearFocus())
+
+        # create 3 buttons inside vertical layout spanning 2 rows
+        button_layout = QVBoxLayout()
+        annotation_layout.addLayout(button_layout, 1, 3, 2, 1)
+
+        # add 3 buttons to vertical layout (red, yellow, green)
+        red_button = QCheckBox()
+        red_button.setChecked(True) if bbox['state'] == 1 or bbox['state'] == 2 else red_button.setChecked(False)
+        button_layout.addWidget(red_button)
+
+        yellow_button = QCheckBox()
+        yellow_button.setChecked(True) if bbox['state'] == 2 or bbox['state'] == 3 else yellow_button.setChecked(False)
+        button_layout.addWidget(yellow_button)
+
+        green_button = QCheckBox()
+        green_button.setChecked(True) if bbox['state'] == 4 else green_button.setChecked(False)
+        button_layout.addWidget(green_button)
+
+        # if current state is yellow, check red and yellow button
+        # else check only red button
+        def red_button_clicked():
+            if  bbox['state'] == 3:
+                bbox['state'] = 2
+                red_button.setChecked(True)
+                yellow_button.setChecked(True)
+                green_button.setChecked(False)
+            else:
+                bbox['state'] = 1
+                red_button.setChecked(True)
+                yellow_button.setChecked(False)
+                green_button.setChecked(False)
+            self.parent().update_bounding_box()
+            self.parent().show()
+
+        red_button.clicked.connect(red_button_clicked)
+
+        # if current state is red, check yellow button
+        # else check only yellow button
+        def yellow_button_clicked():
+            if  bbox['state'] == 1:
+                bbox['state'] = 2
+                red_button.setChecked(True)
+                green_button.setChecked(False)
+            else:
+                bbox['state'] = 3
+                red_button.setChecked(False)
+                yellow_button.setChecked(True)
+                green_button.setChecked(False)
+            self.parent().update_bounding_box()
+            self.parent().show()
+
+        yellow_button.clicked.connect(yellow_button_clicked)
+
+        # check only green button
+        def green_button_clicked():
+            bbox['state'] = 4
+            red_button.setChecked(False)
+            yellow_button.setChecked(False)
+            green_button.setChecked(True)
+            self.parent().update_bounding_box()
+            self.parent().show()
+
+        green_button.clicked.connect(green_button_clicked)
+
+        
+
+
+
+
+
 
 
 
