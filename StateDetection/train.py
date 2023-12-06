@@ -46,94 +46,51 @@ def train(args):
     device = args.device
 
     # dataset = "MNIST"
-    # dataset = "SVHN"
-    dataset = "CIFAR10"
+    dataset = "SVHN"
+    #dataset = "CIFAR10"
 
     # Load dataset
-    # train_dataset = StateDetectionDataset(args.train_data_dir, args.train_label_dir, args.input_size, args.num_classes, args)
-    # val_dataset = StateDetectionDataset(args.val_data_dir, args.val_label_dir, args.input_size, args.num_classes, args)
-    # for now, load a predefined dataset from torch vision (SVHN), resize it to 64x64, and normalize it
     if dataset == "SVHN":
-        train_dataset = datasets.SVHN(
-            root="./data",
-            split="train",
-            download=True,
-            transform=transforms.Compose(
-                [
+        train_dataset = datasets.SVHN(root="./data", split="train", download=True, transform=transforms.Compose([
+                    transforms.Resize((32, 32)),
                     transforms.ToTensor(),
                     transforms.Normalize((0.1307,), (0.3081,)),
-                ]
-            ),
-        )
-        val_dataset = datasets.SVHN(
-            root="./data",
-            split="test",
-            download=True,
-            transform=transforms.Compose(
-                [
+                ]))
+        val_dataset = datasets.SVHN(root="./data", split="test", download=True, transform=transforms.Compose([
+                    transforms.Resize((32, 32)),
                     transforms.ToTensor(),
                     transforms.Normalize((0.1307,), (0.3081,)),
-                ]
-            ),
-        )
+                ]))
         input_sizes = (train_dataset.data.shape[2], train_dataset.data.shape[3])
         channel_sizes = train_dataset.data.shape[1]
         num_classes = 10
         print("Train dataset shape: ", train_dataset.data.shape)
         print("Train dataset labels shape: ", train_dataset.labels.shape)
     elif dataset == "MNIST":
-        train_dataset = datasets.MNIST(
-            root="./data",
-            train=True,
-            download=True,
-            transform=transforms.Compose(
-                [
+        train_dataset = datasets.MNIST(root="./data", train=True, download=True, transform=transforms.Compose([
                     transforms.Resize((32, 32)),
                     transforms.ToTensor(),
                     transforms.Normalize((0.1307,), (0.3081,)),
-                ]
-            ),
-        )
-        val_dataset = datasets.MNIST(
-            root="./data",
-            train=False,
-            download=True,
-            transform=transforms.Compose(
-                [
+                ]))
+        val_dataset = datasets.MNIST(root="./data", train=False, download=True, transform=transforms.Compose([
                     transforms.Resize((32, 32)),
                     transforms.ToTensor(),
                     transforms.Normalize((0.1307,), (0.3081,)),
-                ]
-            ),
-        )
+                ]))
         input_sizes = (train_dataset.data.shape[1], train_dataset.data.shape[2])
         channel_sizes = 1
         num_classes = 10
         print("Train dataset shape: ", train_dataset.data.shape)
         print("Train dataset labels shape: ", train_dataset.targets.shape)
     elif dataset == "CIFAR10":
-        train_dataset = datasets.CIFAR10(
-            root="./data",
-            train=True,
-            download=True,
-            transform=transforms.Compose(
-                [
+        train_dataset = datasets.CIFAR10(root="./data", train=True, download=True, transform=transforms.Compose([
                     transforms.ToTensor(),
                     transforms.Normalize((0.1307,), (0.3081,)),
-                ]
-            ),
-        )
-        val_dataset = datasets.CIFAR10(
-            root="./data",
-            train=False,
-            download=True,
-            transform=transforms.Compose(
-                [
+                ]))
+        val_dataset = datasets.CIFAR10(root="./data", train=False, download=True, transform=transforms.Compose([
                     transforms.ToTensor(),
                     transforms.Normalize((0.1307,), (0.3081,)),
-                ]
-            ),
-        )
+                ]))
         input_sizes = (train_dataset.data.shape[1], train_dataset.data.shape[2])
         channel_sizes = train_dataset.data.shape[3]
         num_classes = 10
@@ -141,18 +98,8 @@ def train(args):
         print("Train dataset labels shape: ", len(train_dataset.targets))
 
     # Create data loaders
-    train_loader = DataLoader(
-        train_dataset,
-        batch_size=args.batch_size,
-        shuffle=True,
-        num_workers=args.num_workers,
-    )
-    val_loader = DataLoader(
-        val_dataset,
-        batch_size=args.batch_size,
-        shuffle=False,
-        num_workers=args.num_workers,
-    )
+    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
+    val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers)
 
     # plot the first 10 images in the training set
     # fig, axs = plt.subplots(2, 5)
@@ -406,9 +353,7 @@ def main():
 
     # Add arguments to parser
     parser.add_argument("--mode", type=str, default="train", help="Mode: train or test")
-    parser.add_argument(
-        "--model_dir", type=str, default="models", help="Directory to save model"
-    )
+    parser.add_argument("--model_dir", type=str, default="models", help="Directory to save model")
     parser.add_argument("--batch_size", type=int, default=64, help="Batch size")
     parser.add_argument("--num_epochs", type=int, default=30, help="Number of epochs")
     parser.add_argument("--lr", type=float, default=1e-3, help="Learning rate")
