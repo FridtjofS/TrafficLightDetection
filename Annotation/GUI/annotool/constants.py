@@ -6,9 +6,9 @@ IMAGE_DIR = 'frames'
 
 from PyQt6.QtGui import QColor
 COLORS = {'none': QColor(255, 255, 255),
-          'red': QColor(255, 0, 0),
-          'red-yellow': QColor(255, 128, 0),
-          'yellow': QColor(255, 255, 0),
-          'green': QColor(0, 255, 0),
-          'off': QColor(0, 0, 100)
+          'red': QColor(245, 86, 86),
+          'red-yellow': QColor(245, 150, 86),
+          'yellow': QColor(245, 245, 86),
+          'green': QColor(100, 245, 86),
+          'off': QColor(20, 20, 86)
           }

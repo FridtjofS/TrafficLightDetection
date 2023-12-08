@@ -1,0 +1,80 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap');
+
+/*
+@background: #3A4450;
+@background-light: #55606D;
+@light-gray: #A0AEC0;
+*/
+
+
+MainWindow {
+  background-color: #3A4450;
+  font-family: 'Montserrat', sans-serif;
+
+}
+AnnotationWindow {
+  background-color: #3A4450;
+  font-family: 'Montserrat', sans-serif;
+}
+
+QScrollArea {
+  border: 0px;
+}
+
+QScrollBar {
+  width: 10px;
+  border-radius: 10px;
+}
+
+QScrollBar::handle{
+  background: #3A4450;
+  min-height: 20px;
+  border-radius: 3px;
+  margin: 2px;
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+  border: none;
+  background: none;
+}
+
+QLabel {
+  color: #fff;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 500;
+}
+
+QLineEdit {
+  background-color: #3A4450;
+  border-radius: 5px;
+  border: 1px solid #A0AEC0;
+  padding: 3px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 300;
+  color: #A0AEC0;
+}
+
+QLineEdit:hover {
+  border: 1px solid #ffffff;
+  color: #ffffff;
+}
+QLineEdit:focus {
+  border: 1px solid #ffffff;
+  color: #ffffff;
+}
+
+QCheckBox {
+  spacing: 2px;
+  margin: 0px;
+  padding: 0px;
+}
+
+QCheckBox::indicator {
+  width: 13px;
+  height: 13px;
+}
+
+
+
+
+
