@@ -1,1 +1,1 @@
-{"traffic_light_0": {"x1": 24, "y1": 13, "x2": 100, "y2": 95, "state": 4}, "traffic_light_1": {"x1": 547, "y1": 21, "x2": 615, "y2": 99, "state": 3}, "traffic_light_2": {"x1": 30, "y1": 392, "x2": 104, "y2": 464, "state": 1}, "traffic_light_3": {"x1": 538, "y1": 388, "x2": 614, "y2": 465, "state": 5}}
+{"traffic_light_0": {"x1": 427, "y1": 159, "x2": 447, "y2": 247, "state": 4}, "traffic_light_1": {"x1": 185, "y1": 143, "x2": 188, "y2": 173, "state": 5}, "traffic_light_2": {"x1": 200, "y1": 206, "x2": 384, "y2": 324, "state": 3}}

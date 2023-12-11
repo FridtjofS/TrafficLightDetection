@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QGridLayout, QLineEdit, QCheckBox, QScrollArea
-from PyQt6.QtGui import QImage, QPixmap, QPen, QColor, QPainter, QIntValidator
-from PyQt6.QtCore import Qt, QPoint
+from PyQt6.QtGui import QImage, QPixmap, QPen, QColor, QPainter, QIntValidator, QPainterPath, QPolygonF
+from PyQt6.QtCore import Qt, QPoint, QPointF
 import shutil
 import json
 from pathlib import Path
@@ -65,11 +65,14 @@ class MainWindow(QWidget):
         self.layout.addWidget(self.annotation_window, 0, 0, 2, 1)
 
         self.next_image()
+        
+        #self.showMaximized()
 
         
 
     # listen for key press events
     def keyPressEvent(self, event):
+        print(event.key())
         # if hit backspace, start previous_image
         # allowed, if image is not first image
         # current input is not saved
@@ -96,7 +99,7 @@ class MainWindow(QWidget):
 
         # if press down space, move origin
         elif event.key() == 32:
-            if self.origin and self.end:
+            if self.end:
                 # (handle move origin with mouse movement in mouseMoveEvent)
                 self.move_origin = True
                 self.update_bounding_box()
@@ -251,17 +254,23 @@ class MainWindow(QWidget):
         if self.move_origin and self.end:
             # and keep bounding box size
             difference = event.pos() - self.end
+
             self.origin += difference
             self.origin = self.label.mapFrom(self, self.origin)
             self.end = event.pos()
             self.end = self.label.mapFrom(self, self.end)
+            # make sure origin is not outside of image
+            self.origin = QPoint(max(1, min(self.pixmap.width(), self.origin.x())), max(0, min(self.pixmap.height(), self.origin.y())))
+            # make sure end is not outside of image
+            self.end = QPoint(max(1, min(self.pixmap.width(), self.end.x())), max(0, min(self.pixmap.height(), self.end.y())))
+            
         else:
             # else, set end of bounding box to mouse position
             self.end = event.pos()
             self.end = self.label.mapFrom(self, self.end)
 
             # make sure end is not outside of image
-            self.end = QPoint(min(self.pixmap.width(), self.end.x()), min(self.pixmap.height(), self.end.y()))
+            self.end = QPoint(max(0, min(self.pixmap.width(), self.end.x())), max(0, min(self.pixmap.height(), self.end.y())))
         
         # update self.bbox
         self.bbox['x1'] = min(self.origin.x(), self.end.x())
@@ -281,7 +290,7 @@ class MainWindow(QWidget):
         self.end = self.label.mapFrom(self, self.end)
 
         # make sure end is not outside of image
-        self.end = QPoint(min(self.pixmap.width(), self.end.x()), min(self.pixmap.height(), self.end.y()))
+        self.end = QPoint(max(0,min(self.pixmap.width(), self.end.x())), max(0, min(self.pixmap.height(), self.end.y())))
         
         # update self.bbox
         self.bbox['x1'] = min(self.origin.x(), self.end.x())
@@ -301,8 +310,7 @@ class MainWindow(QWidget):
     def update_bounding_box(self):
 
         self.setFocus()
-
-        if not self.origin or not self.end:
+        if not self.end:
             return
 
         x1 = self.bbox["x1"]
@@ -340,12 +348,23 @@ class MainWindow(QWidget):
             painter.setOpacity(1)
 
             # label bounding box with number + 1 with background color
-            painter.fillRect(annotation['x1']-1, annotation['y1'] - 12, 12, 12, color)
+            #painter.fillRect(annotation['x1']-1, annotation['y1'] - 12, 12, 12, color)
+            y_poly = annotation['y1'] - 12 if annotation['y1'] - 12 > 0 else annotation['y1'] + 12
+            y_text = annotation['y1'] - 1 if annotation['y1'] - 12 > 0 else annotation['y1'] + 10
+            x_poly = annotation['x1'] + 12 if self.annotated.index(annotation) < 9 else annotation['x1'] + 18
+
+            polygon = QPolygonF([QPointF(annotation['x1']-1, y_poly), QPointF(annotation['x1']-1, annotation['y1']), QPointF(x_poly + 12, annotation['y1']), QPointF(x_poly, y_poly)])
+            path = QPainterPath()
+            path.addPolygon(polygon)
+            painter.fillPath(path, color)
+            #path.addPolygon(QPolygonF([QPointF(annotation['x1']-1, annotation['y1'] - 12), QPointF(annotation['x1']-1, annotation['y1'] - 1), QPointF(annotation['x1'] + 12, annotation['y1'] - 1)]))
+            #painter.fillPath(path, color)
             if annotation['state'] == 5:
                 painter.setPen(QPen(Qt.GlobalColor.white))
             else:
                 painter.setPen(QPen(Qt.GlobalColor.black))
-            painter.drawText(annotation['x1'], annotation['y1'], str(self.annotated.index(annotation) + 1))
+            
+            painter.drawText(annotation['x1'] + 2, y_text, str(self.annotated.index(annotation) + 1))
 
         self.label.setPixmap(canvas)
         del painter
@@ -521,7 +540,7 @@ class AnnotationWindow(QWidget):
         scroll_area.setWidget(scroll_content)
 
         # set width of window to fit the contents
-        self.setFixedWidth(int(const.IMAGE_WIDTH / 3))
+        self.setFixedWidth(200)
 
         #self.draw_annotation({} , self.previous_annotations, "currently editing...")
 
@@ -654,7 +673,7 @@ class AnnotationWindow(QWidget):
                 red_button.setChecked(True)
                 yellow_button.setChecked(False)
                 green_button.setChecked(False)
-            self.parent().annotation_window.setFocus()
+            self.parent().label.setFocus()
             self.parent().update_bounding_box()
             self.parent().show()
 
