@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QGridLayout, QLineEdit, QCheckBox, QScrollArea
-from PyQt6.QtGui import QImage, QPixmap, QPen, QColor, QPainter, QIntValidator, QPainterPath, QPolygonF
-from PyQt6.QtCore import Qt, QPoint, QPointF
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QHBoxLayout, QWidget, QGridLayout, QLineEdit, QCheckBox, QScrollArea
+from PyQt6.QtGui import QImage, QPixmap, QPen, QColor, QPainter, QIntValidator, QPainterPath, QPolygonF, QIcon
+from PyQt6.QtCore import Qt, QPoint, QPointF, QEvent, QPropertyAnimation, QSize
 import shutil
 import json
 from pathlib import Path
@@ -24,17 +24,29 @@ class MainWindow(QWidget):
         super().__init__()
 
         self.setWindowTitle("Traffic Light Annotation Tool")
-        self.next = QPushButton("Next Image")
-        self.last = QPushButton("Previous Image")
+        # set a window icon
+        self.setWindowIcon(QIcon("annotool/img/icon.svg"))
+
+        self.next_last_layout = QHBoxLayout()
+        self.next_last_layout.setContentsMargins(0, 0, 0, 0)
+        self.next_last_layout.setSpacing(0)
+        # set next and last buttons
+        self.next = QPushButton()
+        self.next.setStyleSheet("image: url(annotool/img/next.svg); background-color: transparent; border: none;")
+        self.last = QPushButton()
+        self.last.setStyleSheet("image: url(annotool/img/last.svg); background-color: transparent; border: none;")
+        self.next.setFixedSize(40, 40)
+        self.last.setFixedSize(40, 40)
         self.next.clicked.connect(self.next_image)
         self.last.clicked.connect(self.previous_image)
+        self.next_last_layout.addWidget(self.last)
+        self.next_last_layout.addWidget(self.next)
         
         self.layout = QGridLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
         self.setLayout(self.layout)
-        self.layout.addWidget(self.next, 1, 2)
-        self.layout.addWidget(self.last, 1, 1)
+        self.layout.addLayout(self.next_last_layout, 1, 1, 1, 2)
         
         self.last.setEnabled(False)
 
@@ -64,20 +76,35 @@ class MainWindow(QWidget):
         self.annotation_window.setContentsMargins(0, 0, 0, 0)
         self.layout.addWidget(self.annotation_window, 0, 0, 2, 1)
 
+        #self.update_current_annotation()
+
         self.next_image()
         
         #self.showMaximized()
+        screen = app.primaryScreen()
+        self.size = screen.size()
+        #print('Size: %d x %d' % (self.size.width(), self.size.height()))
 
         
 
     # listen for key press events
     def keyPressEvent(self, event):
-        print(event.key())
         # if hit backspace, start previous_image
         # allowed, if image is not first image
         # current input is not saved
         if event.key() == 16777219:
-            self.last_annotation()
+            #self.last_annotation()
+
+            # delete last annotation if there is one
+            if len(self.annotated) > 0:
+                self.annotated.pop()
+                self.update_annotation_window()
+                self.update_bounding_box()
+                self.show()
+
+
+            else:
+                print("No annotations to delete")
 
             #if self.last:
             #    self.previous_image()
@@ -88,8 +115,10 @@ class MainWindow(QWidget):
         # if hit enter, start next_image
         # only allowed if bounding box and traffic light state are set
         elif event.key() == 16777220:
-            self.lock_in_bbox()
+            self.lock_in_bbox() 
             self.update_annotation_window()
+            self.update_bounding_box()
+            
 
             #if self.origin and self.end and self.state:
             #    self.next_image()
@@ -370,29 +399,28 @@ class MainWindow(QWidget):
         del painter
         del canvas
         self.update()
+        self.repaint()
         self.show()
 
     def update_current_annotation(self):
         # clear current annotation
         for i in reversed(range(self.annotation_window.current_annotation.count())):
             self.annotation_window.current_annotation.itemAt(i).widget().setParent(None)
-        self.annotation_window.draw_annotation(self.bbox, self.annotation_window.current_annotation, "currently editing...")
-        self.annotation_window.show()
+        self.annotation_window.draw_annotation(self.bbox, self.annotation_window.current_annotation, "currently editing...", True)
+        self.annotation_window.update()
 
 
     def update_annotation_window(self):
-        if self.origin and self.end:
-            # clear current annotation
-            for i in reversed(range(self.annotation_window.current_annotation.count())):
-                self.annotation_window.current_annotation.itemAt(i).widget().setParent(None)
-            self.annotation_window.draw_annotation(self.window().bbox, self.annotation_window.current_annotation, "currently editing...")
+        for i in reversed(range(self.annotation_window.current_annotation.count())):
+            self.annotation_window.current_annotation.itemAt(i).widget().setParent(None)
+        self.annotation_window.draw_annotation(self.window().bbox, self.annotation_window.current_annotation, "currently editing...", True)
         # clear previous annotations
         for i in reversed(range(self.annotation_window.previous_annotations.count())): 
             self.annotation_window.previous_annotations.itemAt(i).widget().setParent(None)
         for i in reversed(range(len(self.annotated))):
             self.annotation_window.draw_annotation(self.annotated[i], self.annotation_window.previous_annotations,("Traffic Light " + str(i + 1) + ":"))
 
-        self.annotation_window.show()
+        self.annotation_window.update()
 
     def get_color(self, state):
         if state == None:
@@ -411,30 +439,47 @@ class MainWindow(QWidget):
     
     def lock_in_bbox(self):
         # if bounding box is not set, return
-        if not self.origin or not self.end or self.origin == self.end:
+        if not self.bbox['x1'] or not self.bbox['y1'] or not self.bbox['x2'] or not self.bbox['y2']:
+            print("lol1")
+            return
+        
+        # if bounding box is a point or a line, return
+        if self.bbox['x1'] == self.bbox['x2'] or self.bbox['y1'] == self.bbox['y2']:
+            print("lol2")
             return
 
         # if traffic light state is not set, return
         if not self.bbox['state']:
+            print("lol3")
             return
         
-        bbox = {
-            'x1': min(self.origin.x(), self.end.x()),
-            'y1': min(self.origin.y(), self.end.y()),
-            'x2': max(self.origin.x(), self.end.x()),
-            'y2': max(self.origin.y(), self.end.y()),
-            'state': self.bbox['state']
-        }
+        #bbox = {
+        #    'x1': min(self.origin.x(), self.end.x()),
+        #    'y1': min(self.origin.y(), self.end.y()),
+        #    'x2': max(self.origin.x(), self.end.x()),
+        #    'y2': max(self.origin.y(), self.end.y()),
+        #    'state': self.bbox['state']
+        #}
 
-        self.annotated.append(bbox)
+        self.annotated.append(self.bbox)
 
-        self.update_bounding_box()
-        self.update_annotation_window()
+        
 
         # clear bounding box
         self.origin = None
         self.end = None
         self.state = None
+
+        self.bbox = {
+            'x1': None,
+            'y1': None,
+            'x2': None,
+            'y2': None,
+            'state': None
+        }
+        self.update_bounding_box()
+        self.update_annotation_window()
+
 
     def last_annotation(self):
         if len(self.annotated) == 0:
@@ -511,6 +556,13 @@ class AnnotationWindow(QWidget):
         self.current_annotation_widget.setFixedHeight(120)
         self.current_annotation = QVBoxLayout()
         self.current_annotation.setContentsMargins(0, 0, 0, 0)
+
+        
+        self.current_annotation_widget.show()
+        #self.current_annotation_widget.setFocus()
+        #self.show()
+
+
         self.current_annotation_widget.setLayout(self.current_annotation)
         self.layout.addWidget(self.current_annotation_widget)
 
@@ -546,12 +598,34 @@ class AnnotationWindow(QWidget):
 
         self.show()
 
+        # self.add_new_annotation is a button which is the default if there is no current annotation
+        add_new_annotation = QPushButton("+ Add New Annotation")
+        #self.add_new_annotation.clicked.connect(self.parent().update_current_annotation)
+        add_new_annotation.setFixedSize(120, 120)
+        add_new_annotation.setStyleSheet("""
+        background-color: rgb(0,0,255);
+        """)
+        self.current_annotation.addWidget(add_new_annotation)
+        # background color
+        #self.add_new_annotation.setAutoFillBackground(True)
+        #p = self.add_new_annotation.palette()
+        #p.setColor(self.add_new_annotation.backgroundRole(), QColor(0,255, 109))
+        #self.add_new_annotation.setPalette(p)
+        add_new_annotation.show()
+        self.current_annotation_widget.show()
+        self.show()
+        self.update()
+        self.repaint()
+        self.show()
+
+        self.draw_annotation(self.parent().bbox, self.current_annotation, "currently editing...", True)
+
         # self.draw_annotation(self.parent().bbox, self.current_annotation)
-        for annotation in self.parent().annotated:
-            self.draw_annotation(annotation, self.previous_annotations)
+        #for annotation in self.parent().annotated:
+        #    self.draw_annotation(annotation, self.previous_annotations)
 
 
-    def draw_annotation(self, bbox, parent, title=""):
+    def draw_annotation(self, bbox, parent, title="", current=False):
         '''
         An annotation has 4 text inputs for x1, y1, x2, y2 coordinates
         and one dropdown menu for the traffic light state.
@@ -567,59 +641,201 @@ class AnnotationWindow(QWidget):
         p.setColor(annotation.backgroundRole(), QColor(85, 96, 109))
         annotation.setPalette(p)
         # set size to fit contents
-        annotation.setFixedHeight(90)
+        annotation.setFixedHeight(110)
         # set layout
         annotation_layout = QGridLayout()
         annotation.setLayout(annotation_layout)
+        
 
         # set Title
         title = QLabel(title)
         annotation_layout.addWidget(title, 0, 0, 1, 2)
 
-        def change_input():
-            bbox['x1'] = max(min(int(x1_input.text()), self.parent().pixmap.width()), 0)
-            bbox['y1'] = max(min(int(y1_input.text()), self.parent().pixmap.height()), 0)
-            bbox['x2'] = max(min(int(x2_input.text()), self.parent().pixmap.width()), 0)
-            bbox['y2'] = max(min(int(y2_input.text()), self.parent().pixmap.height()), 0)
+        # set delete or accept button
+        if current:
+            accept_button = QPushButton("")
+            accept_button.setToolTip("Press Enter to lock in")
+            accept_button.setFixedSize(13, 13)
+            accept_button.setStyleSheet("""
+            QPushButton {
+                background-color: transparent;
+                border: none;
+                image: url(annotool/img/accept.svg);
+            }
+            QPushButton:hover {
+                image: url(annotool/img/accept_hover.svg);
+            }
+            """)
+            accept_button.clicked.connect(self.parent().lock_in_bbox)
+            annotation_layout.addWidget(accept_button, 0, 3)
+        else:
+            delete_button = QPushButton("")
+            if len(parent) == 1:
+                delete_button.setToolTip("Press Backspace to delete last annotation")
+            delete_button.setFixedSize(13, 13)
+            delete_button.setStyleSheet("""
+            QPushButton {
+                background-color: transparent;
+                border: none;
+                image: url(annotool/img/delete.svg);
+            }
+            QPushButton:hover {
+                image: url(annotool/img/delete_hover.svg);
+            }
+            """)
+            def delete():
+                self.parent().annotated.remove(bbox)
+                self.parent().update_annotation_window()
+                self.parent().update_bounding_box()
+                self.parent().show()
+            delete_button.clicked.connect(delete)
+            annotation_layout.addWidget(delete_button, 0, 3)
 
-            if bbox['x1'] > bbox['x2']:
+
+        def change_input():
+            bbox['x1'] = max(min(int(x1_input.text()), self.parent().pixmap.width()), 0) if x1_input.text() else None
+            bbox['y1'] = max(min(int(y1_input.text()), self.parent().pixmap.height()), 0) if y1_input.text() else None
+            bbox['x2'] = max(min(int(x2_input.text()), self.parent().pixmap.width()), 0) if x2_input.text() else None
+            bbox['y2'] = max(min(int(y2_input.text()), self.parent().pixmap.height()), 0) if y2_input.text() else None
+
+            if bbox['x1'] and bbox['x2'] and bbox['x1'] > bbox['x2']:
                 bbox['x1'], bbox['x2'] = bbox['x2'], bbox['x1']
-            if bbox['y1'] > bbox['y2']:
+            if bbox['y1'] and bbox['y2'] and bbox['y1'] > bbox['y2']:
                 bbox['y1'], bbox['y2'] = bbox['y2'], bbox['y1']
 
-            x1_input.setText(str(bbox['x1']))
-            y1_input.setText(str(bbox['y1']))
-            x2_input.setText(str(bbox['x2']))
-            y2_input.setText(str(bbox['y2']))
+            x1_input.setText(str(bbox['x1'])) if bbox['x1'] else x1_input.setText("")
+            y1_input.setText(str(bbox['y1'])) if bbox['y1'] else y1_input.setText("")
+            x2_input.setText(str(bbox['x2'])) if bbox['x2'] else x2_input.setText("")
+            y2_input.setText(str(bbox['y2'])) if bbox['y2'] else y2_input.setText("")
 
             self.parent().annotation_window.setFocus()
             self.parent().update_bounding_box()
             self.parent().show()
             
+        widget_style = """
+        QWidget {
+            font-size: 8px;
+            color: #A0AEC0;
+            background-color: #2D3748;
+            border-radius: 5px;
+            border: 1px solid #A0AEC0;
+        }
+        QWidget:hover {
+            color: #ffffff;
+            border-color: #ffffff;
+        }
+        """
+        label_style = """
+        QLabel {
+            color: #A0AEC0;
+            background-color: transparent;
+            border: none;
+        }
+        """
+        input_style = """
+        QLineEdit {
+            background-color: transparent;
+            border: none;
+            color: #A0AEC0;
+            font-size: 13px;
+        }
+        QLineEdit:hover{
+            color: #ffffff;
+        }
+        """
+
 
         # x1
-        x1_input = QLineEdit(str(bbox['x1']))
+        x1_label = QLabel(" x min")
+
+        x1_input = QLineEdit(str(bbox['x1'])) if bbox['x1'] else QLineEdit()
         x1_input.setValidator(QIntValidator())
-        annotation_layout.addWidget(x1_input, 1, 0)
-        x1_input.returnPressed.connect(change_input)
+        x1_input.editingFinished.connect(change_input)
+        
+        x1_layout = QVBoxLayout()
+        x1_layout.setContentsMargins(5, 1, 5, 2)
+        x1_layout.setSpacing(0)
+        x1_layout.addWidget(x1_label)
+        x1_layout.addWidget(x1_input)
+
+        x1_widget = QWidget()
+        x1_widget.setFixedHeight(30)
+        x1_widget.setLayout(x1_layout)
+        x1_widget.setContentsMargins(0, 0, 0, 0)
+        annotation_layout.addWidget(x1_widget, 1, 0)
+
+        x1_widget.setStyleSheet(widget_style)
+        x1_label.setStyleSheet(label_style)
+        x1_input.setStyleSheet(input_style)
 
         # y1
-        y1_input = QLineEdit(str(bbox['y1']))
+        y1_label = QLabel(" y min")
+
+        y1_input = QLineEdit(str(bbox['y1'])) if bbox['y1'] else QLineEdit()
         y1_input.setValidator(QIntValidator())
-        annotation_layout.addWidget(y1_input, 1, 1)
-        y1_input.returnPressed.connect(change_input)
+        y1_input.editingFinished.connect(change_input)
+        
+        y1_layout = QVBoxLayout()
+        y1_layout.setContentsMargins(5, 1, 5, 2)
+        y1_layout.setSpacing(0)
+        y1_layout.addWidget(y1_label)
+        y1_layout.addWidget(y1_input)
+
+        y1_widget = QWidget()
+        y1_widget.setFixedHeight(30)
+        y1_widget.setLayout(y1_layout)
+        y1_widget.setContentsMargins(0, 0, 0, 0)
+        annotation_layout.addWidget(y1_widget, 1, 1)
+
+        y1_widget.setStyleSheet(widget_style)
+        y1_label.setStyleSheet(label_style)
+        y1_input.setStyleSheet(input_style)
 
         # x2
-        x2_input = QLineEdit(str(bbox['x2']))
+        x2_label = QLabel(" x max")
+
+        x2_input = QLineEdit(str(bbox['x2'])) if bbox['x2'] else QLineEdit()
         x2_input.setValidator(QIntValidator())
-        annotation_layout.addWidget(x2_input, 2, 0)
-        x2_input.returnPressed.connect(change_input)
+        x2_input.editingFinished.connect(change_input)
+
+        x2_layout = QVBoxLayout()
+        x2_layout.setContentsMargins(5, 1, 5, 2)
+        x2_layout.setSpacing(0)
+        x2_layout.addWidget(x2_label)
+        x2_layout.addWidget(x2_input)
+
+        x2_widget = QWidget()
+        x2_widget.setFixedHeight(30)
+        x2_widget.setLayout(x2_layout)
+        x2_widget.setContentsMargins(0, 0, 0, 0)
+        annotation_layout.addWidget(x2_widget, 2, 0)
+
+        x2_widget.setStyleSheet(widget_style)
+        x2_label.setStyleSheet(label_style)
+        x2_input.setStyleSheet(input_style)
 
         # y2
-        y2_input = QLineEdit(str(bbox['y2']))
+        y2_label = QLabel(" y max")
+
+        y2_input = QLineEdit(str(bbox['y2'])) if bbox['y2'] else QLineEdit()
         y2_input.setValidator(QIntValidator())
-        annotation_layout.addWidget(y2_input, 2, 1)
-        y2_input.returnPressed.connect(change_input)
+        y2_input.editingFinished.connect(change_input)
+
+        y2_layout = QVBoxLayout()
+        y2_layout.setContentsMargins(5, 1, 5, 2)
+        y2_layout.setSpacing(0)
+        y2_layout.addWidget(y2_label)
+        y2_layout.addWidget(y2_input)
+
+        y2_widget = QWidget()
+        y2_widget.setFixedHeight(30)
+        y2_widget.setLayout(y2_layout)
+        y2_widget.setContentsMargins(0, 0, 0, 0)
+        annotation_layout.addWidget(y2_widget, 2, 1)
+
+        y2_widget.setStyleSheet(widget_style)
+        y2_label.setStyleSheet(label_style)
+        y2_input.setStyleSheet(input_style)
 
         # create 3 buttons inside vertical layout spanning 2 rows
         button_layout = QVBoxLayout()
@@ -647,6 +863,12 @@ class AnnotationWindow(QWidget):
         button_layout.addWidget(yellow_button)
 
         green_button = QCheckBox()
+        if parent == self.current_annotation:
+            green_button.setToolTip("""Press 1 to set state to red
+Press 2 to set state to red-yellow
+Press 3 to set state to yellow
+Press 4 to set state to green
+Press 5 to set state to off""")
         green_button.setStyleSheet("""
         QCheckBox::indicator::unchecked { image: url(annotool/img/green_unchecked.svg); }
         QCheckBox::indicator::checked { image: url(annotool/img/green.svg); }

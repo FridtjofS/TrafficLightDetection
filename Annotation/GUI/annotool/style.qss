@@ -44,20 +44,32 @@ QLabel {
   font-weight: 500;
 }
 
+QPushButton {
+  background-color: transparent;
+  border: none;
+}
+
 QLineEdit {
+  background-color: transparent;
+  border: none;
+  color: #fff;
+  font-size: 15px;
+  
+  /*
   background-color: #3A4450;
   border-radius: 5px;
   border: 1px solid #A0AEC0;
   padding: 3px;
   font-family: 'Montserrat', sans-serif;
   font-weight: 300;
-  color: #A0AEC0;
+  color: #A0AEC0;*/
 }
-
+/*
 QLineEdit:hover {
   border: 1px solid #ffffff;
   color: #ffffff;
 }
+*/
 QLineEdit:focus {
   border: 1px solid #ffffff;
   color: #ffffff;
