@@ -86,6 +86,14 @@ QCheckBox::indicator {
   height: 13px;
 }
 
+QToolTip {
+  background-color: #3A4450;
+  border-radius: 5px;
+  border: 1px solid #A0AEC0;
+  color: #A0AEC0;
+  font-family: 'Montserrat', sans-serif;
+}
+
 
 
 

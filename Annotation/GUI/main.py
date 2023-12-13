@@ -32,9 +32,27 @@ class MainWindow(QWidget):
         self.next_last_layout.setSpacing(0)
         # set next and last buttons
         self.next = QPushButton()
-        self.next.setStyleSheet("image: url(annotool/img/next.svg); background-color: transparent; border: none;")
+        self.next.setStyleSheet("""
+        QPushButton {
+            image: url(annotool/img/next.svg);
+            background-color: transparent;
+            border: none;
+        }
+        QPushButton:disabled {
+            image: url(annotool/img/next_disabled.svg);
+        }
+        """)
         self.last = QPushButton()
-        self.last.setStyleSheet("image: url(annotool/img/last.svg); background-color: transparent; border: none;")
+        self.last.setStyleSheet("""
+        QPushButton {
+            image: url(annotool/img/last.svg);
+            background-color: transparent;
+            border: none;
+        }
+        QPushButton:disabled {
+            image: url(annotool/img/last_disabled.svg);
+        }
+        """)
         self.next.setFixedSize(40, 40)
         self.last.setFixedSize(40, 40)
         self.next.clicked.connect(self.next_image)
@@ -51,6 +69,7 @@ class MainWindow(QWidget):
         self.last.setEnabled(False)
 
         self.annotated = []
+        self.undo_stack = []
 
         # bounding box coordinates
         self.origin = None
@@ -142,27 +161,22 @@ class MainWindow(QWidget):
             self.state = 1
             self.bbox['state'] = 1
             self.update_current_annotation()
-            print("State: Red")
         elif event.key() == 50: # 2
             self.state = 2
             self.bbox['state'] = 2
             self.update_current_annotation()
-            print("State: Red-Yellow")
         elif event.key() == 51: # 3
             self.state = 3
             self.bbox['state'] = 3
             self.update_current_annotation()
-            print("State: Yellow")
         elif event.key() == 52: # 4
             self.state = 4
             self.bbox['state'] = 4
             self.update_current_annotation()
-            print("State: Green")
         elif event.key() == 53: # 5
             self.state = 5
             self.bbox['state'] = 5
             self.update_current_annotation()
-            print("State: Off")
 
         # if press ESC, close window
         elif event.key() == 16777216: # ESC
@@ -170,11 +184,6 @@ class MainWindow(QWidget):
             print("Close")
         
         self.update_bounding_box()
-        
-
-        # if all conditions are met, enable next button
-        if self.origin and self.end and self.state and self.origin != self.end:
-                self.next.setEnabled(True)
 
     def keyReleaseEvent(self, event):
         # if release space, stop moving origin
@@ -182,33 +191,73 @@ class MainWindow(QWidget):
             self.move_origin = False
 
     def next_image(self):
-        self.save_image_with_annotations(self.get_path())
-        self.next.setEnabled(False)
-        self.state = None
-        self.origin = None
-        self.end = None
-        self.annotated = []
-        self.bbox = {
-            'x1': None,
-            'y1': None,
-            'x2': None,
-            'y2': None,
-            'state': None
-        }
-        self.update_annotation_window()
+        if len(os.listdir(const.IMAGE_DIR)) == 0:
+            print("Directory is empty")
+            return
+        if len(self.annotated) > 0:
+            path = self.get_path()
+            self.undo_stack.append(path)
+            self.save_image_with_annotations(path)
+            self.next.setEnabled(False)
+            self.last.setEnabled(True) if len(self.undo_stack) > 0 else self.last.setEnabled(False)
+            self.state = None
+            self.origin = None
+            self.end = None
+            self.annotated = []
+            self.bbox = {
+                'x1': None,
+                'y1': None,
+                'x2': None,
+                'y2': None,
+                'state': None
+            }
+            self.update_annotation_window()
         self.load_image(self.get_path())
-        # get filepath of next image
-        # load in next image
-        # get user input for bounding box and traffic light state
-        # save image with bounding box coordinates and traffic light state in the directory "annotations"
-        pass
 
     def previous_image(self):
         # get filepath of previous image
         # load in previous image
         # get user input for bounding box and traffic light state
         # update json file with bounding box coordinates and traffic light state
-        pass
+        
+        # if there is no previous image, return
+        if len(self.undo_stack) == 0:
+            return
+        
+        if len(self.undo_stack) == 1:
+            self.last.setEnabled(False)
+
+        path = os.path.join(const.ANNOTATED_PATH, os.path.basename(self.undo_stack.pop()))
+
+        # copy image into IMAGE_DIR
+        shutil.copy(path, const.IMAGE_DIR)
+
+        # get json data and set as self.annotated
+        with open(os.path.join(const.ANNOTATED_PATH, Path(path).stem + ".json" ), 'r') as f:
+            json_data = json.load(f)
+            self.annotated = []
+            for key in json_data:
+                self.annotated.append({
+                    'x1': json_data[key]['x1'],
+                    'y1': json_data[key]['y1'],
+                    'x2': json_data[key]['x2'],
+                    'y2': json_data[key]['y2'],
+                    'state': json_data[key]['state']
+                })
+
+        # load image into GUI
+        self.load_image(path)
+        self.update_annotation_window()
+        self.update_bounding_box()
+
+        # delete image from const.ANNOTATED_PATH directory
+        os.remove(path)
+
+        # delete the json file with the same name as the image
+        os.remove(os.path.join(const.ANNOTATED_PATH, Path(path).stem + ".json"))
+
+        
+
     
     # get path of next image in directory "frames"
     def get_path(self):
@@ -275,6 +324,9 @@ class MainWindow(QWidget):
     def mouseMoveEvent(self, event):
         if not self.origin:
             return
+        
+        if event.buttons() != Qt.MouseButton.LeftButton or not self.label.underMouse():
+            return
 
         # if space is pressed, move origin with mouse movement
         if self.move_origin and self.end:
@@ -311,6 +363,9 @@ class MainWindow(QWidget):
         if not self.origin or not self.end:
             return
         
+        if event.button() != Qt.MouseButton.LeftButton or not self.label.underMouse():
+            return
+        
         # set end of bounding box to mouse position
         self.end = event.pos()
         self.end = self.label.mapFrom(self, self.end)
@@ -328,8 +383,8 @@ class MainWindow(QWidget):
         self.update_current_annotation()
 
         # enable next button if all conditions are met
-        if self.origin and self.end and self.state and self.origin != self.end:
-                self.next.setEnabled(True)
+        #if self.bbox['x1'] and self.bbox['y1'] and self.bbox['x2'] and self.bbox['y2'] and self.bbox['state'] and self.bbox['x1'] != self.bbox['x2'] and self.bbox['y1'] != self.bbox['y2']:
+        #        self.next.setEnabled(True)
         
     
     # draw bounding box on image
@@ -437,17 +492,17 @@ class MainWindow(QWidget):
     def lock_in_bbox(self):
         # if bounding box is not set, return
         if not self.bbox['x1'] or not self.bbox['y1'] or not self.bbox['x2'] or not self.bbox['y2']:
-            print("lol1")
+            print("Please set all coordinates")
             return
         
         # if bounding box is a point or a line, return
         if self.bbox['x1'] == self.bbox['x2'] or self.bbox['y1'] == self.bbox['y2']:
-            print("lol2")
+            print("The bounding box has to be a rectangle")
             return
 
         # if traffic light state is not set, return
         if not self.bbox['state']:
-            print("lol3")
+            print("Please set traffic light state")
             return
         
         #bbox = {
@@ -459,6 +514,7 @@ class MainWindow(QWidget):
         #}
 
         self.annotated.append(self.bbox)
+        self.next.setEnabled(True)
 
         
 
@@ -596,20 +652,11 @@ class AnnotationWindow(QWidget):
 
         self.show()
 
-        # self.add_new_annotation is a button which is the default if there is no current annotation
-        add_new_annotation = QPushButton("+ Add New Annotation")
-        #self.add_new_annotation.clicked.connect(self.parent().update_current_annotation)
-        add_new_annotation.setFixedSize(120, 120)
-        add_new_annotation.setStyleSheet("""
-        background-color: rgb(0,0,255);
-        """)
-        self.current_annotation.addWidget(add_new_annotation)
         # background color
         #self.add_new_annotation.setAutoFillBackground(True)
         #p = self.add_new_annotation.palette()
         #p.setColor(self.add_new_annotation.backgroundRole(), QColor(0,255, 109))
         #self.add_new_annotation.setPalette(p)
-        add_new_annotation.show()
         self.current_annotation_widget.show()
         self.show()
         self.update()
@@ -653,7 +700,7 @@ class AnnotationWindow(QWidget):
         if current:
             accept_button = QPushButton("")
             accept_button.setToolTip("Press Enter to lock in")
-            accept_button.setFixedSize(13, 13)
+            accept_button.setFixedSize(17, 17)
             accept_button.setStyleSheet("""
             QPushButton {
                 background-color: transparent;
@@ -670,7 +717,7 @@ class AnnotationWindow(QWidget):
             delete_button = QPushButton("")
             if len(parent) == 1:
                 delete_button.setToolTip("Press Backspace to delete last annotation")
-            delete_button.setFixedSize(13, 13)
+            delete_button.setFixedSize(17, 17)
             delete_button.setStyleSheet("""
             QPushButton {
                 background-color: transparent;
@@ -686,6 +733,8 @@ class AnnotationWindow(QWidget):
                 self.parent().update_annotation_window()
                 self.parent().update_bounding_box()
                 self.parent().show()
+                if len(self.parent().annotated) == 0:
+                    self.parent().next.setEnabled(False)
             delete_button.clicked.connect(delete)
             annotation_layout.addWidget(delete_button, 0, 3)
 
@@ -844,15 +893,18 @@ class AnnotationWindow(QWidget):
         # add 3 buttons to vertical layout (red, yellow, green)
         red_button = QCheckBox()
         red_button.setStyleSheet("""
+        QCheckBox::indicator { width: 18px; height: 18px; }
         QCheckBox::indicator::unchecked { image: url(annotool/img/red_unchecked.svg); }
         QCheckBox::indicator::checked { image: url(annotool/img/red.svg); }
         QCheckBox::indicator::unchecked:hover { image: url(annotool/img/red_hover.svg); }
         """)
+        #red_button.setFixedSize(30, 30)
         red_button.setChecked(True) if bbox['state'] == 1 or bbox['state'] == 2 else red_button.setChecked(False)
         button_layout.addWidget(red_button)
 
         yellow_button = QCheckBox()
         yellow_button.setStyleSheet("""
+        QCheckBox::indicator { width: 18px; height: 18px; }
         QCheckBox::indicator::unchecked { image: url(annotool/img/yellow_unchecked.svg); }
         QCheckBox::indicator::checked { image: url(annotool/img/yellow.svg); }
         QCheckBox::indicator::unchecked:hover { image: url(annotool/img/yellow_hover.svg); }
@@ -868,6 +920,7 @@ Press 3 to set state to yellow
 Press 4 to set state to green
 Press 5 to set state to off""")
         green_button.setStyleSheet("""
+        QCheckBox::indicator { width: 18px; height: 18px; }
         QCheckBox::indicator::unchecked { image: url(annotool/img/green_unchecked.svg); }
         QCheckBox::indicator::checked { image: url(annotool/img/green.svg); }
         QCheckBox::indicator::unchecked:hover { image: url(annotool/img/green_hover.svg); }
