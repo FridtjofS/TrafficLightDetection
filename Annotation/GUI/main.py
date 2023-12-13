@@ -116,8 +116,10 @@ class MainWindow(QWidget):
         # only allowed if bounding box and traffic light state are set
         elif event.key() == 16777220:
             self.lock_in_bbox() 
-            self.update_annotation_window()
+            self.setFocus()
             self.update_bounding_box()
+            self.update_annotation_window()
+            
             
 
             #if self.origin and self.end and self.state:
@@ -193,12 +195,7 @@ class MainWindow(QWidget):
             'y2': None,
             'state': None
         }
-        try:
-            self.annotation_window.current_annotation.itemAt(0).widget().setParent(None)
-        except:
-            pass
-        for i in reversed(range(self.annotation_window.previous_annotations.count())): 
-            self.annotation_window.previous_annotations.itemAt(i).widget().setParent(None)
+        self.update_annotation_window()
         self.load_image(self.get_path())
         # get filepath of next image
         # load in next image
@@ -289,9 +286,9 @@ class MainWindow(QWidget):
             self.end = event.pos()
             self.end = self.label.mapFrom(self, self.end)
             # make sure origin is not outside of image
-            self.origin = QPoint(max(1, min(self.pixmap.width(), self.origin.x())), max(0, min(self.pixmap.height(), self.origin.y())))
+            self.origin = QPoint(max(1, min(self.pixmap.width(), self.origin.x())), max(1, min(self.pixmap.height(), self.origin.y())))
             # make sure end is not outside of image
-            self.end = QPoint(max(1, min(self.pixmap.width(), self.end.x())), max(0, min(self.pixmap.height(), self.end.y())))
+            self.end = QPoint(max(1, min(self.pixmap.width(), self.end.x())), max(1, min(self.pixmap.height(), self.end.y())))
             
         else:
             # else, set end of bounding box to mouse position
@@ -337,30 +334,13 @@ class MainWindow(QWidget):
     
     # draw bounding box on image
     def update_bounding_box(self):
-
-        self.setFocus()
-        if not self.end:
-            return
-
-        x1 = self.bbox["x1"]
-        y1 = self.bbox["y1"]
-        x2 = self.bbox["x2"]
-        y2 = self.bbox["y2"]
         
         canvas = self.pixmap.copy()
         painter = QPainter(canvas)
 
-        pen = QPen(self.get_color(self.bbox['state']))
-        pen.setStyle(Qt.PenStyle.DashLine)
-        pen.setWidth(1)
+        
 
-        painter.setPen(pen)
-        painter.drawRect(x1, y1, x2-x1, y2-y1)
-
-        # fill bounding box with color (10% opacity)
-        painter.setOpacity(0.1)
-        painter.fillRect(x1, y1, x2-x1, y2-y1, self.get_color(self.bbox['state']))
-        painter.setOpacity(1)
+        
 
         for annotation in self.annotated:
             color = self.get_color(annotation['state'])
@@ -395,12 +375,29 @@ class MainWindow(QWidget):
             
             painter.drawText(annotation['x1'] + 2, y_text, str(self.annotated.index(annotation) + 1))
 
+
+        if self.bbox['x1'] and self.bbox['y1'] and self.bbox['x2'] and self.bbox['y2']:
+            pen = QPen(self.get_color(self.bbox['state']))
+            pen.setStyle(Qt.PenStyle.DashLine)
+            pen.setWidth(1)
+
+            x1 = self.bbox["x1"]
+            y1 = self.bbox["y1"]
+            x2 = self.bbox["x2"]
+            y2 = self.bbox["y2"]
+
+            painter.setPen(pen)
+            painter.drawRect(x1, y1, x2-x1, y2-y1)
+
+            # fill bounding box with color (10% opacity)
+            painter.setOpacity(0.1)
+            painter.fillRect(x1, y1, x2-x1, y2-y1, self.get_color(self.bbox['state']))
+            painter.setOpacity(1)
+        
         self.label.setPixmap(canvas)
         del painter
         del canvas
-        self.update()
-        self.repaint()
-        self.show()
+        self.label.update()
 
     def update_current_annotation(self):
         # clear current annotation
@@ -479,6 +476,7 @@ class MainWindow(QWidget):
         }
         self.update_bounding_box()
         self.update_annotation_window()
+        
 
 
     def last_annotation(self):

@@ -1,1 +1,1 @@
-{"traffic_light_0": {"x1": 427, "y1": 159, "x2": 447, "y2": 247, "state": 4}, "traffic_light_1": {"x1": 185, "y1": 143, "x2": 188, "y2": 173, "state": 5}, "traffic_light_2": {"x1": 200, "y1": 206, "x2": 384, "y2": 324, "state": 3}}
+{"traffic_light_0": {"x1": 249, "y1": 137, "x2": 389, "y2": 355, "state": 2}, "traffic_light_1": {"x1": 123, "y1": 231, "x2": 231, "y2": 333, "state": 4}}
