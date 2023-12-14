@@ -226,6 +226,8 @@ class MainWindow(QWidget):
         
         if len(self.undo_stack) == 1:
             self.last.setEnabled(False)
+        
+        self.next.setEnabled(True)
 
         path = os.path.join(const.ANNOTATED_PATH, os.path.basename(self.undo_stack.pop()))
 
@@ -606,6 +608,7 @@ class AnnotationWindow(QWidget):
         self.setLayout(self.layout)
         
         self.current_annotation_widget = QWidget()
+        self.current_annotation_widget.setStyleSheet("background-color: rgb(85, 96, 109);")
         self.current_annotation_widget.setContentsMargins(0, 0, 0, 0)
         self.current_annotation_widget.setFixedHeight(120)
         self.current_annotation = QVBoxLayout()
@@ -622,19 +625,15 @@ class AnnotationWindow(QWidget):
 
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
-        # disable scroll bar
-        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         
         self.layout.addWidget(scroll_area)
 
         scroll_content = QWidget()
-        scroll_content.setAutoFillBackground(True)
-        p = scroll_content.palette()
-        p.setColor(scroll_content.backgroundRole(), QColor(58, 68, 80))
-        scroll_content.setPalette(p)
+        scroll_content.setStyleSheet("background-color: rgb(85, 96, 109);")
+        #scroll_content.setPalette(p)
         scroll_layout = QVBoxLayout(scroll_content)
-        scroll_layout.setContentsMargins(0, 0, 0, 0)
-        scroll_layout.setSpacing(0)
+        scroll_layout.setContentsMargins(0, 2, 0, 0)
+        scroll_layout.setSpacing(2)
         scroll_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         scroll_content.setLayout(scroll_layout)
 
@@ -678,15 +677,23 @@ class AnnotationWindow(QWidget):
 
 
         # create new annotation
-        annotation = QWidget()
+        annotation = QWidget()                  
         parent.addWidget(annotation)
         # background color
         annotation.setAutoFillBackground(True)
         p = annotation.palette()
         p.setColor(annotation.backgroundRole(), QColor(85, 96, 109))
         annotation.setPalette(p)
+
+        # add a line on top of the annotation
+        line = QWidget()
+        line.setStyleSheet("background-color: rgb(55, 65, 81);")
+        line.setFixedSize(190, 2)
+        parent.addWidget(line)
+
         # set size to fit contents
         annotation.setFixedHeight(110)
+        annotation.setFixedWidth(190)
         # set layout
         annotation_layout = QGridLayout()
         annotation.setLayout(annotation_layout)

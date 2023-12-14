@@ -6,7 +6,6 @@
 @light-gray: #A0AEC0;
 */
 
-
 MainWindow {
   background-color: #3A4450;
   font-family: 'Montserrat', sans-serif;
@@ -21,9 +20,11 @@ QScrollArea {
   border: 0px;
 }
 
+
 QScrollBar {
   width: 10px;
   border-radius: 10px;
+  background-color: 	rgb(85, 96, 109);
 }
 
 QScrollBar::handle{
@@ -35,6 +36,13 @@ QScrollBar::handle{
 
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
   border: none;
+  background: none;
+}
+
+QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {
+  background: none;
+}
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
   background: none;
 }
 
