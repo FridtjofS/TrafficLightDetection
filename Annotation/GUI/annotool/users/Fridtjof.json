@@ -1,0 +1,5 @@
+{
+    "input_folder": "frames",
+    "output_folder": "annotations",
+    "output_size": "1920x1080"
+}

@@ -13,6 +13,8 @@ path = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(1, path)
 
 import annotool.constants as const
+from annotool.annotationWindow import AnnotationWindow
+from annotool.settingsWindow import SettingsWindow
 
 # This App is an annotation Tool, which loads in an Image, allows the user to draw a bounding box around the object of interest, as well as select one of four traffic light states and then saves the image with the bounding box coordinates in a text file.
 
@@ -28,7 +30,7 @@ class MainWindow(QWidget):
         self.setWindowIcon(QIcon("annotool/img/icon.svg"))
 
         self.next_last_layout = QHBoxLayout()
-        self.next_last_layout.setContentsMargins(0, 0, 0, 0)
+        self.next_last_layout.setContentsMargins(0, 10, 0, 10)
         self.next_last_layout.setSpacing(0)
         # set next and last buttons
         self.next = QPushButton()
@@ -64,7 +66,10 @@ class MainWindow(QWidget):
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
         self.setLayout(self.layout)
-        self.layout.addLayout(self.next_last_layout, 1, 1, 1, 2)
+        self.layout.addLayout(self.next_last_layout, 2, 1, 1, 2)
+
+        self.first_run = True
+        self.wrong_path = False
         
         self.last.setEnabled(False)
 
@@ -93,11 +98,17 @@ class MainWindow(QWidget):
 
         self.annotation_window = AnnotationWindow(self)
         self.annotation_window.setContentsMargins(0, 0, 0, 0)
-        self.layout.addWidget(self.annotation_window, 0, 0, 2, 1)
+        self.layout.addWidget(self.annotation_window, 1, 0, 2, 1)
 
-        #self.update_current_annotation()
+        self.settingsButton = QPushButton("Settings")
 
-        self.next_image()
+        self.settingsButton.clicked.connect(self.open_settings_window)
+        self.layout.addWidget(self.settingsButton, 0, 0, 1, 1)
+
+        self.open_settings_window()
+        
+
+        #self.next_image()
         
         #self.showMaximized()
         screen = app.primaryScreen()
@@ -119,7 +130,6 @@ class MainWindow(QWidget):
                 self.annotated.pop()
                 self.update_annotation_window()
                 self.update_bounding_box()
-                self.show()
 
 
             else:
@@ -191,28 +201,30 @@ class MainWindow(QWidget):
             self.move_origin = False
 
     def next_image(self):
-        if len(os.listdir(const.IMAGE_DIR)) == 0:
-            print("Directory is empty")
+        #if len(os.listdir(const.IMAGE_DIR)) == 0:	
+        #    print("Directory is empty")
+        #    return
+        path = self.get_path()
+        if path == None:
             return
-        if len(self.annotated) > 0:
-            path = self.get_path()
-            self.undo_stack.append(path)
-            self.save_image_with_annotations(path)
-            self.next.setEnabled(False)
-            self.last.setEnabled(True) if len(self.undo_stack) > 0 else self.last.setEnabled(False)
-            self.state = None
-            self.origin = None
-            self.end = None
-            self.annotated = []
-            self.bbox = {
-                'x1': None,
-                'y1': None,
-                'x2': None,
-                'y2': None,
-                'state': None
-            }
-            self.update_annotation_window()
+        self.undo_stack.append(path)
+        self.save_image_with_annotations(path)
+        self.next.setEnabled(False)
+        self.last.setEnabled(True) if len(self.undo_stack) > 0 else self.last.setEnabled(False)
+        self.state = None
+        self.origin = None
+        self.end = None
+        self.annotated = []
+        self.bbox = {
+            'x1': None,
+            'y1': None,
+            'x2': None,
+            'y2': None,
+            'state': None
+        }
+        self.update_annotation_window()
         self.load_image(self.get_path())
+        self.show()
 
     def previous_image(self):
         # get filepath of previous image
@@ -228,24 +240,22 @@ class MainWindow(QWidget):
             self.last.setEnabled(False)
         
         self.next.setEnabled(True)
+        
+        input_path = self.settings_window.input_folder.text()
+        output_path = self.settings_window.output_folder.text()
 
-        path = os.path.join(const.ANNOTATED_PATH, os.path.basename(self.undo_stack.pop()))
+        path = os.path.join(output_path, os.path.basename(self.undo_stack.pop()))
 
         # copy image into IMAGE_DIR
-        shutil.copy(path, const.IMAGE_DIR)
+        shutil.copy(path, input_path)
 
         # get json data and set as self.annotated
-        with open(os.path.join(const.ANNOTATED_PATH, Path(path).stem + ".json" ), 'r') as f:
+        with open(os.path.join(output_path, Path(path).stem + ".json" ), 'r') as f:
             json_data = json.load(f)
             self.annotated = []
             for key in json_data:
-                self.annotated.append({
-                    'x1': json_data[key]['x1'],
-                    'y1': json_data[key]['y1'],
-                    'x2': json_data[key]['x2'],
-                    'y2': json_data[key]['y2'],
-                    'state': json_data[key]['state']
-                })
+                print(json_data[key])
+                self.annotated.append(self.translate_coordinates(json_data[key], True))
 
         # load image into GUI
         self.load_image(path)
@@ -256,22 +266,56 @@ class MainWindow(QWidget):
         os.remove(path)
 
         # delete the json file with the same name as the image
-        os.remove(os.path.join(const.ANNOTATED_PATH, Path(path).stem + ".json"))
+        os.remove(os.path.join(output_path, Path(path).stem + ".json"))
 
         
+    def settings_error(self, message):    
+            self.wrong_path = True
+            # open warning window
+            widget = QWidget()
+            widget.setStyleSheet(os.path.join("annotool", "style.qss"))
+            widget.setStyleSheet("""
+            background-color: #3A4450;
+            font-family: 'Montserrat', sans-serif;
+            color: #FFFFFF;
+            """)
+            widget.setWindowTitle("Warning")
+            layout = QVBoxLayout()
+            widget.setLayout(layout)
+            label = QLabel(message)
+            layout.addWidget(label)
+            ok = QPushButton("OK")
+            def okay():
+                widget.close()
+                self.open_settings_window()
 
+            ok.clicked.connect(okay)
+            layout.addWidget(ok)
+            widget.show()
+            # set on top
+            widget.raise_()
     
-    # get path of next image in directory "frames"
+    # get path of next image in directory
     def get_path(self):
-        # get the first image in the directory const.IMAGE_DIR
+
+        # get the first image in the directory image_dir
+        
+        image_dir = self.settings_window.input_folder.text()
 
         # check if directory is empty
-        if len(os.listdir(const.IMAGE_DIR)) == 0:
-            print("Directory is empty")
-            return
-        
-        images = os.listdir(const.IMAGE_DIR)
-        return os.path.join(const.IMAGE_DIR, images[0])
+        if len(os.listdir(image_dir)) == 0:
+            self.settings_error("The input directory you selected is empty,\nplease select a different directory")
+            return None
+        else:
+            images = os.listdir(image_dir)
+            image = os.path.join(image_dir, images[0])
+            ending = Path(image).suffix
+            if ending == ".jpg" or ending == ".png":
+                return image
+            else:
+                print("Directory does not contain only images")
+                self.settings_error("The input directory you selected does not contain only images,\nplease select a different directory")
+                return None
         
 
 
@@ -296,8 +340,7 @@ class MainWindow(QWidget):
 
         # set image as label
         self.label.setPixmap(self.pixmap)
-        self.layout.addWidget(self.label, 0, 1, 1, 2)
-        self.show()
+        self.layout.addWidget(self.label, 0, 1, 2, 2)
 
     def mousePressEvent(self, event):
         # check if it was click on image (self.label)
@@ -558,455 +601,59 @@ class MainWindow(QWidget):
             return
             #TODO open extra window to ask if user wants to save image without annotations
 
-        
+        output_path = self.settings_window.output_folder.text()
+
+        # check if output directory exists
+        if not os.path.exists(output_path):
+            self.settings_error("The output directory you selected does not exist,\nplease select a different directory")
+
         # save image in "annotations" directory
-        shutil.copy(path, os.path.join("annotations", os.path.basename(path)))
+        shutil.copy(path, os.path.join(output_path, os.path.basename(path)))
 
         # save bounding box coordinates and traffic light state in json file with same name as image
         json_data = {}
         for i in range(len(self.annotated)):
-            json_data['traffic_light_' + str(i)] = {
-                'x1': self.annotated[i]['x1'],
-                'y1': self.annotated[i]['y1'],
-                'x2': self.annotated[i]['x2'],
-                'y2': self.annotated[i]['y2'],
-                'state' : self.annotated[i]['state']
-            }
+            print("before: ", self.annotated[i], "after: ", self.translate_coordinates(self.annotated[i]))
+            json_data['traffic_light_' + str(i)] = self.translate_coordinates(self.annotated[i])
 
-        with open(os.path.join("annotations", Path(path).stem + ".json" ), 'w') as f:
+        with open(os.path.join(output_path, Path(path).stem + ".json" ), 'w') as f:
             json.dump(json_data, f)
 
-                #'bounding_box': {
-                #    'x1': min(self.origin.x(), self.end.x()),
-                #    'y1': min(self.origin.y(), self.end.y()),
-                #    'x2': max(self.origin.x(), self.end.x()),
-                #    'y2': max(self.origin.y(), self.end.y())
-                #},
-                #'state': self.state
-            
+    def open_settings_window(self):
+        self.settings_window = SettingsWindow(self)
+        self.settings_window.show()
+        self.settings_window.raise_()
+        self.settings_window.activateWindow()
+        self.settings_window.setFocus()
 
+    def translate_coordinates(self, bbox, inverse=False):
+        resolution = self.settings_window.output_size.currentText()
+        res_x = int(resolution.split("x")[0])
+        res_y = int(resolution.split("x")[1])
 
-    # delete image from "frames" directory
-    def delete_image(self):
-        pass
-
-
-class AnnotationWindow(QWidget):
-    '''
-    This is where the annotations of the current image are displayed.
-    One on the top of the one to be locked in,
-    and a history of the ones already locked in below.
-    '''
-    def __init__(self, parent):
-        super().__init__(parent)
-
-        self.setWindowTitle("Annotations")
-        self.layout = QVBoxLayout()
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.setSpacing(0)
-        self.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self.setLayout(self.layout)
-        
-        self.current_annotation_widget = QWidget()
-        self.current_annotation_widget.setStyleSheet("background-color: rgb(85, 96, 109);")
-        self.current_annotation_widget.setContentsMargins(0, 0, 0, 0)
-        self.current_annotation_widget.setFixedHeight(120)
-        self.current_annotation = QVBoxLayout()
-        self.current_annotation.setContentsMargins(0, 0, 0, 0)
-
-        
-        self.current_annotation_widget.show()
-        #self.current_annotation_widget.setFocus()
-        #self.show()
-
-
-        self.current_annotation_widget.setLayout(self.current_annotation)
-        self.layout.addWidget(self.current_annotation_widget)
-
-        scroll_area = QScrollArea()
-        scroll_area.setWidgetResizable(True)
-        
-        self.layout.addWidget(scroll_area)
-
-        scroll_content = QWidget()
-        scroll_content.setStyleSheet("background-color: rgb(85, 96, 109);")
-        #scroll_content.setPalette(p)
-        scroll_layout = QVBoxLayout(scroll_content)
-        scroll_layout.setContentsMargins(0, 2, 0, 0)
-        scroll_layout.setSpacing(2)
-        scroll_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        scroll_content.setLayout(scroll_layout)
-
-        
-
-        self.previous_annotations = QVBoxLayout()
-        scroll_layout.addLayout(self.previous_annotations)
-
-        scroll_area.setWidget(scroll_content)
-
-        # set width of window to fit the contents
-        self.setFixedWidth(200)
-
-        #self.draw_annotation({} , self.previous_annotations, "currently editing...")
-
-        self.show()
-
-        # background color
-        #self.add_new_annotation.setAutoFillBackground(True)
-        #p = self.add_new_annotation.palette()
-        #p.setColor(self.add_new_annotation.backgroundRole(), QColor(0,255, 109))
-        #self.add_new_annotation.setPalette(p)
-        self.current_annotation_widget.show()
-        self.show()
-        self.update()
-        self.repaint()
-        self.show()
-
-        self.draw_annotation(self.parent().bbox, self.current_annotation, "currently editing...", True)
-
-        # self.draw_annotation(self.parent().bbox, self.current_annotation)
-        #for annotation in self.parent().annotated:
-        #    self.draw_annotation(annotation, self.previous_annotations)
-
-
-    def draw_annotation(self, bbox, parent, title="", current=False):
-        '''
-        An annotation has 4 text inputs for x1, y1, x2, y2 coordinates
-        and one dropdown menu for the traffic light state.
-        '''
-
-
-        # create new annotation
-        annotation = QWidget()                  
-        parent.addWidget(annotation)
-        # background color
-        annotation.setAutoFillBackground(True)
-        p = annotation.palette()
-        p.setColor(annotation.backgroundRole(), QColor(85, 96, 109))
-        annotation.setPalette(p)
-
-        # add a line on top of the annotation
-        line = QWidget()
-        line.setStyleSheet("background-color: rgb(55, 65, 81);")
-        line.setFixedSize(190, 2)
-        parent.addWidget(line)
-
-        # set size to fit contents
-        annotation.setFixedHeight(110)
-        annotation.setFixedWidth(190)
-        # set layout
-        annotation_layout = QGridLayout()
-        annotation.setLayout(annotation_layout)
-        
-
-        # set Title
-        title = QLabel(title)
-        annotation_layout.addWidget(title, 0, 0, 1, 2)
-
-        # set delete or accept button
-        if current:
-            accept_button = QPushButton("")
-            accept_button.setToolTip("Press Enter to lock in")
-            accept_button.setFixedSize(17, 17)
-            accept_button.setStyleSheet("""
-            QPushButton {
-                background-color: transparent;
-                border: none;
-                image: url(annotool/img/accept.svg);
-            }
-            QPushButton:hover {
-                image: url(annotool/img/accept_hover.svg);
-            }
-            """)
-            accept_button.clicked.connect(self.parent().lock_in_bbox)
-            annotation_layout.addWidget(accept_button, 0, 3)
+        if inverse:
+            x1 = bbox['x1'] * self.label.pixmap().width() / res_x
+            y1 = bbox['y1'] * self.label.pixmap().height() / res_y
+            x2 = bbox['x2'] * self.label.pixmap().width() / res_x
+            y2 = bbox['y2'] * self.label.pixmap().height() / res_y
         else:
-            delete_button = QPushButton("")
-            if len(parent) == 1:
-                delete_button.setToolTip("Press Backspace to delete last annotation")
-            delete_button.setFixedSize(17, 17)
-            delete_button.setStyleSheet("""
-            QPushButton {
-                background-color: transparent;
-                border: none;
-                image: url(annotool/img/delete.svg);
-            }
-            QPushButton:hover {
-                image: url(annotool/img/delete_hover.svg);
-            }
-            """)
-            def delete():
-                self.parent().annotated.remove(bbox)
-                self.parent().update_annotation_window()
-                self.parent().update_bounding_box()
-                self.parent().show()
-                if len(self.parent().annotated) == 0:
-                    self.parent().next.setEnabled(False)
-            delete_button.clicked.connect(delete)
-            annotation_layout.addWidget(delete_button, 0, 3)
-
-
-        def change_input():
-            bbox['x1'] = max(min(int(x1_input.text()), self.parent().pixmap.width()), 0) if x1_input.text() else None
-            bbox['y1'] = max(min(int(y1_input.text()), self.parent().pixmap.height()), 0) if y1_input.text() else None
-            bbox['x2'] = max(min(int(x2_input.text()), self.parent().pixmap.width()), 0) if x2_input.text() else None
-            bbox['y2'] = max(min(int(y2_input.text()), self.parent().pixmap.height()), 0) if y2_input.text() else None
-
-            if bbox['x1'] and bbox['x2'] and bbox['x1'] > bbox['x2']:
-                bbox['x1'], bbox['x2'] = bbox['x2'], bbox['x1']
-            if bbox['y1'] and bbox['y2'] and bbox['y1'] > bbox['y2']:
-                bbox['y1'], bbox['y2'] = bbox['y2'], bbox['y1']
-
-            x1_input.setText(str(bbox['x1'])) if bbox['x1'] else x1_input.setText("")
-            y1_input.setText(str(bbox['y1'])) if bbox['y1'] else y1_input.setText("")
-            x2_input.setText(str(bbox['x2'])) if bbox['x2'] else x2_input.setText("")
-            y2_input.setText(str(bbox['y2'])) if bbox['y2'] else y2_input.setText("")
-
-            self.parent().annotation_window.setFocus()
-            self.parent().update_bounding_box()
-            self.parent().show()
+            x1 = bbox['x1'] * res_x / self.label.pixmap().width()
+            y1 = bbox['y1'] * res_y / self.label.pixmap().height()
+            x2 = bbox['x2'] * res_x / self.label.pixmap().width()
+            y2 = bbox['y2'] * res_y / self.label.pixmap().height()
             
-        widget_style = """
-        QWidget {
-            font-size: 8px;
-            color: #A0AEC0;
-            background-color: #2D3748;
-            border-radius: 5px;
-            border: 1px solid #A0AEC0;
+        return {
+            'x1': int(x1),
+            'y1': int(y1),
+            'x2': int(x2),
+            'y2': int(y2),
+            'state': bbox['state']
         }
-        QWidget:hover {
-            color: #ffffff;
-            border-color: #ffffff;
-        }
-        """
-        label_style = """
-        QLabel {
-            color: #A0AEC0;
-            background-color: transparent;
-            border: none;
-        }
-        """
-        input_style = """
-        QLineEdit {
-            background-color: transparent;
-            border: none;
-            color: #A0AEC0;
-            font-size: 13px;
-        }
-        QLineEdit:hover{
-            color: #ffffff;
-        }
-        """
-
-
-        # x1
-        x1_label = QLabel(" x min")
-
-        x1_input = QLineEdit(str(bbox['x1'])) if bbox['x1'] else QLineEdit()
-        x1_input.setValidator(QIntValidator())
-        x1_input.editingFinished.connect(change_input)
-        
-        x1_layout = QVBoxLayout()
-        x1_layout.setContentsMargins(5, 1, 5, 2)
-        x1_layout.setSpacing(0)
-        x1_layout.addWidget(x1_label)
-        x1_layout.addWidget(x1_input)
-
-        x1_widget = QWidget()
-        x1_widget.setFixedHeight(30)
-        x1_widget.setLayout(x1_layout)
-        x1_widget.setContentsMargins(0, 0, 0, 0)
-        annotation_layout.addWidget(x1_widget, 1, 0)
-
-        x1_widget.setStyleSheet(widget_style)
-        x1_label.setStyleSheet(label_style)
-        x1_input.setStyleSheet(input_style)
-
-        # y1
-        y1_label = QLabel(" y min")
-
-        y1_input = QLineEdit(str(bbox['y1'])) if bbox['y1'] else QLineEdit()
-        y1_input.setValidator(QIntValidator())
-        y1_input.editingFinished.connect(change_input)
-        
-        y1_layout = QVBoxLayout()
-        y1_layout.setContentsMargins(5, 1, 5, 2)
-        y1_layout.setSpacing(0)
-        y1_layout.addWidget(y1_label)
-        y1_layout.addWidget(y1_input)
-
-        y1_widget = QWidget()
-        y1_widget.setFixedHeight(30)
-        y1_widget.setLayout(y1_layout)
-        y1_widget.setContentsMargins(0, 0, 0, 0)
-        annotation_layout.addWidget(y1_widget, 1, 1)
-
-        y1_widget.setStyleSheet(widget_style)
-        y1_label.setStyleSheet(label_style)
-        y1_input.setStyleSheet(input_style)
-
-        # x2
-        x2_label = QLabel(" x max")
-
-        x2_input = QLineEdit(str(bbox['x2'])) if bbox['x2'] else QLineEdit()
-        x2_input.setValidator(QIntValidator())
-        x2_input.editingFinished.connect(change_input)
-
-        x2_layout = QVBoxLayout()
-        x2_layout.setContentsMargins(5, 1, 5, 2)
-        x2_layout.setSpacing(0)
-        x2_layout.addWidget(x2_label)
-        x2_layout.addWidget(x2_input)
-
-        x2_widget = QWidget()
-        x2_widget.setFixedHeight(30)
-        x2_widget.setLayout(x2_layout)
-        x2_widget.setContentsMargins(0, 0, 0, 0)
-        annotation_layout.addWidget(x2_widget, 2, 0)
-
-        x2_widget.setStyleSheet(widget_style)
-        x2_label.setStyleSheet(label_style)
-        x2_input.setStyleSheet(input_style)
-
-        # y2
-        y2_label = QLabel(" y max")
-
-        y2_input = QLineEdit(str(bbox['y2'])) if bbox['y2'] else QLineEdit()
-        y2_input.setValidator(QIntValidator())
-        y2_input.editingFinished.connect(change_input)
-
-        y2_layout = QVBoxLayout()
-        y2_layout.setContentsMargins(5, 1, 5, 2)
-        y2_layout.setSpacing(0)
-        y2_layout.addWidget(y2_label)
-        y2_layout.addWidget(y2_input)
-
-        y2_widget = QWidget()
-        y2_widget.setFixedHeight(30)
-        y2_widget.setLayout(y2_layout)
-        y2_widget.setContentsMargins(0, 0, 0, 0)
-        annotation_layout.addWidget(y2_widget, 2, 1)
-
-        y2_widget.setStyleSheet(widget_style)
-        y2_label.setStyleSheet(label_style)
-        y2_input.setStyleSheet(input_style)
-
-        # create 3 buttons inside vertical layout spanning 2 rows
-        button_layout = QVBoxLayout()
-        button_layout.setContentsMargins(0, 0, 0, 0)
-        button_layout.setSpacing(0)
-        annotation_layout.addLayout(button_layout, 1, 3, 2, 1)
-
-        # add 3 buttons to vertical layout (red, yellow, green)
-        red_button = QCheckBox()
-        red_button.setStyleSheet("""
-        QCheckBox::indicator { width: 18px; height: 18px; }
-        QCheckBox::indicator::unchecked { image: url(annotool/img/red_unchecked.svg); }
-        QCheckBox::indicator::checked { image: url(annotool/img/red.svg); }
-        QCheckBox::indicator::unchecked:hover { image: url(annotool/img/red_hover.svg); }
-        """)
-        #red_button.setFixedSize(30, 30)
-        red_button.setChecked(True) if bbox['state'] == 1 or bbox['state'] == 2 else red_button.setChecked(False)
-        button_layout.addWidget(red_button)
-
-        yellow_button = QCheckBox()
-        yellow_button.setStyleSheet("""
-        QCheckBox::indicator { width: 18px; height: 18px; }
-        QCheckBox::indicator::unchecked { image: url(annotool/img/yellow_unchecked.svg); }
-        QCheckBox::indicator::checked { image: url(annotool/img/yellow.svg); }
-        QCheckBox::indicator::unchecked:hover { image: url(annotool/img/yellow_hover.svg); }
-        """)
-        yellow_button.setChecked(True) if bbox['state'] == 2 or bbox['state'] == 3 else yellow_button.setChecked(False)
-        button_layout.addWidget(yellow_button)
-
-        green_button = QCheckBox()
-        if parent == self.current_annotation:
-            green_button.setToolTip("""Press 1 to set state to red
-Press 2 to set state to red-yellow
-Press 3 to set state to yellow
-Press 4 to set state to green
-Press 5 to set state to off""")
-        green_button.setStyleSheet("""
-        QCheckBox::indicator { width: 18px; height: 18px; }
-        QCheckBox::indicator::unchecked { image: url(annotool/img/green_unchecked.svg); }
-        QCheckBox::indicator::checked { image: url(annotool/img/green.svg); }
-        QCheckBox::indicator::unchecked:hover { image: url(annotool/img/green_hover.svg); }
-        """)
-        green_button.setChecked(True) if bbox['state'] == 4 else green_button.setChecked(False)
-        button_layout.addWidget(green_button)
-
-        # if current state is yellow, check red and yellow button
-        # else check only red button
-        def red_button_clicked():
-            if  bbox['state'] == 3:
-                bbox['state'] = 2
-                red_button.setChecked(True)
-                yellow_button.setChecked(True)
-                green_button.setChecked(False)
-            elif bbox['state'] == 1:
-                bbox['state'] = 5
-                red_button.setChecked(False)
-                yellow_button.setChecked(False)
-                green_button.setChecked(False)
-            else:
-                bbox['state'] = 1
-                red_button.setChecked(True)
-                yellow_button.setChecked(False)
-                green_button.setChecked(False)
-            self.parent().label.setFocus()
-            self.parent().update_bounding_box()
-            self.parent().show()
-
-        red_button.clicked.connect(red_button_clicked)
-
-        # if current state is red, check yellow button
-        # else check only yellow button
-        def yellow_button_clicked():
-            if  bbox['state'] == 1:
-                bbox['state'] = 2
-                red_button.setChecked(True)
-                green_button.setChecked(False)
-            elif bbox['state'] == 3:
-                bbox['state'] = 5
-                red_button.setChecked(False)
-                yellow_button.setChecked(False)
-                green_button.setChecked(False)
-            else:
-                bbox['state'] = 3
-                red_button.setChecked(False)
-                yellow_button.setChecked(True)
-                green_button.setChecked(False)
-            self.parent().annotation_window.setFocus()
-            self.parent().update_bounding_box()
-            self.parent().show()
-
-        yellow_button.clicked.connect(yellow_button_clicked)
-
-        # check only green button
-        def green_button_clicked():
-            if bbox['state'] == 4:
-                bbox['state'] = 5
-                red_button.setChecked(False)
-                yellow_button.setChecked(False)
-                green_button.setChecked(False)
-            else:
-                bbox['state'] = 4
-                red_button.setChecked(False)
-                yellow_button.setChecked(False)
-                green_button.setChecked(True)
-            self.parent().annotation_window.setFocus()
-            self.parent().update_bounding_box()
-            self.parent().show()
-
-        green_button.clicked.connect(green_button_clicked)
-
-        return annotation
 
 
 
 app = QApplication(sys.argv)
 app.setStyleSheet(Path("annotool/style.qss").read_text())
 window = MainWindow()
-window.show()
 sys.exit(app.exec())
 

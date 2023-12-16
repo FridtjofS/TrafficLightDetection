@@ -16,6 +16,68 @@ AnnotationWindow {
   font-family: 'Montserrat', sans-serif;
 }
 
+SettingsWindow {
+  background-color: rgb(85, 96, 109);
+  font-family: 'Montserrat', sans-serif;
+}
+
+SettingsWindow > QPushButton {
+  background-color: #3A4450;
+  border-radius: 5px;
+  color: #A0AEC0;
+  border: 1px solid #A0AEC0;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 500;
+  padding: 5px;
+}
+
+SettingsWindow > QPushButton:hover, SettingsWindow > QPushButton:pressed {
+  color: #fff;
+  border-color: #fff;
+}
+
+
+SettingsWindow > QComboBox {
+  background-color:  #3A4450;
+  color: #A0AEC0;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 500;
+  padding: 5px;
+  border: 1px solid #A0AEC0;
+}
+
+SettingsWindow > QComboBox:hover {
+  color: #fff;
+  border: 1px solid #fff;
+}
+
+SettingsWindow > QComboBox::drop-down {
+  border: none;
+}
+
+SettingsWindow > QComboBox::down-arrow {
+  image: url("annotool/img/arrow-down.svg");
+}
+
+SettingsWindow > QComboBox::down-arrow:on {
+  image: url("annotool/img/arrow-up.svg");
+}
+
+SettingsWindow > QComboBox QAbstractItemView {
+  background-color: #3A4450;
+  border-radius: 10px;
+  color: #A0AEC0;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 500;
+  padding: 5px;
+}
+
+SettingsWindow > QComboBox QAbstractItemView::item:hover {
+  color: #fff;
+}
+
+
+
 QScrollArea {
   border: 0px;
 }
