@@ -33,6 +33,7 @@ class SettingsWindow(QWidget):
         self.layout.setContentsMargins(10, 10, 10, 10)
         self.setLayout(self.layout)
 
+        
         label = QLabel("Settings")
         label.setStyleSheet("font-size: 20px; font-weight: bold;")
         self.layout.addWidget(label, 0, 0, 1, 2)

@@ -1,5 +1,16 @@
 {
     "input_folder": "frames",
     "output_folder": "annotations",
-    "output_size": "1920x1080"
+    "output_size": "1920x1080",
+    "stats": {
+        "total_images": 20,
+        "total_annotations": 58,
+        "total_red": 14,
+        "total_red_yellow": 9,
+        "total_yellow": 7,
+        "total_green": 11,
+        "total_off": 17,
+        "total_time": 285.33978748321533,
+        "most_traffic_lights_in_one_image": 10
+    }
 }

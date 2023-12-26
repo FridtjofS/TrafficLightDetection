@@ -4,7 +4,7 @@ from PyQt6.QtCore import Qt, QPoint, QPointF, QEvent, QPropertyAnimation, QSize
 import shutil
 import json
 from pathlib import Path
-
+import time
 import sys
 import os
 
@@ -15,10 +15,9 @@ sys.path.insert(1, path)
 import annotool.constants as const
 from annotool.annotationWindow import AnnotationWindow
 from annotool.settingsWindow import SettingsWindow
+from annotool.statsWindow import StatsWindow
 
 # This App is an annotation Tool, which loads in an Image, allows the user to draw a bounding box around the object of interest, as well as select one of four traffic light states and then saves the image with the bounding box coordinates in a text file.
-
-
 
 class MainWindow(QWidget):
 
@@ -88,29 +87,75 @@ class MainWindow(QWidget):
             'y2': None,
             'state': None
         }
+        
 
+        
+        self.label = QLabel(self)
+        # align top, so that coordinates can be mapped correctly
+        self.label.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.layout.addWidget(self.label, 0, 1, 2, 2)
 
         # move bounding box origin with mouse movement
         self.move_origin = False
 
         # load the first image into the GUI
+
+        self.left_layout = QVBoxLayout()
+
+        self.layout.addLayout(self.left_layout, 0, 0, 3, 1)
         
+        label = QLabel("Traffic Light\nAnnotation Tool")
+        label.setStyleSheet("font-size: 15px; font-weight: bold; margin: 5px;")
+        self.left_layout.addWidget(label)
 
         self.annotation_window = AnnotationWindow(self)
         self.annotation_window.setContentsMargins(0, 0, 0, 0)
-        self.layout.addWidget(self.annotation_window, 1, 0, 2, 1)
+        self.left_layout.addWidget(self.annotation_window)
 
-        self.settingsButton = QPushButton("Settings")
+
+
+        self.settingsButton = QPushButton()
+        self.settingsButton.setStyleSheet("""
+        QPushButton {
+            image: url(annotool/img/settings.svg);
+            background-color: transparent;
+            border: none;
+        }
+        QPushButton:hover {
+            image: url(annotool/img/settings_hover.svg);
+        }
+        """)
+        self.settingsButton.setToolTip("Settings")
+        self.settingsButton.setFixedSize(20, 20)
 
         self.settingsButton.clicked.connect(self.open_settings_window)
-        self.layout.addWidget(self.settingsButton, 0, 0, 1, 1)
+        self.lower_left_layout = QHBoxLayout()
+        #self.lower_left_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.lower_left_layout.setContentsMargins(5, 5, 5, 5)
+        self.lower_left_layout.setSpacing(5)
+        self.lower_left_layout.addStretch()
+        self.lower_left_layout.addWidget(self.settingsButton, alignment=Qt.AlignmentFlag.AlignLeft)
+        self.left_layout.addLayout(self.lower_left_layout)
+
+        self.endSessionButton = QPushButton("End Session")
+        self.endSessionButton.setStyleSheet("""
+        QPushButton {
+            background-color: #3A4450;
+            border: none;
+            font-size: 15px;
+            color: #FFFFFF;
+            padding: 5px;
+        }
+        QPushButton:hover {
+            background-color: #2C333D;
+        }
+        """)
+        self.endSessionButton.clicked.connect(self.open_stats_window)
+        self.lower_left_layout.addWidget(self.endSessionButton)
 
         self.open_settings_window()
         
-
-        #self.next_image()
         
-        #self.showMaximized()
         screen = app.primaryScreen()
         self.size = screen.size()
         #print('Size: %d x %d' % (self.size.width(), self.size.height()))
@@ -204,12 +249,16 @@ class MainWindow(QWidget):
         #if len(os.listdir(const.IMAGE_DIR)) == 0:	
         #    print("Directory is empty")
         #    return
+
         path = self.get_path()
         if path == None:
             return
+        
+        if len(self.undo_stack) > 0:
+            self.save_image_with_annotations(path)
+
         self.undo_stack.append(path)
-        self.save_image_with_annotations(path)
-        self.next.setEnabled(False)
+        #self.next.setEnabled(False)
         self.last.setEnabled(True) if len(self.undo_stack) > 0 else self.last.setEnabled(False)
         self.state = None
         self.origin = None
@@ -224,7 +273,7 @@ class MainWindow(QWidget):
         }
         self.update_annotation_window()
         self.load_image(self.get_path())
-        self.show()
+        self.showMaximized()
 
     def previous_image(self):
         # get filepath of previous image
@@ -239,7 +288,7 @@ class MainWindow(QWidget):
         if len(self.undo_stack) == 1:
             self.last.setEnabled(False)
         
-        self.next.setEnabled(True)
+        #self.next.setEnabled(True)
         
         input_path = self.settings_window.input_folder.text()
         output_path = self.settings_window.output_folder.text()
@@ -254,8 +303,9 @@ class MainWindow(QWidget):
             json_data = json.load(f)
             self.annotated = []
             for key in json_data:
-                print(json_data[key])
                 self.annotated.append(self.translate_coordinates(json_data[key], True))
+
+        self.update_stats(True)
 
         # load image into GUI
         self.load_image(path)
@@ -323,24 +373,47 @@ class MainWindow(QWidget):
     
     # load image into GUI
     def load_image(self, path):
-        self.label = QLabel(self)
 
-        # align top, so that coordinates can be mapped correctly
-        self.label.setAlignment(Qt.AlignmentFlag.AlignTop)
-
-        # load image and scale it to fit into GUI
+        # load image
         if path == None:
             self.pixmap = QPixmap()
         else:
             self.pixmap = QPixmap(path)
-        self.pixmap = self.pixmap.scaled(const.IMAGE_WIDTH, const.IMAGE_HEIGHT)
+
+        # scale image to fit the maximum available size
+        max_size_x = self.size.width() - self.left_layout.sizeHint().width()
+        max_size_y = self.size.height() - self.next_last_layout.sizeHint().height() - 40
+        max_size = QSize(max_size_x, max_size_y)
+        
+        self.pixmap = self.pixmap.scaled(max_size, Qt.AspectRatioMode.KeepAspectRatio)
 
         # set focus to label, so that key press events are registered
         self.label.setFocus()
 
         # set image as label
         self.label.setPixmap(self.pixmap)
-        self.layout.addWidget(self.label, 0, 1, 2, 2)
+
+        # start timer
+        self.timer = time.time()
+    
+    #def resizeEvent(self, event):
+    #    # scale image to fit the maximum available size
+    #    print("resize")
+    #    super().resizeEvent(event)
+    #    
+    #    # get the root widget
+    #    root = self.window()
+    #    # get the size of the root widget
+    #    #self.size = root.size()
+    #    print(self.window().size)
+    #
+    #
+    #    max_size_x = self.size.width() - self.left_layout.sizeHint().width()
+    #    max_size_y = self.size.height() - self.next_last_layout.sizeHint().height() - 40
+    #    max_size = QSize(max_size_x, max_size_y)
+    #    #print(max_size)
+    #    self.pixmap = self.pixmap.scaled(max_size)#, Qt.AspectRatioMode.KeepAspectRatio)
+
 
     def mousePressEvent(self, event):
         # check if it was click on image (self.label)
@@ -559,7 +632,7 @@ class MainWindow(QWidget):
         #}
 
         self.annotated.append(self.bbox)
-        self.next.setEnabled(True)
+        #self.next.setEnabled(True)
 
         
 
@@ -597,8 +670,8 @@ class MainWindow(QWidget):
     
     # copy image into "annotations" directory, and save bounding box coordinates and traffic light state in json file
     def save_image_with_annotations(self, path):
-        if self.annotated == [] or not path:
-            return
+        if self.annotated == []:
+            print("No annotations to save")
             #TODO open extra window to ask if user wants to save image without annotations
 
         output_path = self.settings_window.output_folder.text()
@@ -613,11 +686,13 @@ class MainWindow(QWidget):
         # save bounding box coordinates and traffic light state in json file with same name as image
         json_data = {}
         for i in range(len(self.annotated)):
-            print("before: ", self.annotated[i], "after: ", self.translate_coordinates(self.annotated[i]))
             json_data['traffic_light_' + str(i)] = self.translate_coordinates(self.annotated[i])
 
         with open(os.path.join(output_path, Path(path).stem + ".json" ), 'w') as f:
             json.dump(json_data, f)
+
+        self.update_stats()
+        
 
     def open_settings_window(self):
         self.settings_window = SettingsWindow(self)
@@ -649,6 +724,54 @@ class MainWindow(QWidget):
             'y2': int(y2),
             'state': bbox['state']
         }
+    
+    def open_stats_window(self):
+        self.stats_window = StatsWindow(self)
+        self.stats_window.show()
+        self.stats_window.raise_()
+        self.stats_window.activateWindow()
+        self.stats_window.setFocus()
+        #self.hide()
+
+    def update_stats(self, undo = False):
+        # update stats in user.json file
+        # get user settings
+        user = self.settings_window.login.currentText()
+
+        # get path to user settings file
+        path = os.path.join("annotool", "users", user + ".json")
+        # open file and read contents
+        with open(path, "r") as f:
+            settings = json.load(f)
+
+
+        if undo:
+            # update stats
+            settings["stats"]["total_images"] -= 1
+            settings["stats"]["total_annotations"] -= len(self.annotated)
+            settings["stats"]["total_red"] -= len([x for x in self.annotated if x['state'] == 1])
+            settings["stats"]["total_red_yellow"] -= len([x for x in self.annotated if x['state'] == 2])
+            settings["stats"]["total_yellow"] -= len([x for x in self.annotated if x['state'] == 3])
+            settings["stats"]["total_green"] -= len([x for x in self.annotated if x['state'] == 4])
+            settings["stats"]["total_off"] -= len([x for x in self.annotated if x['state'] == 5])
+        else:
+            # update stats
+            settings["stats"]["total_images"] += 1
+            settings["stats"]["total_annotations"] += len(self.annotated)
+            settings["stats"]["total_red"] += len([x for x in self.annotated if x['state'] == 1])
+            settings["stats"]["total_red_yellow"] += len([x for x in self.annotated if x['state'] == 2])
+            settings["stats"]["total_yellow"] += len([x for x in self.annotated if x['state'] == 3])
+            settings["stats"]["total_green"] += len([x for x in self.annotated if x['state'] == 4])
+            settings["stats"]["total_off"] += len([x for x in self.annotated if x['state'] == 5])
+            settings["stats"]["most_traffic_lights_in_one_image"] = max(settings["stats"]["most_traffic_lights_in_one_image"], len(self.annotated))
+
+            # end timer
+            end = time.time()
+            settings["stats"]["total_time"] += end - self.timer
+
+        # save updated stats
+        with open(path, "w") as f:
+            json.dump(settings, f, indent=4)
 
 
 

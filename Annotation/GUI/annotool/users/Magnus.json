@@ -1,5 +1,16 @@
 {
-    "input_folder": "inputdsfgmh",
-    "output_folder": "..\\test",
-    "output_size": "640x480"
+    "input_folder": "frames",
+    "output_folder": "annotations",
+    "output_size": "1920x1080",
+    "stats": {
+        "total_images": 6,
+        "total_annotations": 20,
+        "total_red": 8,
+        "total_red_yellow": 2,
+        "total_yellow": 2,
+        "total_green": 4,
+        "total_off": 10,
+        "total_time": 195.90078504179235,
+        "most_traffic_lights_in_one_image": 3
+    }
 }
