@@ -1,6 +1,7 @@
 import random
 import numpy as np
 import torch
+import os
 
 
 def set_seed(seed):
@@ -22,7 +23,7 @@ def print2way(f, *x):
     print(*x, file=f)
     f.flush()
 
-def plot_loss_acc(train_losses, val_accs):
+def plot_loss_acc(train_losses, val_accs, dir):
     import matplotlib.pyplot as plt
     fig, ax1 = plt.subplots()
     ax2 = ax1.twinx()
@@ -31,9 +32,7 @@ def plot_loss_acc(train_losses, val_accs):
     ax1.set_xlabel('epoch')
     ax1.set_ylabel('Train loss', color='b')
     ax2.set_ylabel('Validation accuracy', color='r')
-    fig.tight_layout()
-    # set title
     plt.title('Loss and accuracy')
-    plt.show()
-    plt.savefig('loss_acc.png')
+    fig.tight_layout()
+    plt.savefig(os.path.join(dir, 'loss_acc.png'))
     plt.close()

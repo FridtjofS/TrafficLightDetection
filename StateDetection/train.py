@@ -144,7 +144,10 @@ def train(args, logf):
 
             # Print training status
             if batch_idx % args.log_interval == 0:
-                print2way(logf, f"Train Epoch: {epoch} [{batch_idx * len(data)}/{len(train_loader.dataset)} ({100.0 * batch_idx / len(train_loader):.0f}%)]\tLoss: {loss:.6f}\tAccuracy: {acc:.6f}")
+                print2way(logf, 
+                    f"Train Epoch: {epoch} [{batch_idx * len(data)}/{len(train_loader.dataset)} ({100.0 * batch_idx / len(train_loader):.0f}%)]",
+                    f"\tLoss: {loss:.6f}\tAccuracy: {acc:.6f}"
+                )
         
         scheduler.step()
         train_loss /= len(train_loader)
@@ -168,8 +171,8 @@ def train(args, logf):
 
         # Print training and validation results
         print2way(logf, 
-            f"\nEpoch: {epoch}\tTraining Loss: {train_loss:.6f}\tTraining Accuracy: {train_acc:.6f}\
-                \tValidation Loss: {val_loss:.6f}\tValidation Accuracy: {val_acc:.6f}\tTime: {time.time() - start_time:.2f}s\n"
+            f"\nEpoch: {epoch}\tTrain Loss: {train_loss:.6f}\tTrain Acc: {train_acc:.6f}\tVal Loss: {val_loss:.6f}",
+            f"\tVal Acc: {val_acc:.6f}\tTime: {time.time() - start_time:.2f}s\n"
         )
 
         # Add loss to list
@@ -183,7 +186,7 @@ def train(args, logf):
             print2way(logf, "Model saved to %s" % args.save_model_dir)
 
         # Plot training loss and validation accuracy toegether in the same plot, but on different y axes
-        plot_loss_acc(train_loss_list, val_acc_list)
+        plot_loss_acc(train_loss_list, val_acc_list, args.save_model_dir)
 
     # Save training loss and validation accuracy lists
     with open(os.path.join(args.save_model_dir, "train_loss_list.pkl"), "wb") as f:
@@ -319,6 +322,7 @@ def main():
         os.makedirs(exp_dir)
     args.save_model_dir = exp_dir
     args.custom_id = custom_id
+    args.device = device
 
     logf = open(os.path.join(args.save_model_dir, "log.txt"), "w")
     
