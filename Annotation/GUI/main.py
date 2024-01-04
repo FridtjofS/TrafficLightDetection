@@ -3,6 +3,7 @@ from PyQt6.QtGui import QImage, QPixmap, QPen, QColor, QPainter, QIntValidator, 
 from PyQt6.QtCore import Qt, QPoint, QPointF, QEvent, QPropertyAnimation, QSize
 import shutil
 import json
+from PIL import Image
 from pathlib import Path
 import time
 import sys
@@ -256,7 +257,7 @@ class MainWindow(QWidget):
         
         if len(self.undo_stack) > 0:
             self.save_image_with_annotations(path)
-
+        
         self.undo_stack.append(path)
         #self.next.setEnabled(False)
         self.last.setEnabled(True) if len(self.undo_stack) > 0 else self.last.setEnabled(False)
@@ -288,22 +289,23 @@ class MainWindow(QWidget):
         if len(self.undo_stack) == 1:
             self.last.setEnabled(False)
         
-        #self.next.setEnabled(True)
-        
         input_path = self.settings_window.input_folder.text()
-        output_path = self.settings_window.output_folder.text()
+        od_output_path = self.settings_window.od_output_folder.text()
 
-        path = os.path.join(output_path, os.path.basename(self.undo_stack.pop()))
+        path = os.path.join(od_output_path, os.path.basename(self.undo_stack.pop()))
 
         # copy image into IMAGE_DIR
         shutil.copy(path, input_path)
 
         # get json data and set as self.annotated
-        with open(os.path.join(output_path, Path(path).stem + ".json" ), 'r') as f:
+        with open(os.path.join(od_output_path, Path(path).stem + ".json" ), 'r') as f:
             json_data = json.load(f)
             self.annotated = []
             for key in json_data:
-                self.annotated.append(self.translate_coordinates(json_data[key], True))
+                resolution = self.settings_window.output_size.currentText()
+                res_x = int(resolution.split("x")[0])
+                res_y = int(resolution.split("x")[1])
+                self.annotated.append(self.translate_coordinates(res_x, res_y, json_data[key], True))
 
         self.update_stats(True)
 
@@ -313,10 +315,28 @@ class MainWindow(QWidget):
         self.update_bounding_box()
 
         # delete image from const.ANNOTATED_PATH directory
-        os.remove(path)
+        if os.path.exists(path):
+            os.remove(path)
 
         # delete the json file with the same name as the image
-        os.remove(os.path.join(output_path, Path(path).stem + ".json"))
+        if os.path.exists(os.path.join(od_output_path, Path(path).stem + ".json")):
+            os.remove(os.path.join(od_output_path, Path(path).stem + ".json"))
+
+        # delete cropped traffic lights
+        for i in range(len(self.annotated)):
+            tf_path = os.path.join(self.settings_window.sd_output_folder.text(), Path(path).stem + "_" + str(i))
+            # delete all files with the same name as the image
+            if os.path.exists(tf_path + ".jpg"):
+                os.remove(tf_path + ".jpg")
+            if os.path.exists(tf_path + ".jpeg"):
+                os.remove(tf_path + ".jpeg")
+            if os.path.exists(tf_path + ".png"):
+                os.remove(tf_path + ".png")
+            if os.path.exists(tf_path + ".json"):
+                os.remove(tf_path + ".json")
+
+
+
 
         
     def settings_error(self, message):    
@@ -385,7 +405,14 @@ class MainWindow(QWidget):
         max_size_y = self.size.height() - self.next_last_layout.sizeHint().height() - 40
         max_size = QSize(max_size_x, max_size_y)
         
-        self.pixmap = self.pixmap.scaled(max_size, Qt.AspectRatioMode.KeepAspectRatio)
+        self.pixmap = self.pixmap.scaled(max_size)
+
+        # draw path stem on lower left corner
+        painter = QPainter(self.pixmap)
+        painter.setPen(QPen(Qt.GlobalColor.white))
+        painter.setOpacity(1)
+        painter.drawText(5, self.pixmap.height() - 36, Path(path).stem)
+        del painter
 
         # set focus to label, so that key press events are registered
         self.label.setFocus()
@@ -674,24 +701,59 @@ class MainWindow(QWidget):
             print("No annotations to save")
             #TODO open extra window to ask if user wants to save image without annotations
 
-        output_path = self.settings_window.output_folder.text()
+        od_output_path = self.settings_window.od_output_folder.text()
+        sd_output_path = self.settings_window.sd_output_folder.text()
+        #input_path = self.settings_window.input_folder.text()
 
         # check if output directory exists
-        if not os.path.exists(output_path):
-            self.settings_error("The output directory you selected does not exist,\nplease select a different directory")
+        if not os.path.exists(od_output_path):
+            self.settings_error("The OD-output directory you selected does not exist,\nplease select a different directory")
+        if not os.path.exists(sd_output_path):
+            self.settings_error("The SD-output directory you selected does not exist,\nplease select a different directory")
 
-        # save image in "annotations" directory
-        shutil.copy(path, os.path.join(output_path, os.path.basename(path)))
+        # save image in "od_output_path" directory
+        shutil.copy(path, os.path.join(od_output_path, os.path.basename(path)))
 
         # save bounding box coordinates and traffic light state in json file with same name as image
         json_data = {}
         for i in range(len(self.annotated)):
-            json_data['traffic_light_' + str(i)] = self.translate_coordinates(self.annotated[i])
+            resolution = self.settings_window.output_size.currentText()
+            res_x = int(resolution.split("x")[0])
+            res_y = int(resolution.split("x")[1])
+            json_data['traffic_light_' + str(i)] = self.translate_coordinates(res_x, res_y, self.annotated[i])
 
-        with open(os.path.join(output_path, Path(path).stem + ".json" ), 'w') as f:
+        with open(os.path.join(od_output_path, Path(path).stem + ".json" ), 'w') as f:
             json.dump(json_data, f)
 
+        # save cropped traffic lights in "sd_output_path" directory
+        self.save_cropped_traffic_lights(sd_output_path, path)
+
+        # delete image from input directory
+        os.remove(self.get_path())
+
         self.update_stats()
+    
+    def save_cropped_traffic_lights(self, sd_output_path, path):
+        
+        original = Image.open(path)
+        width, height = original.size
+
+        for i in range(len(self.annotated)):
+            bbox = self.annotated[i]
+            # translate coordinates to original image size
+            bbox = self.translate_coordinates(width, height, bbox)
+            # crop traffic light
+            cropped = original.crop((bbox['x1'], bbox['y1'], bbox['x2'], bbox['y2']))
+            # scale cropped traffic light to 128x128
+            cropped = cropped.resize((128, 128))
+            # save cropped traffic light
+            cropped.save(os.path.join(sd_output_path, Path(path).stem + "_" + str(i) + ".jpg"))
+            # create json file with traffic light state
+            json_data = {
+                'state': bbox['state']
+            }
+            with open(os.path.join(sd_output_path, Path(path).stem + "_" + str(i) + ".json" ), 'w') as f:
+                json.dump(json_data, f)
         
 
     def open_settings_window(self):
@@ -701,10 +763,9 @@ class MainWindow(QWidget):
         self.settings_window.activateWindow()
         self.settings_window.setFocus()
 
-    def translate_coordinates(self, bbox, inverse=False):
-        resolution = self.settings_window.output_size.currentText()
-        res_x = int(resolution.split("x")[0])
-        res_y = int(resolution.split("x")[1])
+    def translate_coordinates(self, res_x, res_y, bbox, inverse=False):
+        #resolution = self.settings_window.output_size.currentText()
+        
 
         if inverse:
             x1 = bbox['x1'] * self.label.pixmap().width() / res_x

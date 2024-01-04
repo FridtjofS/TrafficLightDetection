@@ -125,7 +125,7 @@ class StatsWindow(QWidget):
             bar = QLabel()
             layout.addWidget(bar, i+1, 1)
             width = int((stat/max_val) * max_width)
-            color = "#f55656" if stat == round(max_val, 2) else "#f5ea56"
+            color = "#66f556" if stat == round(max_val, 2) else "#f5ea56"
             bar.setFixedHeight(17)
             bar.setStyleSheet("background-color: '#f5ea56';")
 

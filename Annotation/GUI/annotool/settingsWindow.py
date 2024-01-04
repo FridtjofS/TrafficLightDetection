@@ -51,31 +51,36 @@ class SettingsWindow(QWidget):
         self.layout.addWidget(self.input_folder, 2, 1)
 
 
-        self.layout.addWidget(QLabel("Path to output folder:"), 3, 0)
-        self.output_folder = QPushButton(self.get_user_settings()["output_folder"])
-        self.output_folder.clicked.connect(self.open_folder_dialog_output)
-        self.output_folder.setStyleSheet("text-align: left; border-radius: 0;")
-        self.layout.addWidget(self.output_folder, 3, 1)
+        self.layout.addWidget(QLabel("Path to OD-output folder:"), 3, 0)
+        self.od_output_folder = QPushButton(self.get_user_settings()["od_output_folder"])
+        self.od_output_folder.clicked.connect(self.open_folder_dialog_od_output)
+        self.od_output_folder.setStyleSheet("text-align: left; border-radius: 0;")
+        self.layout.addWidget(self.od_output_folder, 3, 1)
 
-        self.layout.addWidget(QLabel("Output Image Size:"), 4, 0)
+        self.layout.addWidget(QLabel("Path to SD-output folder:"), 4, 0)
+        self.sd_output_folder = QPushButton(self.get_user_settings()["sd_output_folder"])
+        self.sd_output_folder.clicked.connect(self.open_folder_dialog_sd_output)
+        self.sd_output_folder.setStyleSheet("text-align: left; border-radius: 0;")
+        self.layout.addWidget(self.sd_output_folder, 4, 1)
+
+
+        self.layout.addWidget(QLabel("Output Image Size:"), 5, 0)
         self.output_size = QComboBox()
         self.output_size.addItem("1920x1080")
         self.output_size.addItem("1280x720")
+        self.output_size.addItem("1024x440")
         self.output_size.addItem("640x480")
         self.output_size.addItem("320x240")
         self.output_size.setCurrentText(self.get_user_settings()["output_size"])
-
-
-
-        self.layout.addWidget(self.output_size, 4, 1)
+        self.layout.addWidget(self.output_size, 5, 1)
 
         self.save = QPushButton("Save Settings")
         self.save.clicked.connect(self.save_settings)
-        self.layout.addWidget(self.save, 5, 1)
+        self.layout.addWidget(self.save, 6, 1)
 
         self.discard = QPushButton("Discard Changes")
         self.discard.clicked.connect(self.discard_changes)
-        self.layout.addWidget(self.discard, 5, 0)
+        self.layout.addWidget(self.discard, 6, 0)
 
 
 
@@ -92,7 +97,9 @@ class SettingsWindow(QWidget):
         # update input folder
         self.input_folder.setText(settings["input_folder"])
         # update output folder
-        self.output_folder.setText(settings["output_folder"])
+        self.od_output_folder.setText(settings["od_output_folder"])
+        # update output folder
+        self.sd_output_folder.setText(settings["sd_output_folder"])
         # update output size
         self.output_size.setCurrentText(settings["output_size"])
 
@@ -114,12 +121,19 @@ class SettingsWindow(QWidget):
         # update button text
         self.input_folder.setText(relative_path)
 
-    def open_folder_dialog_output(self):
+    def open_folder_dialog_od_output(self):
         folder = QFileDialog.getExistingDirectory(self, "Select Directory")
         # get relative path to annotool folder 
         relative_path = os.path.relpath(folder, os.getcwd())
         # update button text
-        self.output_folder.setText(relative_path)
+        self.od_output_folder.setText(relative_path)
+
+    def open_folder_dialog_sd_output(self):
+        folder = QFileDialog.getExistingDirectory(self, "Select Directory")
+        # get relative path to annotool folder 
+        relative_path = os.path.relpath(folder, os.getcwd())
+        # update button text
+        self.sd_output_folder.setText(relative_path)
 
     def save_settings(self):
         # get user settings
@@ -127,7 +141,9 @@ class SettingsWindow(QWidget):
         # update input folder
         settings["input_folder"] = self.input_folder.text()
         # update output folder
-        settings["output_folder"] = self.output_folder.text()
+        settings["od_output_folder"] = self.od_output_folder.text()
+        # update output folder
+        settings["sd_output_folder"] = self.sd_output_folder.text()
         # update output size
         settings["output_size"] = self.output_size.currentText()
         # get path to user settings file
