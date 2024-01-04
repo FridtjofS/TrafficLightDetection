@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from utils import print2way
+
 
 class ResidualBlock(nn.Module):
     def __init__(self, in_channels, out_channels, stride=1, downsample=None):
@@ -63,6 +65,7 @@ class ResNet(nn.Module):
         channel_size=3,
         layers=[3, 4, 6, 3],
         Block=ResidualBlock,
+        logf=None,
         args=None,
     ):
         super(ResNet, self).__init__()
@@ -82,10 +85,10 @@ class ResNet(nn.Module):
         self.num_classes = num_classes
         self.input_size = input_size
         self.device = args.device
-        print("Device: ", self.device)
-        print("Input size: ", self.input_size)
-        print("Num classes: ", self.num_classes)
-        print("Channel size: ", channel_size)
+        #print("Device: ", self.device)
+        #print("Input size: ", self.input_size)
+        #print("Num classes: ", self.num_classes)
+        #print("Channel size: ", channel_size)
 
         # [input_size x input_size x 3]
         self.in_channels = 64
@@ -103,7 +106,7 @@ class ResNet(nn.Module):
         self.avgpool = nn.AvgPool2d(kernel_size=2, stride=1) 
         self.fc = nn.Linear(512, num_classes)
 
-        print("Total number of parameters: ", sum(p.numel() for p in self.parameters() if p.requires_grad))
+        print2way(logf, "\nTotal number of parameters: ", sum(p.numel() for p in self.parameters() if p.requires_grad), "\n")
         # print(self)
 
     def make_layer(self, block, out_channels, blocks, stride=1):

@@ -17,3 +17,23 @@ def set_seed(seed):
     torch.cuda.deterministic = True
     
 
+def print2way(f, *x):
+    print(*x)
+    print(*x, file=f)
+    f.flush()
+
+def plot_loss_acc(train_losses, val_accs):
+    import matplotlib.pyplot as plt
+    fig, ax1 = plt.subplots()
+    ax2 = ax1.twinx()
+    ax1.plot(train_losses, 'b-')
+    ax2.plot(val_accs, 'r-')
+    ax1.set_xlabel('epoch')
+    ax1.set_ylabel('Train loss', color='b')
+    ax2.set_ylabel('Validation accuracy', color='r')
+    fig.tight_layout()
+    # set title
+    plt.title('Loss and accuracy')
+    plt.show()
+    plt.savefig('loss_acc.png')
+    plt.close()

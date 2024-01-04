@@ -134,4 +134,4 @@ dmypy.json
 *.out
 
 
-/data
+/StateDetection/data/
