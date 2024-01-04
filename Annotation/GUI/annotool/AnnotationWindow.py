@@ -130,6 +130,7 @@ class AnnotationWindow(QWidget):
                 image: url(annotool/img/accept_hover.svg);
             }
             """)
+            
             accept_button.clicked.connect(self.parent().lock_in_bbox)
             annotation_layout.addWidget(accept_button, 0, 3)
         else:
@@ -152,8 +153,6 @@ class AnnotationWindow(QWidget):
                 self.parent().update_annotation_window()
                 self.parent().update_bounding_box()
                 self.parent().show()
-                if len(self.parent().annotated) == 0:
-                    self.parent().next.setEnabled(False)
             delete_button.clicked.connect(delete)
             annotation_layout.addWidget(delete_button, 0, 3)
 
@@ -333,11 +332,11 @@ class AnnotationWindow(QWidget):
 
         green_button = QCheckBox()
         if parent == self.current_annotation:
-            green_button.setToolTip("""Press 1 to set state to red
-Press 2 to set state to red-yellow
-Press 3 to set state to yellow
-Press 4 to set state to green
-Press 5 to set state to off""")
+            green_button.setToolTip("""Press 1 to set state to off
+Press 2 to set state to red
+Press 3 to set state to red-yellow
+Press 4 to set state to yellow
+Press 5 to set state to green""")
         green_button.setStyleSheet("""
         QCheckBox::indicator { width: 18px; height: 18px; }
         QCheckBox::indicator::unchecked { image: url(annotool/img/green_unchecked.svg); }
@@ -356,7 +355,7 @@ Press 5 to set state to off""")
                 yellow_button.setChecked(True)
                 green_button.setChecked(False)
             elif bbox['state'] == 1:
-                bbox['state'] = 5
+                bbox['state'] = 0
                 red_button.setChecked(False)
                 yellow_button.setChecked(False)
                 green_button.setChecked(False)
@@ -379,7 +378,7 @@ Press 5 to set state to off""")
                 red_button.setChecked(True)
                 green_button.setChecked(False)
             elif bbox['state'] == 3:
-                bbox['state'] = 5
+                bbox['state'] = 0
                 red_button.setChecked(False)
                 yellow_button.setChecked(False)
                 green_button.setChecked(False)
@@ -397,7 +396,7 @@ Press 5 to set state to off""")
         # check only green button
         def green_button_clicked():
             if bbox['state'] == 4:
-                bbox['state'] = 5
+                bbox['state'] = 0
                 red_button.setChecked(False)
                 yellow_button.setChecked(False)
                 green_button.setChecked(False)

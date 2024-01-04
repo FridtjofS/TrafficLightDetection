@@ -190,7 +190,7 @@ class MainWindow(QWidget):
         # if hit enter, start next_image
         # only allowed if bounding box and traffic light state are set
         elif event.key() == 16777220:
-            self.lock_in_bbox() 
+            self.lock_in_bbox()
             self.setFocus()
             self.update_bounding_box()
             self.update_annotation_window()
@@ -214,24 +214,24 @@ class MainWindow(QWidget):
 
         # traffic light states
         elif event.key() == 49: # 1
+            self.state = 0
+            self.bbox['state'] = 0
+            self.update_current_annotation()
+        elif event.key() == 50: # 2
             self.state = 1
             self.bbox['state'] = 1
             self.update_current_annotation()
-        elif event.key() == 50: # 2
+        elif event.key() == 51: # 3
             self.state = 2
             self.bbox['state'] = 2
             self.update_current_annotation()
-        elif event.key() == 51: # 3
+        elif event.key() == 52: # 4
             self.state = 3
             self.bbox['state'] = 3
             self.update_current_annotation()
-        elif event.key() == 52: # 4
+        elif event.key() == 53: # 5
             self.state = 4
             self.bbox['state'] = 4
-            self.update_current_annotation()
-        elif event.key() == 53: # 5
-            self.state = 5
-            self.bbox['state'] = 5
             self.update_current_annotation()
 
         # if press ESC, close window
@@ -622,6 +622,8 @@ class MainWindow(QWidget):
     def get_color(self, state):
         if state == None:
             return const.COLORS['none']
+        elif state == 0:
+            return const.COLORS['off']
         elif state == 1:
             return const.COLORS['red']
         elif state == 2:
@@ -630,11 +632,17 @@ class MainWindow(QWidget):
             return const.COLORS['yellow']
         elif state == 4:
             return const.COLORS['green']
-        elif state == 5:
-            return const.COLORS['off']
+        
         return const.COLORS['none']
     
     def lock_in_bbox(self):
+        # read bbox coordinates and traffic light state from annotation window
+        # set self.bbox to these values
+        #print(self.annotation_window.read_current_bbox())
+        print(self.bbox)
+
+
+
         # if bounding box is not set, return
         if not self.bbox['x1'] or not self.bbox['y1'] or not self.bbox['x2'] or not self.bbox['y2']:
             print("Please set all coordinates")
@@ -644,9 +652,9 @@ class MainWindow(QWidget):
         if self.bbox['x1'] == self.bbox['x2'] or self.bbox['y1'] == self.bbox['y2']:
             print("The bounding box has to be a rectangle")
             return
-
+        
         # if traffic light state is not set, return
-        if not self.bbox['state']:
+        if self.bbox['state'] == None:
             print("Please set traffic light state")
             return
         
