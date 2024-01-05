@@ -134,21 +134,23 @@ class MainWindow(QWidget):
         #self.lower_left_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.lower_left_layout.setContentsMargins(5, 5, 5, 5)
         self.lower_left_layout.setSpacing(5)
-        self.lower_left_layout.addStretch()
+        #self.lower_left_layout.addStretch()
         self.lower_left_layout.addWidget(self.settingsButton, alignment=Qt.AlignmentFlag.AlignLeft)
         self.left_layout.addLayout(self.lower_left_layout)
 
         self.endSessionButton = QPushButton("End Session")
         self.endSessionButton.setStyleSheet("""
         QPushButton {
-            background-color: #3A4450;
-            border: none;
+            background-color: #2C333D;
+            border: 1px solid rgb(85, 96, 109);
+            border-radius: 5px;
             font-size: 15px;
-            color: #FFFFFF;
+            color: rgb(85, 96, 109);
             padding: 5px;
         }
         QPushButton:hover {
-            background-color: #2C333D;
+            border: 1px solid #A0AEC0;
+            color: #A0AEC0;
         }
         """)
         self.endSessionButton.clicked.connect(self.open_stats_window)
@@ -157,11 +159,61 @@ class MainWindow(QWidget):
         self.open_settings_window()
         
         
+        
         screen = app.primaryScreen()
         self.size = screen.size()
         #print('Size: %d x %d' % (self.size.width(), self.size.height()))
 
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        old_size = self.pixmap.size()
+        self.size= super().size()
+
+        # scale image to fit the maximum available size
+        max_size_x = self.size.width() - self.left_layout.sizeHint().width()
+        max_size_y = self.size.height() - self.next_last_layout.sizeHint().height()
+        max_size = QSize(max_size_x, max_size_y)
+
+        self.pixmap = self.pixmap.scaled(max_size)
+        self.label.setPixmap(self.pixmap)
+
+        # translate all coordinates to new size
         
+        # translate origin
+        if self.origin != None:
+            temp_bbox = {
+                'x1': self.origin.x(),
+                'y1': self.origin.y(),
+                'x2': 0,
+                'y2': 0,
+                'state': None
+            }
+            temp_bbox = self.translate_coordinates(old_size.width(), old_size.height(), temp_bbox, True)
+            self.origin = QPoint(temp_bbox['x1'], temp_bbox['y1'])
+
+        if self.end != None:
+            temp_bbox = {
+                'x1': self.end.x(),
+                'y1': self.end.y(),
+                'x2': 0,
+                'y2': 0,
+                'state': None
+            }
+            temp_bbox = self.translate_coordinates(old_size.width(), old_size.height(), temp_bbox, True)
+            self.end = QPoint(temp_bbox['x1'], temp_bbox['y1'])
+
+        # translate all annotations
+        for i in range(len(self.annotated)):
+            self.annotated[i] = self.translate_coordinates(old_size.width(), old_size.height(), self.annotated[i], True)
+        # translate current annotation
+        if self.bbox != None:
+            self.bbox = self.translate_coordinates(old_size.width(), old_size.height(), self.bbox, True)
+
+        self.update_bounding_box()
+        self.update_annotation_window()
+
+
 
     # listen for key press events
     def keyPressEvent(self, event):
@@ -238,6 +290,14 @@ class MainWindow(QWidget):
         elif event.key() == 16777216: # ESC
             self.close()
             print("Close")
+
+        # right arrow key
+        elif event.key() == 16777236:
+            self.next_image()
+
+        # left arrow key
+        elif event.key() == 16777234:
+            self.previous_image()
         
         self.update_bounding_box()
 
@@ -402,7 +462,7 @@ class MainWindow(QWidget):
 
         # scale image to fit the maximum available size
         max_size_x = self.size.width() - self.left_layout.sizeHint().width()
-        max_size_y = self.size.height() - self.next_last_layout.sizeHint().height() - 40
+        max_size_y = self.size.height() - self.next_last_layout.sizeHint().height()# - 40
         max_size = QSize(max_size_x, max_size_y)
         
         self.pixmap = self.pixmap.scaled(max_size)
@@ -639,7 +699,6 @@ class MainWindow(QWidget):
         # read bbox coordinates and traffic light state from annotation window
         # set self.bbox to these values
         #print(self.annotation_window.read_current_bbox())
-        print(self.bbox)
 
 
 
@@ -772,25 +831,24 @@ class MainWindow(QWidget):
         self.settings_window.setFocus()
 
     def translate_coordinates(self, res_x, res_y, bbox, inverse=False):
-        #resolution = self.settings_window.output_size.currentText()
         
 
         if inverse:
-            x1 = bbox['x1'] * self.label.pixmap().width() / res_x
-            y1 = bbox['y1'] * self.label.pixmap().height() / res_y
-            x2 = bbox['x2'] * self.label.pixmap().width() / res_x
-            y2 = bbox['y2'] * self.label.pixmap().height() / res_y
+            x1 = int(bbox['x1'] * self.label.pixmap().width() / res_x) if bbox['x1'] != None else None
+            y1 = int(bbox['y1'] * self.label.pixmap().height() / res_y) if bbox['y1'] != None else None
+            x2 = int(bbox['x2'] * self.label.pixmap().width() / res_x) if bbox['x2'] != None else None
+            y2 = int(bbox['y2'] * self.label.pixmap().height() / res_y) if bbox['y2'] != None else None
         else:
-            x1 = bbox['x1'] * res_x / self.label.pixmap().width()
-            y1 = bbox['y1'] * res_y / self.label.pixmap().height()
-            x2 = bbox['x2'] * res_x / self.label.pixmap().width()
-            y2 = bbox['y2'] * res_y / self.label.pixmap().height()
+            x1 = int(bbox['x1'] * res_x / self.label.pixmap().width()) if bbox['x1'] != None else None
+            y1 = int(bbox['y1'] * res_y / self.label.pixmap().height()) if bbox['y1'] != None else None
+            x2 = int(bbox['x2'] * res_x / self.label.pixmap().width()) if bbox['x2'] != None else None
+            y2 = int(bbox['y2'] * res_y / self.label.pixmap().height()) if bbox['y2'] != None else None
             
         return {
-            'x1': int(x1),
-            'y1': int(y1),
-            'x2': int(x2),
-            'y2': int(y2),
+            'x1': x1,
+            'y1': y1,
+            'x2': x2,
+            'y2': y2,
             'state': bbox['state']
         }
     
