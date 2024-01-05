@@ -471,7 +471,7 @@ class MainWindow(QWidget):
         painter = QPainter(self.pixmap)
         painter.setPen(QPen(Qt.GlobalColor.white))
         painter.setOpacity(1)
-        painter.drawText(5, self.pixmap.height() - 36, Path(path).stem)
+        painter.drawText(5, self.pixmap.height() - 5, Path(path).stem)
         del painter
 
         # set focus to label, so that key press events are registered
