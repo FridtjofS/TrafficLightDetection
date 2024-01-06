@@ -56,7 +56,6 @@ class ResidualBlock(nn.Module):
 
         return out
 
-
 class ResNet(nn.Module):
     def __init__(
         self,
@@ -85,12 +84,7 @@ class ResNet(nn.Module):
         self.num_classes = num_classes
         self.input_size = input_size
         self.device = args.device
-        #print("Device: ", self.device)
-        #print("Input size: ", self.input_size)
-        #print("Num classes: ", self.num_classes)
-        #print("Channel size: ", channel_size)
-
-        # [input_size x input_size x 3]
+    
         self.in_channels = 64
         self.conv1 = nn.Sequential(
                         nn.Conv2d(channel_size, 64, kernel_size=3, stride=1, padding=1),
@@ -105,9 +99,7 @@ class ResNet(nn.Module):
         # the output of the last layer is [input_size/16 x input_size/16 x 512], and needs to be flattened to [512] with the following avgpool layer
         self.avgpool = nn.AvgPool2d(kernel_size=2, stride=1) 
         self.fc = nn.Linear(512, num_classes)
-
         print2way(logf, "\nTotal number of parameters: ", sum(p.numel() for p in self.parameters() if p.requires_grad), "\n")
-        # print(self)
 
     def make_layer(self, block, out_channels, blocks, stride=1):
         downsample = None

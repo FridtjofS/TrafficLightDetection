@@ -17,8 +17,11 @@ from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
 from torchvision import datasets
 
+#from torchsummary import summary
+
 from model import StateDetection
-from ResNet import ResNet
+#from StateDetection.ResNet_simple import ResNet
+from ResNet_withBottleneck import ResNet
 from dataset import StateDetectionDataset
 from utils import *
 
@@ -42,12 +45,12 @@ def train(args, logf):
     # Load dataset
     if args.data_dir == "SVHN":
         train_dataset = datasets.SVHN(root="./data", split="train", download=True, transform=transforms.Compose([
-                    transforms.Resize((32, 32)),
+                    transforms.Resize((224, 224)),
                     transforms.ToTensor(),
                     transforms.Normalize((0.1307,), (0.3081,)),
                 ]))
         val_dataset = datasets.SVHN(root="./data", split="test", download=True, transform=transforms.Compose([
-                    transforms.Resize((32, 32)),
+                    transforms.Resize((224, 224)),
                     transforms.ToTensor(),
                     transforms.Normalize((0.1307,), (0.3081,)),
                 ]))
@@ -58,12 +61,12 @@ def train(args, logf):
         print2way(logf, "Train dataset labels shape: ", train_dataset.labels.shape)
     elif args.data_dir == "MNIST":
         train_dataset = datasets.MNIST(root="./data", train=True, download=True, transform=transforms.Compose([
-                    transforms.Resize((32, 32)),
+                    transforms.Resize((224, 224)),
                     transforms.ToTensor(),
                     transforms.Normalize((0.1307,), (0.3081,)),
                 ]))
         val_dataset = datasets.MNIST(root="./data", train=False, download=True, transform=transforms.Compose([
-                    transforms.Resize((32, 32)),
+                    transforms.Resize((224, 224)),
                     transforms.ToTensor(),
                     transforms.Normalize((0.1307,), (0.3081,)),
                 ]))
@@ -73,11 +76,20 @@ def train(args, logf):
         print2way(logf, "Train dataset shape: ", train_dataset.data.shape)
         print2way(logf, "Train dataset labels shape: ", train_dataset.targets.shape)
     elif args.data_dir == "CIFAR10":
-        train_dataset = datasets.CIFAR10(root="./data", train=True, download=True, transform=transforms.Compose([
-                    transforms.ToTensor(),
-                    transforms.Normalize((0.1307,), (0.3081,)),
-                ]))
+        transforms_train = transforms.Compose([
+            transforms.Resize((224, 224)),
+            transforms.RandomHorizontalFlip(),
+            #transforms.RandomCrop(32, padding=4),
+            transforms.RandomRotation(15),
+            transforms.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1, hue=0.1),
+            transforms.RandomGrayscale(p=0.1),
+            transforms.RandomPerspective(distortion_scale=0.5, p=0.1),
+            transforms.ToTensor(),
+            transforms.Normalize((0.1307,), (0.3081,)),
+        ])
+        train_dataset = datasets.CIFAR10(root="./data", train=True, download=True, transform=transforms_train)
         val_dataset = datasets.CIFAR10(root="./data", train=False, download=True, transform=transforms.Compose([
+                    transforms.Resize((224, 224)),
                     transforms.ToTensor(),
                     transforms.Normalize((0.1307,), (0.3081,)),
                 ]))
@@ -87,23 +99,54 @@ def train(args, logf):
         print2way(logf, "Train dataset shape: ", train_dataset.data.shape)
         print2way(logf, "Train dataset labels shape: ", len(train_dataset.targets))
 
-    # Create data loaders
+
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
     val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers)
+
+    if args.predefined_model == "resnet18":
+        args.resnet_layers = [2, 2, 2, 2]
+        args.resnet_output_channels = [64, 128, 256, 512]
+        args.resnet_block = "simple"
+    elif args.predefined_model == "resnet34":
+        args.resnet_layers = [3, 4, 6, 3]
+        args.resnet_output_channels = [64, 128, 256, 512]
+        args.resnet_block = "simple"
+    elif args.predefined_model == "resnet50":
+        args.resnet_layers = [3, 4, 6, 3]
+        args.resnet_output_channels = [64, 128, 256, 512]
+        args.resnet_block = "bottleneck"
+    elif args.predefined_model == "resnet101":
+        args.resnet_layers = [3, 4, 23, 3]
+        args.resnet_output_channels = [64, 128, 256, 512]
+        args.resnet_block = "bottleneck"
+    elif args.predefined_model == "resnet152":
+        args.resnet_layers = [3, 8, 36, 3]
+        args.resnet_output_channels = [64, 128, 256, 512]
+        args.resnet_block = "bottleneck"
+    elif args.predefined_model == "resnet200":
+        args.resnet_layers = [3, 24, 36, 3]
+        args.resnet_output_channels = [64, 128, 256, 512]
+        args.resnet_block = "bottleneck"
+
+    
 
     model = ResNet(
         num_classes=args.num_classes,
         input_size=args.input_sizes,
         channel_size=args.channel_sizes,
         layers=args.resnet_layers,
+        out_channels=args.resnet_output_channels,
+        blocktype=args.resnet_block,
         logf=logf,
         args=args,
     )
 
+    #print2way(logf, summary(model, (args.channel_sizes, 224, 224)))
     # Define optimizer
-    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
+    #optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
+    optimizer = torch.optim.SGD(model.parameters(), lr=args.lr, momentum=0.9, weight_decay=5e-4)
     criterion = nn.CrossEntropyLoss()
-    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[10, 20], gamma=0.1)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.num_epochs, eta_min=0.0001)
     model.to(device)
 
     # Initialize best validation accuracy
@@ -115,6 +158,28 @@ def train(args, logf):
     for arg in vars(args):
         print2way(logf, f"{arg}: {getattr(args, arg)}")
     print2way(logf, "\n\n")
+
+    #print sample input shape
+    sample = next(iter(train_loader))
+    print2way(logf, "Sample input shape: ", sample[0].shape)
+    print2way(logf, "Sample input labels shape: ", sample[1].shape)
+    
+
+    #print sample input
+    fig, ax = plt.subplots(2,2, figsize=(10, 10))
+    for imgs, labels in train_loader:
+        for i in range(4):
+            sample_img = imgs[i].permute(1, 2, 0).numpy()
+            # to 0-1
+            sample_img -= sample_img.min()
+            sample_img /= sample_img.max()
+            ax[i//2][i%2].imshow(sample_img)
+            ax[i//2][i%2].set_title(labels[i].item())
+        break
+    plt.savefig(os.path.join(args.save_model_dir, "sample_input.png"))
+    plt.close()
+
+    
 
     # Training loop
     for epoch in range(args.num_epochs):
@@ -301,7 +366,9 @@ def main():
     parser.add_argument("--mode", type=str, default="train", help="Mode: train or test")
     parser.add_argument("--save_model_dir", type=str, default="models", help="Directory to save model")
     parser.add_argument("--data_dir", type=str, default="SVHN", help="Training data directory")
-    parser.add_argument("--resnet_layers", type=list, default=[1, 1, 1, 1], help="Number of layers in each block")
+    parser.add_argument("--resnet_layers", type=list, default=[3,4,6,3], help="Number of layers in each block")
+    parser.add_argument("--resnet_output_channels", type=list, default=[64, 128, 256, 512], help="Number of output channels in each layer")
+    parser.add_argument("--resnet_block", type=str, default="bottleneck", help="Type of block")
     parser.add_argument("--batch_size", type=int, default=64, help="Batch size")
     parser.add_argument("--num_epochs", type=int, default=30, help="Number of epochs")
     parser.add_argument("--lr", type=float, default=1e-3, help="Learning rate")
@@ -312,6 +379,7 @@ def main():
     parser.add_argument("--input_sizes", type=tuple, default=(128, 128), help="Input image size")
     parser.add_argument("--num_classes", type=int, default=10, help="Number of classes")
     parser.add_argument("--channel_size", type=int, default=3, help="Number of channels")
+    parser.add_argument("--predefined_model", type=str, default=None, help="Predefined model")
 
     args = parser.parse_args()
 
@@ -338,3 +406,36 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+# ResNet18: 
+#    layers=[2, 2, 2, 2],
+#    out_channels=[64, 128, 256, 512],
+#    blocktype='simple',
+    
+# ResNet34:
+#    layers=[3, 4, 6, 3],
+#    out_channels=[64, 128, 256, 512],
+#    blocktype='simple',
+    
+# ResNet50:
+#    layers=[3, 4, 6, 3],
+#    out_channels=[64, 128, 256, 512],
+#    blocktype='bottleneck',
+    
+# ResNet101:
+#    layers=[3, 4, 23, 3],
+#    out_channels=[64, 128, 256, 512],
+#    blocktype='bottleneck',
+    
+# ResNet152:
+#    layers=[3, 8, 36, 3],
+#    out_channels=[64, 128, 256, 512],
+    
+# ResNet200:
+#    layers=[3, 24, 36, 3],
+#    out_channels=[64, 128, 256, 512],
+#    blocktype='bottleneck',
+    
+
