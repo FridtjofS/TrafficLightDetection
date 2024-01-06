@@ -238,15 +238,17 @@ class MainWindow(QWidget):
             #else:
             #    print("This is the first image")
             #return
-
-        # if hit enter, start next_image
+                
+        # if hit enter or tab, start next_image
         # only allowed if bounding box and traffic light state are set
-        elif event.key() == 16777220:
+        elif (event.key() == 16777220) or (event.key() == 16777248):
             self.lock_in_bbox()
             self.setFocus()
             self.update_bounding_box()
             self.update_annotation_window()
-            
+
+        
+        
             
 
             #if self.origin and self.end and self.state:
@@ -320,7 +322,7 @@ class MainWindow(QWidget):
         
         self.undo_stack.append(path)
         #self.next.setEnabled(False)
-        self.last.setEnabled(True) if len(self.undo_stack) > 0 else self.last.setEnabled(False)
+        self.last.setEnabled(True) if len(self.undo_stack) > 1 else self.last.setEnabled(False)
         self.state = None
         self.origin = None
         self.end = None
@@ -343,10 +345,10 @@ class MainWindow(QWidget):
         # update json file with bounding box coordinates and traffic light state
         
         # if there is no previous image, return
-        if len(self.undo_stack) == 0:
+        if len(self.undo_stack) == 1:
             return
         
-        if len(self.undo_stack) == 1:
+        if len(self.undo_stack) == 2:
             self.last.setEnabled(False)
         
         input_path = self.settings_window.input_folder.text()

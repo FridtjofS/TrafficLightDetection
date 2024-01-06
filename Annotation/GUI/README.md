@@ -49,7 +49,7 @@
     - **3:** Red-Yellow
     - **4:** Yellow
     - **5:** Green
-- If you are happy with your current annotation, Press Enter, or the small green checkmark on the currently editinhg Traffic Light Card. Nowyou can keep adding Traffic Lights, or move on.
+- If you are happy with your current annotation, Press Enter or Shift, or the small green checkmark on the currently editinhg Traffic Light Card. Nowyou can keep adding Traffic Lights, or move on.
 - If you want to edit a Traffic Light, you can edit the respective Traffic Light Card on the left, or delete it by pressing the small red Xon the Traffic Light Card. To delete the last Traffic Light, press Backspace.
 
 ### Navigation:

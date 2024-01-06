@@ -118,7 +118,7 @@ class AnnotationWindow(QWidget):
         # set delete or accept button
         if current:
             accept_button = QPushButton("")
-            accept_button.setToolTip("Press Enter to lock in")
+            accept_button.setToolTip("Press Enter or Shift to lock in")
             accept_button.setFixedSize(17, 17)
             accept_button.setStyleSheet("""
             QPushButton {
