@@ -45,12 +45,18 @@ class StatsWindow(QWidget):
 
         time_per_image = self.get_statistics("total_time")
         for user, stat in self.get_statistics("total_time").items():
-            time_per_image[user] = stat / self.get_statistics("total_images")[user]
+            if self.get_statistics("total_images")[user] != 0:
+                time_per_image[user] = stat / self.get_statistics("total_images")[user]
+            else:
+                time_per_image[user] = 0
         self.stats.append(("Time per Image", time_per_image))
 
         time_per_annotation = self.get_statistics("total_time")
         for user, stat in self.get_statistics("total_time").items():
-            time_per_annotation[user] = stat / self.get_statistics("total_annotations")[user]
+            if self.get_statistics("total_annotations")[user] != 0:
+                time_per_annotation[user] = stat / self.get_statistics("total_annotations")[user]
+            else:
+                time_per_annotation[user] = 0
         self.stats.append(("Time per Traffic Light", time_per_annotation))
 
 
