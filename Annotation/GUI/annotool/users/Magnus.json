@@ -4,14 +4,14 @@
     "sd_output_folder": "sd_traffic_lights",
     "output_size": "1024x440",
     "stats": {
-        "total_images": 0,
-        "total_annotations": 0,
-        "total_red": 0,
+        "total_images": 28,
+        "total_annotations": 54,
+        "total_red": 9,
         "total_red_yellow": 0,
         "total_yellow": 0,
-        "total_green": 0,
+        "total_green": 39,
         "total_off": 0,
-        "total_time": 0,
-        "most_traffic_lights_in_one_image": 0
+        "total_time": 547.3161718845367,
+        "most_traffic_lights_in_one_image": 5
     }
 }

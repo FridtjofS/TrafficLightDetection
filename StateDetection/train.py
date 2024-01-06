@@ -23,6 +23,8 @@ from model import StateDetection
 #from StateDetection.ResNet_simple import ResNet
 from ResNet_withBottleneck import ResNet
 from dataset import StateDetectionDataset
+# import train test split from torch
+from sklearn.model_selection import train_test_split
 from utils import *
 
 
@@ -55,7 +57,7 @@ def train(args, logf):
                     transforms.Normalize((0.1307,), (0.3081,)),
                 ]))
         args.input_sizes = (train_dataset.data.shape[2], train_dataset.data.shape[3])
-        args.channel_sizes = train_dataset.data.shape[1]
+        args.channel_size = train_dataset.data.shape[1]
         args.num_classes = 10
         print2way(logf, "Train dataset shape: ", train_dataset.data.shape)
         print2way(logf, "Train dataset labels shape: ", train_dataset.labels.shape)
@@ -71,7 +73,7 @@ def train(args, logf):
                     transforms.Normalize((0.1307,), (0.3081,)),
                 ]))
         args.input_sizes = (train_dataset.data.shape[1], train_dataset.data.shape[2])
-        args.channel_sizes = 1
+        args.channel_size = 1
         args.num_classes = 10
         print2way(logf, "Train dataset shape: ", train_dataset.data.shape)
         print2way(logf, "Train dataset labels shape: ", train_dataset.targets.shape)
@@ -94,12 +96,33 @@ def train(args, logf):
                     transforms.Normalize((0.1307,), (0.3081,)),
                 ]))
         args.input_sizes = (train_dataset.data.shape[1], train_dataset.data.shape[2])
-        args.channel_sizes = train_dataset.data.shape[3]
+        args.channel_size = train_dataset.data.shape[3]
         args.num_classes = 10
-        print2way(logf, "Train dataset shape: ", train_dataset.data.shape)
-        print2way(logf, "Train dataset labels shape: ", len(train_dataset.targets))
+        print2way(logf, "Train dataset shape: ", train_dataset.data.shape) # (50000, 32, 32, 3)
+        print2way(logf, "Train dataset labels shape: ", len(train_dataset.targets)) # 50000
+    elif args.data_dir == "TrafficLight":
+        train_dataset = StateDetectionDataset(train=True, transform=transforms.Compose([
+            #transforms.Resize((224, 224)),
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomRotation(15),
+            transforms.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.2, hue=0),
+            transforms.ToTensor(),
+            transforms.Normalize((0.1307,), (0.3081,)),
+        ]))
+        val_dataset = StateDetectionDataset(train=False, transform=transforms.Compose([
+            #transforms.Resize((224, 224)),
+            transforms.ToTensor(),
+            transforms.Normalize((0.1307,), (0.3081,)),
+        ]))
+
+        args.input_sizes = (train_dataset.data.shape[1], train_dataset.data.shape[2])
+        args.channel_size = train_dataset.data.shape[3]
+        args.num_classes = 5
+        print2way(logf, "Train dataset shape: ", train_dataset.data.shape) # (40, 128, 128, 3)
+        print2way(logf, "Train dataset labels shape: ", len(train_dataset.label)) # 40
 
 
+    # if the batch size does not divide the dataset size, the last batch will be smaller
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
     val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers)
 
@@ -133,7 +156,7 @@ def train(args, logf):
     model = ResNet(
         num_classes=args.num_classes,
         input_size=args.input_sizes,
-        channel_size=args.channel_sizes,
+        channel_size=args.channel_size,
         layers=args.resnet_layers,
         out_channels=args.resnet_output_channels,
         blocktype=args.resnet_block,
@@ -141,7 +164,7 @@ def train(args, logf):
         args=args,
     )
 
-    #print2way(logf, summary(model, (args.channel_sizes, 224, 224)))
+    #print2way(logf, summary(model, (args.channel_size, 224, 224)))
     # Define optimizer
     #optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
     optimizer = torch.optim.SGD(model.parameters(), lr=args.lr, momentum=0.9, weight_decay=5e-4)
@@ -160,24 +183,24 @@ def train(args, logf):
     print2way(logf, "\n\n")
 
     #print sample input shape
-    sample = next(iter(train_loader))
-    print2way(logf, "Sample input shape: ", sample[0].shape)
-    print2way(logf, "Sample input labels shape: ", sample[1].shape)
-    
-
-    #print sample input
-    fig, ax = plt.subplots(2,2, figsize=(10, 10))
-    for imgs, labels in train_loader:
-        for i in range(4):
-            sample_img = imgs[i].permute(1, 2, 0).numpy()
-            # to 0-1
-            sample_img -= sample_img.min()
-            sample_img /= sample_img.max()
-            ax[i//2][i%2].imshow(sample_img)
-            ax[i//2][i%2].set_title(labels[i].item())
-        break
-    plt.savefig(os.path.join(args.save_model_dir, "sample_input.png"))
-    plt.close()
+    #sample = next(iter(train_loader))
+    #print2way(logf, "Sample input shape: ", sample[0].shape)
+    #print2way(logf, "Sample input labels shape: ", sample[1].shape)
+    #
+#
+    ##print sample input
+    #fig, ax = plt.subplots(2,2, figsize=(10, 10))
+    #for imgs, labels in train_loader:
+    #    for i in range(4):
+    #        sample_img = imgs[i].permute(1, 2, 0).numpy()
+    #        # to 0-1
+    #        sample_img -= sample_img.min()
+    #        sample_img /= sample_img.max()
+    #        ax[i//2][i%2].imshow(sample_img)
+    #        ax[i//2][i%2].set_title(labels[i].item())
+    #    break
+    #plt.savefig(os.path.join(args.save_model_dir, "sample_input.png"))
+    #plt.close()
 
     
 
@@ -214,7 +237,7 @@ def train(args, logf):
                     f"\tLoss: {loss:.6f}\tAccuracy: {acc:.6f}"
                 )
         
-        scheduler.step()
+        #scheduler.step()
         train_loss /= len(train_loader)
         train_acc /= len(train_loader)
         model.eval()
@@ -259,6 +282,53 @@ def train(args, logf):
 
     with open(os.path.join(args.save_model_dir, "val_acc_list.pkl"), "wb") as f:
         pickle.dump(val_acc_list, f)
+
+    # plot final prediction on validation set
+    plot_final_prediction(model, val_loader, args.save_model_dir, args.num_classes, args.device)
+
+def plot_final_prediction(model, val_loader, save_model_dir, num_classes, device):
+    """
+    Plot final prediction on validation set
+
+    Args:
+        model (nn.Module): CNN model.
+        val_loader (DataLoader): Validation data loader.
+        save_model_dir (str): Directory to save model.
+        num_classes (int): Number of classes.
+        device (str): Device.
+
+    Returns:
+        None
+
+    """
+
+    # Disable gradient calculation
+    with torch.no_grad():
+        # Loop over each batch from the validation set
+        for data, target in val_loader:
+            data, target = data.to(device), target.to(device)
+            output = model(data)
+            pred = torch.argmax(output, dim=1)
+            correct = pred.eq(target.view_as(pred)).sum().item()
+            acc = correct / len(data)
+
+            # Plot final prediction
+            fig, ax = plt.subplots(2,4, figsize=(10, 10))
+            for i in range(8):
+                sample_img = data[i].permute(1, 2, 0).cpu().numpy()
+                # to 0-1
+                sample_img -= sample_img.min()
+                sample_img /= sample_img.max()
+                ax[i//4][i%4].imshow(sample_img)
+                ax[i//4][i%4].set_title(f"Pred: {pred[i].item()}, Label: {target[i].item()}")
+                ax.flat[i].axes.get_xaxis().set_visible(False)
+                ax.flat[i].axes.get_yaxis().set_visible(False)
+            fig.suptitle(f"Validation Accuracy: {acc:.6f}")
+
+            plt.savefig(os.path.join(save_model_dir, "final_prediction.png"))
+            plt.close()
+            break
+
 
 
 def test(args, logf):
