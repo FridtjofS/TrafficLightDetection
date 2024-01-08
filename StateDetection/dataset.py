@@ -46,6 +46,29 @@ class StateDetectionDataset(Dataset):
         # Load the data and label
         self.data, self.label = self.load_data()
 
+        for i in range(self.num_classes):
+            print(self.label_names[i], self.label.count(i))
+        # get the minimum number of samples per class
+        #min_num_samples = min([self.label.count(i) for i in range(self.num_classes)])
+        ## only keep min_num_samples number of samples per class to even out hte dataset
+        ## first, group the data and label by label
+        #data_grouped_by_label = [[] for i in range(self.num_classes)]
+        #for i in range(len(self.data)):
+        #    data_grouped_by_label[self.label[i]].append(self.data[i])
+        ## then, randomly select min_num_samples number of samples per class
+        #self.data = []
+        #self.label = []
+        #for i in range(self.num_classes):
+        #    self.data += random.sample(data_grouped_by_label[i], min_num_samples)
+        #    self.label += [i] * min_num_samples
+        
+
+        #for i in range(self.num_classes):
+        #    print(self.label_names[i], self.label.count(i))
+        
+
+        
+
         # Split the data into training and validation sets
         self.data, self.label, self.val_data, self.val_label = self.split_data(self.data, self.label, train_ratio=0.8)
 
@@ -181,7 +204,10 @@ class StateDetectionDataset(Dataset):
             
             # load the label
             with open(os.path.join(self.data_dir, label_list[i]), 'r') as f:
-                label_dict = json.load(f)
+                try:
+                    label_dict = json.load(f)
+                except:
+                    print("error in loading json file: ", label_list[i] )
             lb = label_dict['state']
             # add the label to the list
             label.append(lb)

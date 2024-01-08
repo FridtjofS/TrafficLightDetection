@@ -271,6 +271,7 @@ def train(args, logf):
         if val_acc > best_val_acc:
             best_val_acc = val_acc
             torch.save(model.state_dict(), os.path.join(args.save_model_dir, "model.pt"))
+            args.load_model_dir = args.save_model_dir
             print2way(logf, "Model saved to %s" % args.save_model_dir)
 
         # Plot training loss and validation accuracy toegether in the same plot, but on different y axes
@@ -284,9 +285,9 @@ def train(args, logf):
         pickle.dump(val_acc_list, f)
 
     # plot final prediction on validation set
-    plot_final_prediction(model, val_loader, args.save_model_dir, args.num_classes, args.device)
+    plot_final_prediction(args, logf)
 
-def plot_final_prediction(model, val_loader, save_model_dir, num_classes, device):
+def plot_final_prediction(args, logf):
     """
     Plot final prediction on validation set
 
@@ -301,9 +302,49 @@ def plot_final_prediction(model, val_loader, save_model_dir, num_classes, device
         None
 
     """
+    # Set device
+    args.device = "cuda" if torch.cuda.is_available() else "cpu"
+    device = args.device
 
+    if args.data_dir == "TrafficLight":
+        args.num_classes = 5
+    # load model
+    model = ResNet(
+        num_classes=args.num_classes,
+        input_size=(128, 128),
+        channel_size=3,
+        layers=[3, 4, 6, 3],
+        out_channels=[64, 128, 256, 512],
+        blocktype='bottleneck',
+        logf=logf,
+        args=args,
+    )
+    model.load_state_dict(torch.load(os.path.join(args.load_model_dir, "model.pt")))
+
+    model.to(device)
+    model.eval()
+
+    # Load dataset
+    val_dataset = StateDetectionDataset(train=False, transform=transforms.Compose([
+        #transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize((0.1307,), (0.3081,)),
+    ]))
+    
+    label_names = val_dataset.label_names
+
+    # Create data loader
+    val_loader = DataLoader(
+        val_dataset,
+        batch_size=8,
+        shuffle=False,
+        num_workers=1,
+    )
+
+    confusion_matrix = np.zeros((args.num_classes, args.num_classes))
     # Disable gradient calculation
     with torch.no_grad():
+        batch_idx = 0
         # Loop over each batch from the validation set
         for data, target in val_loader:
             data, target = data.to(device), target.to(device)
@@ -312,22 +353,70 @@ def plot_final_prediction(model, val_loader, save_model_dir, num_classes, device
             correct = pred.eq(target.view_as(pred)).sum().item()
             acc = correct / len(data)
 
-            # Plot final prediction
-            fig, ax = plt.subplots(2,4, figsize=(10, 10))
-            for i in range(8):
-                sample_img = data[i].permute(1, 2, 0).cpu().numpy()
-                # to 0-1
-                sample_img -= sample_img.min()
-                sample_img /= sample_img.max()
-                ax[i//4][i%4].imshow(sample_img)
-                ax[i//4][i%4].set_title(f"Pred: {pred[i].item()}, Label: {target[i].item()}")
-                ax.flat[i].axes.get_xaxis().set_visible(False)
-                ax.flat[i].axes.get_yaxis().set_visible(False)
-            fig.suptitle(f"Validation Accuracy: {acc:.6f}")
 
-            plt.savefig(os.path.join(save_model_dir, "final_prediction.png"))
-            plt.close()
-            break
+            # Update confusion matrix
+            for i in range(len(target)):
+                confusion_matrix[target[i]][pred[i]] += 1
+            
+            # only plot the first batch
+            if  batch_idx == 0:
+                # Plot final prediction
+                fig, ax = plt.subplots(2,4)
+                for i in range(8):
+                    sample_img = data[i].permute(1, 2, 0).cpu().numpy()
+                    # unnormalize
+                    sample_img *= 0.3081
+                    sample_img += 0.1307
+                    sample_img *= 255
+                    sample_img = sample_img.astype(np.uint8)
+
+                    ax[i//4][i%4].imshow(sample_img)
+                    
+                    pred_label = pred[i].item()
+                    target_label = target[i].item()
+
+                    pred_name = label_names[pred_label]
+                    target_name = label_names[target_label]
+
+                    color = "green" if pred_label == target_label else "red"
+                    ax[i//4][i%4].set_title(f"Pred: {pred_name}\nActual: {target_name}", color=color)
+                    ax.flat[i].axes.get_xaxis().set_visible(False)
+                    ax.flat[i].axes.get_yaxis().set_visible(False)
+                fig.suptitle(f"Validation Accuracy: {acc:.6f}")
+                fig.tight_layout()
+                plt.savefig(os.path.join(args.save_model_dir, "final_prediction.png"))
+                plt.close()
+
+            batch_idx += 1
+
+    # Plot confusion matrix
+    # but first normalize the confusion matrix by row
+    # but never divide by 0
+    confusion_matrix = confusion_matrix.astype('float') / (confusion_matrix.sum(axis=1)[:, np.newaxis]  + 1e-6)
+
+    
+    fig, ax = plt.subplots()
+    im = ax.imshow(confusion_matrix)
+    ax.set_xticks(np.arange(args.num_classes))
+    ax.set_yticks(np.arange(args.num_classes))
+    ax.set_xticklabels(label_names)
+    ax.set_yticklabels(label_names)
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
+                rotation_mode="anchor")
+    for i in range(args.num_classes):
+        for j in range(args.num_classes):
+            text = ax.text(j, i, f"{confusion_matrix[i, j]:.2f}",
+                        ha="center", va="center", color="w")
+    ax.set_title("Confusion Matrix")
+    ax.set_xlabel("Predicted")
+    ax.set_ylabel("Actual")
+
+    fig.tight_layout()
+    plt.savefig(os.path.join(args.save_model_dir, "confusion_matrix.png"))
+    plt.close()
+
+    
+    print("Final prediction saved to %s" % os.path.join(args.save_model_dir, "final_prediction.png"))
 
 
 
@@ -347,6 +436,7 @@ def test(args, logf):
     set_seed(args.seed)
 
     # Set device
+    args.device = "cuda" if torch.cuda.is_available() else "cpu"
     device = args.device
 
     # Load dataset
@@ -435,6 +525,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", type=str, default="train", help="Mode: train or test")
     parser.add_argument("--save_model_dir", type=str, default="models", help="Directory to save model")
+    parser.add_argument("--load_model_dir", type=str, default="models", help="Directory to load model")
     parser.add_argument("--data_dir", type=str, default="SVHN", help="Training data directory")
     parser.add_argument("--resnet_layers", type=list, default=[3,4,6,3], help="Number of layers in each block")
     parser.add_argument("--resnet_output_channels", type=list, default=[64, 128, 256, 512], help="Number of output channels in each layer")
@@ -455,6 +546,7 @@ def main():
 
     # Set directory to save model
     custom_id = np.random.randint(0, 100000)
+
     exp_dir = os.path.join(args.save_model_dir, f"model_{custom_id}")
     if not os.path.exists(exp_dir):
         os.makedirs(exp_dir)
@@ -471,6 +563,8 @@ def main():
         train(args, logf)
     elif args.mode == "test":
         test(args, logf)
+    elif args.mode == "plot":
+        plot_final_prediction(args, logf)
     else:
         raise Exception("Invalid mode")
 
