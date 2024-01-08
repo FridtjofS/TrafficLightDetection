@@ -1,7 +1,7 @@
 {
-  "input_folder": "frames",
-  "od_output_folder": "od_traffic_lights",
-  "sd_output_folder": "sd_traffic_lights",
+  "input_folder": "..\\raw_dataset\\TrainingDataPt1",
+  "od_output_folder": "..\\..\\ObjectDetection\\od_train_data",
+  "sd_output_folder": "..\\..\\StateDetection\\sd_train_data",
   "output_size": "1024x440",
   "stats": {
       "total_images": 0,
