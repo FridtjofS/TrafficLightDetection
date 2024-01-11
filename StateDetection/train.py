@@ -108,18 +108,21 @@ def train(args, logf):
             transforms.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.2, hue=0),
             transforms.ToTensor(),
             transforms.Normalize((0.1307,), (0.3081,)),
-        ]))
+        ]), args=args)
         val_dataset = StateDetectionDataset(train=False, transform=transforms.Compose([
             #transforms.Resize((224, 224)),
             transforms.ToTensor(),
             transforms.Normalize((0.1307,), (0.3081,)),
-        ]))
+        ]), args=args)
 
         args.input_sizes = (train_dataset.data.shape[1], train_dataset.data.shape[2])
         args.channel_size = train_dataset.data.shape[3]
         args.num_classes = 5
         print2way(logf, "Train dataset shape: ", train_dataset.data.shape) # (40, 128, 128, 3)
+        print2way(logf, "Val dataset shape: ", val_dataset.data.shape) # (40, 128, 128, 3)
         print2way(logf, "Train dataset labels shape: ", len(train_dataset.label)) # 40
+        print2way(logf, "Val dataset labels shape: ", len(val_dataset.label))
+        
 
 
     # if the batch size does not divide the dataset size, the last batch will be smaller
@@ -311,13 +314,14 @@ def plot_final_prediction(args, logf):
     # load model
     model = ResNet(
         num_classes=args.num_classes,
-        input_size=(128, 128),
-        channel_size=3,
-        layers=[3, 4, 6, 3],
-        out_channels=[64, 128, 256, 512],
-        blocktype='bottleneck',
+        input_size=args.input_sizes,
+        channel_size=args.channel_size,
+        layers=args.resnet_layers,
+        out_channels=args.resnet_output_channels,
+        blocktype=args.resnet_block,
         logf=logf,
         args=args,
+
     )
     model.load_state_dict(torch.load(os.path.join(args.load_model_dir, "model.pt")))
 
@@ -329,7 +333,7 @@ def plot_final_prediction(args, logf):
         #transforms.Resize((224, 224)),
         transforms.ToTensor(),
         transforms.Normalize((0.1307,), (0.3081,)),
-    ]))
+    ]), args=args)
     
     label_names = val_dataset.label_names
 
@@ -342,61 +346,75 @@ def plot_final_prediction(args, logf):
     )
 
     confusion_matrix = np.zeros((args.num_classes, args.num_classes))
+    val_acc = 0
+    correct = 0
     # Disable gradient calculation
     with torch.no_grad():
-        batch_idx = 0
+    
         # Loop over each batch from the validation set
-        for data, target in val_loader:
+        for batch_idx, (data, target) in enumerate(val_loader):
             data, target = data.to(device), target.to(device)
             output = model(data)
             pred = torch.argmax(output, dim=1)
-            correct = pred.eq(target.view_as(pred)).sum().item()
-            acc = correct / len(data)
+            correct += pred.eq(target.view_as(pred)).sum().item()
+            #acc = correct / len(data)
+            #print("acc", acc)
+            #val_acc += acc
+            #print("correct", correct)
 
 
             # Update confusion matrix
             for i in range(len(target)):
                 confusion_matrix[target[i]][pred[i]] += 1
             
-            # only plot the first batch
-            if  batch_idx == 0:
+            # only plot the last batch
+            if  batch_idx == len(val_loader) - 1:
+                #print("val_acc", val_acc)
+                #print("len(val_loader)", len(val_loader))
+                #print("len(val_dataset)", len(val_dataset))
+                #print("correct", correct)
+                val_acc = correct / len(val_dataset)
+
                 # Plot final prediction
                 fig, ax = plt.subplots(2,4)
                 for i in range(8):
-                    sample_img = data[i].permute(1, 2, 0).cpu().numpy()
-                    # unnormalize
-                    sample_img *= 0.3081
-                    sample_img += 0.1307
-                    sample_img *= 255
-                    sample_img = sample_img.astype(np.uint8)
+                    try:
+                        sample_img = data[i].permute(1, 2, 0).cpu().numpy()
+                        # unnormalize
+                        sample_img *= 0.3081
+                        sample_img += 0.1307
+                        sample_img *= 255
+                        sample_img = sample_img.astype(np.uint8)
 
-                    ax[i//4][i%4].imshow(sample_img)
-                    
-                    pred_label = pred[i].item()
-                    target_label = target[i].item()
+                        ax[i//4][i%4].imshow(sample_img)
+                        
+                        pred_label = pred[i].item()
+                        target_label = target[i].item()
 
-                    pred_name = label_names[pred_label]
-                    target_name = label_names[target_label]
+                        pred_name = label_names[pred_label]
+                        target_name = label_names[target_label]
 
-                    color = "green" if pred_label == target_label else "red"
-                    ax[i//4][i%4].set_title(f"Pred: {pred_name}\nActual: {target_name}", color=color)
+                        color = "green" if pred_label == target_label else "black"
+                        ax[i//4][i%4].set_title(f"Pred: {pred_name}\nActual: {target_name}", color=color)
+                    except:
+                        pass
                     ax.flat[i].axes.get_xaxis().set_visible(False)
                     ax.flat[i].axes.get_yaxis().set_visible(False)
-                fig.suptitle(f"Validation Accuracy: {acc:.6f}")
+                fig.suptitle(f"Validation Accuracy: {val_acc:.6f}")
                 fig.tight_layout()
                 plt.savefig(os.path.join(args.save_model_dir, "final_prediction.png"))
                 plt.close()
 
-            batch_idx += 1
+   
 
     # Plot confusion matrix
     # but first normalize the confusion matrix by row
     # but never divide by 0
-    confusion_matrix = confusion_matrix.astype('float') / (confusion_matrix.sum(axis=1)[:, np.newaxis]  + 1e-6)
+    confusion_matrix_norm = confusion_matrix.astype('float') / (confusion_matrix.sum(axis=1)[:, np.newaxis]  + 1e-6)
 
     
     fig, ax = plt.subplots()
-    im = ax.imshow(confusion_matrix)
+    im = ax.imshow(confusion_matrix_norm)
     ax.set_xticks(np.arange(args.num_classes))
     ax.set_yticks(np.arange(args.num_classes))
     ax.set_xticklabels(label_names)
@@ -405,9 +423,9 @@ def plot_final_prediction(args, logf):
                 rotation_mode="anchor")
     for i in range(args.num_classes):
         for j in range(args.num_classes):
-            text = ax.text(j, i, f"{confusion_matrix[i, j]:.2f}",
+            text = ax.text(j, i, f"{int(confusion_matrix[i, j])}",
                         ha="center", va="center", color="w")
-    ax.set_title("Confusion Matrix")
+    ax.set_title(f"Confusion Matrix for {len(val_dataset)} samples\nValidation Accuracy: {val_acc:.6f}")
     ax.set_xlabel("Predicted")
     ax.set_ylabel("Actual")
 
@@ -415,8 +433,8 @@ def plot_final_prediction(args, logf):
     plt.savefig(os.path.join(args.save_model_dir, "confusion_matrix.png"))
     plt.close()
 
-    
-    print("Final prediction saved to %s" % os.path.join(args.save_model_dir, "final_prediction.png"))
+    print2way(logf, "Final Validation Accuracy: ", val_acc)
+    print2way(logf, "Final prediction saved to %s" % os.path.join(args.save_model_dir, "final_prediction.png"))
 
 
 
@@ -526,7 +544,7 @@ def main():
     parser.add_argument("--mode", type=str, default="train", help="Mode: train or test")
     parser.add_argument("--save_model_dir", type=str, default="models", help="Directory to save model")
     parser.add_argument("--load_model_dir", type=str, default="models", help="Directory to load model")
-    parser.add_argument("--data_dir", type=str, default="SVHN", help="Training data directory")
+    parser.add_argument("--data_dir", type=str, default="TrafficLight", help="Training data directory")
     parser.add_argument("--resnet_layers", type=list, default=[3,4,6,3], help="Number of layers in each block")
     parser.add_argument("--resnet_output_channels", type=list, default=[64, 128, 256, 512], help="Number of output channels in each layer")
     parser.add_argument("--resnet_block", type=str, default="bottleneck", help="Type of block")
@@ -534,7 +552,7 @@ def main():
     parser.add_argument("--num_epochs", type=int, default=30, help="Number of epochs")
     parser.add_argument("--lr", type=float, default=1e-3, help="Learning rate")
     parser.add_argument("--num_workers", type=int, default=4, help="Number of workers")
-    parser.add_argument("--log_interval", type=int, default=30, help="Logging interval")
+    parser.add_argument("--log_interval", type=int, default=4, help="Logging interval")
     parser.add_argument("--seed", type=int, default=0, help="Random seed")
     parser.add_argument("--device", type=str, default="cpu", help="Device")
     parser.add_argument("--input_sizes", type=tuple, default=(128, 128), help="Input image size")
@@ -555,6 +573,7 @@ def main():
     args.device = device
 
     logf = open(os.path.join(args.save_model_dir, "log.txt"), "w")
+    args.logf = logf
     
 
     
@@ -603,3 +622,5 @@ if __name__ == "__main__":
 #    blocktype='bottleneck',
     
 
+# good for overfitting:
+# python train.py --predefined_model "resnet18" --data_dir "TrafficLight" --batch_size 16 --lr 0.005 --num_epochs 2  

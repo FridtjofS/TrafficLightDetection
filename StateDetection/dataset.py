@@ -16,10 +16,11 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import json
 
+from utils import print2way
 
 # load a predefined dataset
 class StateDetectionDataset(Dataset):
-    def __init__(self, train=True, input_size=(128,128), num_classes=5, data_dir=".\..\Annotation\GUI\sd_traffic_lights", transform=None, args=None):
+    def __init__(self, train=True, input_size=(128,128), num_classes=5, data_dir=".\..\StateDetection\sd_train_data", transform=None, args=None):
         '''
         Load the dataset and perform preprocessing transformations.
         
@@ -34,11 +35,12 @@ class StateDetectionDataset(Dataset):
             None
 
         '''
-        self.random_seed = 0
+        self.random_seed = args.seed
         self.data_dir = data_dir
         self.input_size = input_size
         self.num_classes = num_classes
         self.label_names = ['off', 'red', 'red_yellow', 'yellow', 'green']
+        logf = args.logf
 
         # Define transformations to be applied to the data
         self.transform = transform
@@ -46,26 +48,51 @@ class StateDetectionDataset(Dataset):
         # Load the data and label
         self.data, self.label = self.load_data()
 
-        for i in range(self.num_classes):
-            print(self.label_names[i], self.label.count(i))
+        if train:
+            for i in range(self.num_classes):
+                print2way(logf, self.label_names[i], self.label.count(i))
+            print2way(logf, "\n ")
+
         # get the minimum number of samples per class
-        #min_num_samples = min([self.label.count(i) for i in range(self.num_classes)])
-        ## only keep min_num_samples number of samples per class to even out hte dataset
-        ## first, group the data and label by label
-        #data_grouped_by_label = [[] for i in range(self.num_classes)]
-        #for i in range(len(self.data)):
-        #    data_grouped_by_label[self.label[i]].append(self.data[i])
-        ## then, randomly select min_num_samples number of samples per class
-        #self.data = []
-        #self.label = []
-        #for i in range(self.num_classes):
-        #    self.data += random.sample(data_grouped_by_label[i], min_num_samples)
-        #    self.label += [i] * min_num_samples
+        min_num_samples = min([self.label.count(i) for i in range(self.num_classes)])
+
+        max_keep = 60
+        # only keep min_num_samples number of samples per class to even out hte dataset
+        # first, group the data and label by label
+        data_grouped_by_label = [[] for i in range(self.num_classes)]
+        for i in range(len(self.data)):
+            data_grouped_by_label[self.label[i]].append(self.data[i])
+        
+        if train:
+            for i in range(self.num_classes):
+                print2way(logf, self.label_names[i], len(data_grouped_by_label[i]))
+            print2way(logf, "\n ")
+            # still correct
         
 
-        #for i in range(self.num_classes):
-        #    print(self.label_names[i], self.label.count(i))
-        
+        self.data = []
+        self.label = []
+        # if a class has more than max_keep samples, randomly choose max_keep samples
+        # if a class has less than max_keep samples, randomly choose samples with replacement
+        # if a class has no samples, skip it
+        for i in range(self.num_classes):
+            if len(data_grouped_by_label[i]) > max_keep:
+                # randomly choose max_keep samples
+                self.data += random.sample(data_grouped_by_label[i], max_keep)
+                self.label += [i] * max_keep
+            elif len(data_grouped_by_label[i]) > 0:
+                # randomly choose samples with replacement
+                self.data += random.choices(data_grouped_by_label[i], k=max_keep)
+                self.label += [i] * max_keep
+            else:
+                # skip this class
+                continue
+                
+
+        if train:
+            for i in range(self.num_classes):
+                print2way(logf, self.label_names[i], self.label.count(i))
+            print2way(logf, "\n ")
 
         
 
