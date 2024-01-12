@@ -356,13 +356,19 @@ def plot_final_prediction(args, logf):
     confusion_matrix = np.zeros((args.num_classes, args.num_classes))
     val_acc = 0
     correct = 0
+    total_time = 0
     # Disable gradient calculation
     with torch.no_grad():
     
         # Loop over each batch from the validation set
         for batch_idx, (data, target) in enumerate(val_loader):
             data, target = data.to(device), target.to(device)
+            # measure time for inference (in milliseconds)
+            start_time = time.time()
             output = model(data)
+            end_time = time.time()
+            
+            total_time += (end_time - start_time) * 1000 / len(data)
             pred = torch.argmax(output, dim=1)
             correct += pred.eq(target.view_as(pred)).sum().item()
             #acc = correct / len(data)
@@ -412,8 +418,9 @@ def plot_final_prediction(args, logf):
                 fig.tight_layout()
                 plt.savefig(os.path.join(args.save_model_dir, "final_prediction.png"))
                 plt.close()
+            
 
-   
+    print2way(logf, "Average inference time: ", total_time / len(val_loader), "ms")
 
     # Plot confusion matrix
     # but first normalize the confusion matrix by row
@@ -553,7 +560,7 @@ def main():
     parser.add_argument("--save_model_dir", type=str, default="models", help="Directory to save model")
     parser.add_argument("--load_model_dir", type=str, default="models", help="Directory to load model")
     parser.add_argument("--data_dir", type=str, default="TrafficLight", help="Training data directory")
-    parser.add_argument("--resnet_layers", type=list, default=[3,4,6,3], help="Number of layers in each block")
+    parser.add_argument("--resnet_layers", type=list, default=[1,1,1,1], help="Number of layers in each block")
     parser.add_argument("--resnet_output_channels", type=list, default=[64, 128, 256, 512], help="Number of output channels in each layer")
     parser.add_argument("--resnet_block", type=str, default="bottleneck", help="Type of block")
     parser.add_argument("--batch_size", type=int, default=64, help="Batch size")
