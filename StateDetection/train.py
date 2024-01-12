@@ -167,6 +167,14 @@ def train(args, logf):
         args=args,
     )
 
+    #model = StateDetection(
+    #    num_classes=args.num_classes,
+    #    input_size=args.input_sizes,
+    #    channel_size=args.channel_size,
+    #    logf=logf,
+    #    args=args,
+    #)
+
     #print2way(logf, summary(model, (args.channel_size, 224, 224)))
     # Define optimizer
     #optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)

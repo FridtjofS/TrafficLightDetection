@@ -12,11 +12,14 @@ import torch.nn.functional as F
 import torchvision.transforms as transforms
 import numpy as np
 
+from utils import print2way
+
 class StateDetection(nn.Module):
-    def __init__(self, num_classes=5, 
+    def __init__(self, 
+                 num_classes=5, 
                  input_size=(64, 64), 
                  channel_size=3,
-
+                 logf=None,
                  args=None):
         super(StateDetection, self).__init__()
         '''
@@ -73,7 +76,7 @@ class StateDetection(nn.Module):
             nn.Softmax(dim=1),
         ).to(self.device)
 
-        print("Total number of parameters: ", sum(p.numel() for p in self.net.parameters() if p.requires_grad))
+        print2way(logf, "Total number of parameters: ", sum(p.numel() for p in self.net.parameters() if p.requires_grad))
 
     
     def forward(self, x):
