@@ -4,14 +4,14 @@
     "sd_output_folder": "sd_traffic_lights/Nadia",
     "output_size": "1024x440",
     "stats": {
-        "total_images": 37,
-        "total_annotations": 95,
-        "total_red": 41,
-        "total_red_yellow": 0,
-        "total_yellow": 0,
-        "total_green": 54,
+        "total_images": 200,
+        "total_annotations": 450,
+        "total_red": 178,
+        "total_red_yellow": 17,
+        "total_yellow": 27,
+        "total_green": 222,
         "total_off": 0,
-        "total_time": 1003.655791759491,
+        "total_time": 3865.6461720466614,
         "most_traffic_lights_in_one_image": 4
     }
 }
