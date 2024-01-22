@@ -136,3 +136,5 @@ dmypy.json
 
 /StateDetection/data/
 .vscode/launch.json
+
+.DS_Store
