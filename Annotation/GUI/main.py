@@ -446,6 +446,7 @@ class MainWindow(QWidget):
                 return image
             else:
                 print("Directory does not contain only images")
+                print ("This file is producing a bug: " + str(os.listdir(image_dir)[0]))
                 self.settings_error("The input directory you selected does not contain only images,\nplease select a different directory")
                 return None
         
