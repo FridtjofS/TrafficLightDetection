@@ -1,17 +1,17 @@
 {
-    "input_folder": "../../TrainingDataPt3",
+    "input_folder": "../../Xtra_GelbOrange",
     "od_output_folder": "od_traffic_lights/Nadia",
     "sd_output_folder": "sd_traffic_lights/Nadia",
     "output_size": "1024x440",
     "stats": {
-        "total_images": 200,
-        "total_annotations": 450,
-        "total_red": 178,
-        "total_red_yellow": 17,
-        "total_yellow": 27,
-        "total_green": 222,
+        "total_images": 235,
+        "total_annotations": 536,
+        "total_red": 189,
+        "total_red_yellow": 49,
+        "total_yellow": 68,
+        "total_green": 224,
         "total_off": 0,
-        "total_time": 3865.6461720466614,
-        "most_traffic_lights_in_one_image": 4
+        "total_time": 4976.938915014267,
+        "most_traffic_lights_in_one_image": 6
     }
 }
