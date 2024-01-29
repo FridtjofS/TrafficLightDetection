@@ -1,0 +1,21 @@
+off 3
+red 178
+red_yellow 6
+yellow 32
+green 566
+
+ 
+off 3
+red 178
+red_yellow 6
+yellow 32
+green 566
+
+ 
+off 60
+red 60
+red_yellow 60
+yellow 60
+green 60
+
+ 

@@ -24,7 +24,7 @@ from model import StateDetection
 from ResNet_withBottleneck import ResNet
 from dataset import StateDetectionDataset
 # import train test split from torch
-from sklearn.model_selection import train_test_split
+#from sklearn.model_selection import train_test_split
 from utils import *
 
 
@@ -114,6 +114,10 @@ def train(args, logf):
             transforms.ToTensor(),
             transforms.Normalize((0.1307,), (0.3081,)),
         ]), args=args)
+        print2way(logf, "Train dataset shape: ", train_dataset.data.shape) # (40, 128, 128, 3)
+        print2way(logf, "Val dataset shape: ", val_dataset.data.shape) # (40, 128, 128, 3)
+        print2way(logf, "Train dataset labels shape: ", len(train_dataset.label)) # 40
+        print2way(logf, "Val dataset labels shape: ", len(val_dataset.label))
 
         args.input_sizes = (train_dataset.data.shape[1], train_dataset.data.shape[2])
         args.channel_size = train_dataset.data.shape[3]
@@ -557,8 +561,8 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", type=str, default="train", help="Mode: train or test")
-    parser.add_argument("--save_model_dir", type=str, default="models", help="Directory to save model")
-    parser.add_argument("--load_model_dir", type=str, default="models", help="Directory to load model")
+    parser.add_argument("--save_model_dir", type=str, default="/home/stud468/TrafficLightDetection/StateDetection/models", help="Directory to save model")
+    parser.add_argument("--load_model_dir", type=str, default="/home/stud468/TrafficLightDetection/StateDetection/models", help="Directory to load model")
     parser.add_argument("--data_dir", type=str, default="TrafficLight", help="Training data directory")
     parser.add_argument("--resnet_layers", type=list, default=[1,1,1,1], help="Number of layers in each block")
     parser.add_argument("--resnet_output_channels", type=list, default=[64, 128, 256, 512], help="Number of output channels in each layer")
@@ -586,6 +590,8 @@ def main():
     args.save_model_dir = exp_dir
     args.custom_id = custom_id
     args.device = device
+
+    print("args.save_model_dir", args.save_model_dir)
 
     logf = open(os.path.join(args.save_model_dir, "log.txt"), "w")
     args.logf = logf

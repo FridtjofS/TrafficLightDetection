@@ -20,7 +20,7 @@ from utils import print2way
 
 # load a predefined dataset
 class StateDetectionDataset(Dataset):
-    def __init__(self, train=True, input_size=(128,128), num_classes=5, data_dir=".\..\StateDetection\sd_train_data", transform=None, args=None):
+    def __init__(self, train=True, input_size=(128,128), num_classes=5, data_dir="/home/stud468/TrafficLightDetection/StateDetection/sd_train_data", transform=None, args=None):
         '''
         Load the dataset and perform preprocessing transformations.
         
@@ -143,9 +143,25 @@ class StateDetectionDataset(Dataset):
         val_data = data[num_train:]
         val_label = label[num_train:]
 
+        print("Number of training samples: ", len(train_data)) #
+        print("shape of training data: ", train_data[0].shape) # torch.Size([128, 128, 3]
+        print("shape of training data: ", train_data[1].shape) # torch.Size([128, 128, 3]
+        print("shape of training data: ", train_data[2].shape) # torch.Size([128, 128, 3]
+        print("shape of training data: ", train_data[3].shape)  # torch.Size([128, 128, 3]
+
         # convert list to numpy array
-        train_data = np.array(train_data)
-        val_data = np.array(val_data)
+        #train_data = np.array(train_data)
+        #val_data = np.array(val_data)
+        train_data_arr = np.zeros((len(train_data), self.input_size[0], self.input_size[1], 3))
+        val_data_arr = np.zeros((len(val_data), self.input_size[0], self.input_size[1], 3))
+        for i in range(len(train_data)):
+            train_data_arr[i] = train_data[i]
+        for i in range(len(val_data)):
+            val_data_arr[i] = val_data[i]
+
+        train_data = train_data_arr
+        val_data = val_data_arr
+
 
         return train_data, train_label, val_data, val_label
     

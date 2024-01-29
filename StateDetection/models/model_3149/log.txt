@@ -1,0 +1,196 @@
+off 3
+red 178
+red_yellow 6
+yellow 32
+green 566
+
+ 
+off 3
+red 178
+red_yellow 6
+yellow 32
+green 566
+
+ 
+off 60
+red 60
+red_yellow 60
+yellow 60
+green 60
+
+ 
+Train dataset shape:  (240, 128, 128, 3)
+Val dataset shape:  (60, 128, 128, 3)
+Train dataset labels shape:  240
+Val dataset labels shape:  60
+Train dataset shape:  (240, 128, 128, 3)
+Val dataset shape:  (60, 128, 128, 3)
+Train dataset labels shape:  240
+Val dataset labels shape:  60
+
+Total number of parameters:  8035845 
+
+
+Arguments:
+
+mode: train
+save_model_dir: /home/stud468/TrafficLightDetection/StateDetection/models/model_3149
+load_model_dir: /home/stud468/TrafficLightDetection/StateDetection/models
+data_dir: TrafficLight
+resnet_layers: [1, 1, 1, 1]
+resnet_output_channels: [64, 128, 256, 512]
+resnet_block: bottleneck
+batch_size: 64
+num_epochs: 30
+lr: 0.001
+num_workers: 4
+log_interval: 4
+seed: 0
+device: cuda
+input_sizes: (128, 128)
+num_classes: 5
+channel_size: 3
+predefined_model: None
+custom_id: 3149
+logf: <_io.TextIOWrapper name='/home/stud468/TrafficLightDetection/StateDetection/models/model_3149/log.txt' mode='w' encoding='UTF-8'>
+
+
+
+Train Epoch: 0 [0/240 (0%)] 	Loss: 1.660666	Accuracy: 0.265625
+
+Epoch: 0	Train Loss: 1.626206	Train Acc: 0.313802	Val Loss: 1.607042 	Val Acc: 0.216667	Time: 16.07s
+
+Model saved to /home/stud468/TrafficLightDetection/StateDetection/models/model_3149
+Train Epoch: 1 [0/240 (0%)] 	Loss: 1.591737	Accuracy: 0.390625
+
+Epoch: 1	Train Loss: 1.586759	Train Acc: 0.386719	Val Loss: 1.609081 	Val Acc: 0.216667	Time: 2.03s
+
+Train Epoch: 2 [0/240 (0%)] 	Loss: 1.525357	Accuracy: 0.437500
+
+Epoch: 2	Train Loss: 1.529337	Train Acc: 0.450521	Val Loss: 1.614054 	Val Acc: 0.216667	Time: 1.92s
+
+Train Epoch: 3 [0/240 (0%)] 	Loss: 1.490829	Accuracy: 0.484375
+
+Epoch: 3	Train Loss: 1.474429	Train Acc: 0.548177	Val Loss: 1.619195 	Val Acc: 0.216667	Time: 1.98s
+
+Train Epoch: 4 [0/240 (0%)] 	Loss: 1.459042	Accuracy: 0.468750
+
+Epoch: 4	Train Loss: 1.435317	Train Acc: 0.524740	Val Loss: 1.624562 	Val Acc: 0.216667	Time: 1.93s
+
+Train Epoch: 5 [0/240 (0%)] 	Loss: 1.412841	Accuracy: 0.468750
+
+Epoch: 5	Train Loss: 1.391181	Train Acc: 0.505208	Val Loss: 1.617192 	Val Acc: 0.216667	Time: 2.00s
+
+Train Epoch: 6 [0/240 (0%)] 	Loss: 1.321246	Accuracy: 0.609375
+
+Epoch: 6	Train Loss: 1.345407	Train Acc: 0.550781	Val Loss: 1.593474 	Val Acc: 0.216667	Time: 1.95s
+
+Train Epoch: 7 [0/240 (0%)] 	Loss: 1.274042	Accuracy: 0.640625
+
+Epoch: 7	Train Loss: 1.302144	Train Acc: 0.613281	Val Loss: 1.535462 	Val Acc: 0.216667	Time: 1.96s
+
+Train Epoch: 8 [0/240 (0%)] 	Loss: 1.308175	Accuracy: 0.640625
+
+Epoch: 8	Train Loss: 1.272104	Train Acc: 0.675781	Val Loss: 1.455806 	Val Acc: 0.266667	Time: 2.00s
+
+Model saved to /home/stud468/TrafficLightDetection/StateDetection/models/model_3149
+Train Epoch: 9 [0/240 (0%)] 	Loss: 1.264981	Accuracy: 0.671875
+
+Epoch: 9	Train Loss: 1.237683	Train Acc: 0.700521	Val Loss: 1.351606 	Val Acc: 0.366667	Time: 1.98s
+
+Model saved to /home/stud468/TrafficLightDetection/StateDetection/models/model_3149
+Train Epoch: 10 [0/240 (0%)] 	Loss: 1.216132	Accuracy: 0.671875
+
+Epoch: 10	Train Loss: 1.188979	Train Acc: 0.678385	Val Loss: 1.240810 	Val Acc: 0.700000	Time: 1.95s
+
+Model saved to /home/stud468/TrafficLightDetection/StateDetection/models/model_3149
+Train Epoch: 11 [0/240 (0%)] 	Loss: 1.215634	Accuracy: 0.750000
+
+Epoch: 11	Train Loss: 1.148060	Train Acc: 0.742188	Val Loss: 1.148527 	Val Acc: 0.650000	Time: 1.88s
+
+Train Epoch: 12 [0/240 (0%)] 	Loss: 1.089383	Accuracy: 0.765625
+
+Epoch: 12	Train Loss: 1.109445	Train Acc: 0.720052	Val Loss: 1.074609 	Val Acc: 0.666667	Time: 1.91s
+
+Train Epoch: 13 [0/240 (0%)] 	Loss: 1.097383	Accuracy: 0.718750
+
+Epoch: 13	Train Loss: 1.088389	Train Acc: 0.726562	Val Loss: 1.022092 	Val Acc: 0.700000	Time: 1.97s
+
+Train Epoch: 14 [0/240 (0%)] 	Loss: 1.076030	Accuracy: 0.671875
+
+Epoch: 14	Train Loss: 1.049710	Train Acc: 0.757812	Val Loss: 0.974221 	Val Acc: 0.700000	Time: 1.97s
+
+Train Epoch: 15 [0/240 (0%)] 	Loss: 1.115961	Accuracy: 0.703125
+
+Epoch: 15	Train Loss: 1.030949	Train Acc: 0.713542	Val Loss: 0.931598 	Val Acc: 0.733333	Time: 2.01s
+
+Model saved to /home/stud468/TrafficLightDetection/StateDetection/models/model_3149
+Train Epoch: 16 [0/240 (0%)] 	Loss: 1.036928	Accuracy: 0.734375
+
+Epoch: 16	Train Loss: 1.022845	Train Acc: 0.768229	Val Loss: 0.890071 	Val Acc: 0.750000	Time: 1.96s
+
+Model saved to /home/stud468/TrafficLightDetection/StateDetection/models/model_3149
+Train Epoch: 17 [0/240 (0%)] 	Loss: 1.011072	Accuracy: 0.765625
+
+Epoch: 17	Train Loss: 0.985611	Train Acc: 0.748698	Val Loss: 0.855359 	Val Acc: 0.750000	Time: 1.95s
+
+Train Epoch: 18 [0/240 (0%)] 	Loss: 0.900984	Accuracy: 0.812500
+
+Epoch: 18	Train Loss: 0.926486	Train Acc: 0.792969	Val Loss: 0.822401 	Val Acc: 0.766667	Time: 2.00s
+
+Model saved to /home/stud468/TrafficLightDetection/StateDetection/models/model_3149
+Train Epoch: 19 [0/240 (0%)] 	Loss: 0.965749	Accuracy: 0.781250
+
+Epoch: 19	Train Loss: 0.907368	Train Acc: 0.817708	Val Loss: 0.795481 	Val Acc: 0.766667	Time: 1.97s
+
+Train Epoch: 20 [0/240 (0%)] 	Loss: 0.840884	Accuracy: 0.843750
+
+Epoch: 20	Train Loss: 0.884645	Train Acc: 0.819010	Val Loss: 0.767163 	Val Acc: 0.783333	Time: 1.98s
+
+Model saved to /home/stud468/TrafficLightDetection/StateDetection/models/model_3149
+Train Epoch: 21 [0/240 (0%)] 	Loss: 0.868702	Accuracy: 0.828125
+
+Epoch: 21	Train Loss: 0.872464	Train Acc: 0.829427	Val Loss: 0.739657 	Val Acc: 0.800000	Time: 1.95s
+
+Model saved to /home/stud468/TrafficLightDetection/StateDetection/models/model_3149
+Train Epoch: 22 [0/240 (0%)] 	Loss: 0.837191	Accuracy: 0.796875
+
+Epoch: 22	Train Loss: 0.856089	Train Acc: 0.825521	Val Loss: 0.716434 	Val Acc: 0.816667	Time: 1.98s
+
+Model saved to /home/stud468/TrafficLightDetection/StateDetection/models/model_3149
+Train Epoch: 23 [0/240 (0%)] 	Loss: 0.854548	Accuracy: 0.781250
+
+Epoch: 23	Train Loss: 0.803483	Train Acc: 0.821615	Val Loss: 0.690606 	Val Acc: 0.816667	Time: 1.97s
+
+Train Epoch: 24 [0/240 (0%)] 	Loss: 0.818552	Accuracy: 0.812500
+
+Epoch: 24	Train Loss: 0.784580	Train Acc: 0.833333	Val Loss: 0.670549 	Val Acc: 0.833333	Time: 1.97s
+
+Model saved to /home/stud468/TrafficLightDetection/StateDetection/models/model_3149
+Train Epoch: 25 [0/240 (0%)] 	Loss: 0.791010	Accuracy: 0.812500
+
+Epoch: 25	Train Loss: 0.778653	Train Acc: 0.833333	Val Loss: 0.646076 	Val Acc: 0.850000	Time: 1.96s
+
+Model saved to /home/stud468/TrafficLightDetection/StateDetection/models/model_3149
+Train Epoch: 26 [0/240 (0%)] 	Loss: 0.741221	Accuracy: 0.828125
+
+Epoch: 26	Train Loss: 0.741317	Train Acc: 0.850260	Val Loss: 0.627543 	Val Acc: 0.850000	Time: 1.99s
+
+Train Epoch: 27 [0/240 (0%)] 	Loss: 0.783512	Accuracy: 0.812500
+
+Epoch: 27	Train Loss: 0.711712	Train Acc: 0.846354	Val Loss: 0.612004 	Val Acc: 0.833333	Time: 1.97s
+
+Train Epoch: 28 [0/240 (0%)] 	Loss: 0.735830	Accuracy: 0.859375
+
+Epoch: 28	Train Loss: 0.708153	Train Acc: 0.845052	Val Loss: 0.591204 	Val Acc: 0.850000	Time: 1.99s
+
+Train Epoch: 29 [0/240 (0%)] 	Loss: 0.773972	Accuracy: 0.750000
+
+Epoch: 29	Train Loss: 0.672737	Train Acc: 0.848958	Val Loss: 0.571842 	Val Acc: 0.850000	Time: 1.95s
+
+
+Total number of parameters:  8035845 
+
+Average inference time:  15.419583767652512 ms
+Final Validation Accuracy:  0.85
+Final prediction saved to /home/stud468/TrafficLightDetection/StateDetection/models/model_3149/final_prediction.png
