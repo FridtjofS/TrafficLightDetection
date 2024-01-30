@@ -176,6 +176,16 @@ def train(args, logf):
     #    args=args,
     #)
 
+    #plot a batch of images
+    dataiter = iter(train_loader)
+    images, labels = next(dataiter)
+    import torchvision.utils as vutils
+    img_grid = vutils.make_grid(images, normalize=True)
+    plt.imshow(np.transpose(img_grid, (1, 2, 0)))
+    plt.savefig(os.path.join(args.save_model_dir, "sample_images.png"))
+    plt.close()
+
+
     #print2way(logf, summary(model, (args.channel_size, 224, 224)))
     # Define optimizer
     #optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
