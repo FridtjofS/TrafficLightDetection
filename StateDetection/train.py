@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import os
 import argparse
 import time
-import datetime
+from time import strftime
 import pickle
 import random
 import sys
@@ -24,7 +24,7 @@ from model import StateDetection
 from ResNet_withBottleneck import ResNet
 from dataset import StateDetectionDataset
 # import train test split from torch
-from sklearn.model_selection import train_test_split
+#from sklearn.model_selection import train_test_split
 from utils import *
 
 
@@ -44,14 +44,16 @@ def train(args, logf):
     set_seed(args.seed)
     device = args.device
 
+    cwd = os.getcwd()
+
     # Load dataset
     if args.data_dir == "SVHN":
-        train_dataset = datasets.SVHN(root="./data", split="train", download=True, transform=transforms.Compose([
+        train_dataset = datasets.SVHN(root=os.path.join(cwd, "data"), split="train", download=True, transform=transforms.Compose([
                     transforms.Resize((224, 224)),
                     transforms.ToTensor(),
                     transforms.Normalize((0.1307,), (0.3081,)),
                 ]))
-        val_dataset = datasets.SVHN(root="./data", split="test", download=True, transform=transforms.Compose([
+        val_dataset = datasets.SVHN(root=os.path.join(cwd, "data"), split="test", download=True, transform=transforms.Compose([
                     transforms.Resize((224, 224)),
                     transforms.ToTensor(),
                     transforms.Normalize((0.1307,), (0.3081,)),
@@ -62,12 +64,12 @@ def train(args, logf):
         print2way(logf, "Train dataset shape: ", train_dataset.data.shape)
         print2way(logf, "Train dataset labels shape: ", train_dataset.labels.shape)
     elif args.data_dir == "MNIST":
-        train_dataset = datasets.MNIST(root="./data", train=True, download=True, transform=transforms.Compose([
+        train_dataset = datasets.MNIST(root=os.path.join(cwd, "data"), train=True, download=True, transform=transforms.Compose([
                     transforms.Resize((224, 224)),
                     transforms.ToTensor(),
                     transforms.Normalize((0.1307,), (0.3081,)),
                 ]))
-        val_dataset = datasets.MNIST(root="./data", train=False, download=True, transform=transforms.Compose([
+        val_dataset = datasets.MNIST(root=os.path.join(cwd, "data"), train=False, download=True, transform=transforms.Compose([
                     transforms.Resize((224, 224)),
                     transforms.ToTensor(),
                     transforms.Normalize((0.1307,), (0.3081,)),
@@ -89,8 +91,8 @@ def train(args, logf):
             transforms.ToTensor(),
             transforms.Normalize((0.1307,), (0.3081,)),
         ])
-        train_dataset = datasets.CIFAR10(root="./data", train=True, download=True, transform=transforms_train)
-        val_dataset = datasets.CIFAR10(root="./data", train=False, download=True, transform=transforms.Compose([
+        train_dataset = datasets.CIFAR10(root=os.path.join(cwd, "data"), train=True, download=True, transform=transforms_train)
+        val_dataset = datasets.CIFAR10(root=os.path.join(cwd, "data"), train=False, download=True, transform=transforms.Compose([
                     transforms.Resize((224, 224)),
                     transforms.ToTensor(),
                     transforms.Normalize((0.1307,), (0.3081,)),
@@ -101,7 +103,7 @@ def train(args, logf):
         print2way(logf, "Train dataset shape: ", train_dataset.data.shape) # (50000, 32, 32, 3)
         print2way(logf, "Train dataset labels shape: ", len(train_dataset.targets)) # 50000
     elif args.data_dir == "TrafficLight":
-        train_dataset = StateDetectionDataset(train=True, transform=transforms.Compose([
+        train_dataset = StateDetectionDataset(train=True, data_dir=os.path.join(cwd, "sd_train_data"), transform=transforms.Compose([
             #transforms.Resize((224, 224)),
             transforms.RandomHorizontalFlip(),
             transforms.RandomRotation(15),
@@ -109,12 +111,11 @@ def train(args, logf):
             transforms.ToTensor(),
             transforms.Normalize((0.1307,), (0.3081,)),
         ]), args=args)
-        val_dataset = StateDetectionDataset(train=False, transform=transforms.Compose([
+        val_dataset = StateDetectionDataset(train=False, data_dir=os.path.join(cwd, "sd_train_data"), transform=transforms.Compose([
             #transforms.Resize((224, 224)),
             transforms.ToTensor(),
             transforms.Normalize((0.1307,), (0.3081,)),
         ]), args=args)
-
         args.input_sizes = (train_dataset.data.shape[1], train_dataset.data.shape[2])
         args.channel_size = train_dataset.data.shape[3]
         args.num_classes = 5
@@ -192,28 +193,8 @@ def train(args, logf):
     for arg in vars(args):
         print2way(logf, f"{arg}: {getattr(args, arg)}")
     print2way(logf, "\n\n")
-
-    #print sample input shape
-    #sample = next(iter(train_loader))
-    #print2way(logf, "Sample input shape: ", sample[0].shape)
-    #print2way(logf, "Sample input labels shape: ", sample[1].shape)
-    #
-#
-    ##print sample input
-    #fig, ax = plt.subplots(2,2, figsize=(10, 10))
-    #for imgs, labels in train_loader:
-    #    for i in range(4):
-    #        sample_img = imgs[i].permute(1, 2, 0).numpy()
-    #        # to 0-1
-    #        sample_img -= sample_img.min()
-    #        sample_img /= sample_img.max()
-    #        ax[i//2][i%2].imshow(sample_img)
-    #        ax[i//2][i%2].set_title(labels[i].item())
-    #    break
-    #plt.savefig(os.path.join(args.save_model_dir, "sample_input.png"))
-    #plt.close()
-
     
+    start_time = time.time()
 
     # Training loop
     for epoch in range(args.num_epochs):
@@ -221,7 +202,7 @@ def train(args, logf):
         train_acc = 0
         val_acc = 0
         val_loss = 0
-        start_time = time.time()
+        epoch_start_time = time.time()
         model.train()
 
         # Loop over each batch from the training set
@@ -244,15 +225,15 @@ def train(args, logf):
             # Print training status
             if batch_idx % args.log_interval == 0:
                 print2way(logf, 
-                    f"Train Epoch: {epoch} [{batch_idx * len(data)}/{len(train_loader.dataset)} ({100.0 * batch_idx / len(train_loader):.0f}%)]",
+                    f"Train Epoch: {epoch} [{batch_idx * args.batch_size}/{len(train_loader.dataset)} ({100.0 * batch_idx / len(train_loader):.0f}%)]",
                     f"\tLoss: {loss:.6f}\tAccuracy: {acc:.6f}"
                 )
         
-        #scheduler.step()
+        scheduler.step()
         train_loss /= len(train_loader)
         train_acc /= len(train_loader)
         model.eval()
-
+        
         # Disable gradient calculation
         with torch.no_grad():
             for data, target in val_loader:
@@ -265,13 +246,14 @@ def train(args, logf):
                 correct = pred.eq(target.view_as(pred)).sum().item()
                 val_acc += correct / len(data)
 
+       
         val_loss /= len(val_loader)
         val_acc /= len(val_loader)
 
         # Print training and validation results
         print2way(logf, 
             f"\nEpoch: {epoch}\tTrain Loss: {train_loss:.6f}\tTrain Acc: {train_acc:.6f}\tVal Loss: {val_loss:.6f}",
-            f"\tVal Acc: {val_acc:.6f}\tTime: {time.time() - start_time:.2f}s\n"
+            f"\tVal Acc: {val_acc:.6f}\tTime: {time.time() - epoch_start_time:.2f}s\n"
         )
 
         # Add loss to list
@@ -285,20 +267,23 @@ def train(args, logf):
             args.load_model_dir = args.save_model_dir
             print2way(logf, "Model saved to %s" % args.save_model_dir)
 
+        
         # Plot training loss and validation accuracy toegether in the same plot, but on different y axes
         plot_loss_acc(train_loss_list, val_acc_list, args.save_model_dir)
-
+        
     # Save training loss and validation accuracy lists
     with open(os.path.join(args.save_model_dir, "train_loss_list.pkl"), "wb") as f:
         pickle.dump(train_loss_list, f)
 
     with open(os.path.join(args.save_model_dir, "val_acc_list.pkl"), "wb") as f:
         pickle.dump(val_acc_list, f)
-
+    
+    print2way(logf, "Total training time: ", strftime("%H:%M:%S", time.gmtime(time.time() - start_time)))
+    
     # plot final prediction on validation set
-    plot_final_prediction(args, logf)
+    plot_final_prediction(args, val_loader, val_dataset, logf)
 
-def plot_final_prediction(args, logf):
+def plot_final_prediction(args, val_loader, val_dataset, logf):
     """
     Plot final prediction on validation set
 
@@ -314,7 +299,7 @@ def plot_final_prediction(args, logf):
 
     """
     # Set device
-    args.device = "cuda" if torch.cuda.is_available() else "cpu"
+    #args.device = "cuda" if torch.cuda.is_available() else "cpu"
     device = args.device
 
     if args.data_dir == "TrafficLight":
@@ -337,21 +322,21 @@ def plot_final_prediction(args, logf):
     model.eval()
 
     # Load dataset
-    val_dataset = StateDetectionDataset(train=False, transform=transforms.Compose([
-        #transforms.Resize((224, 224)),
-        transforms.ToTensor(),
-        transforms.Normalize((0.1307,), (0.3081,)),
-    ]), args=args)
+    #val_dataset = StateDetectionDataset(train=False, transform=transforms.Compose([
+    #    #transforms.Resize((224, 224)),
+    #    transforms.ToTensor(),
+    #    transforms.Normalize((0.1307,), (0.3081,)),
+    #]), args=args)
     
     label_names = val_dataset.label_names
 
     # Create data loader
-    val_loader = DataLoader(
-        val_dataset,
-        batch_size=8,
-        shuffle=False,
-        num_workers=1,
-    )
+    #val_loader = DataLoader(
+    #    val_dataset,
+    #    batch_size=args.batch_size,
+    #    shuffle=False,
+    #    num_workers=1,
+    #)
 
     confusion_matrix = np.zeros((args.num_classes, args.num_classes))
     val_acc = 0
@@ -364,31 +349,24 @@ def plot_final_prediction(args, logf):
         for batch_idx, (data, target) in enumerate(val_loader):
             data, target = data.to(device), target.to(device)
             # measure time for inference (in milliseconds)
-            start_time = time.time()
+            epoch_start_time = time.time()
             output = model(data)
             end_time = time.time()
             
-            total_time += (end_time - start_time) * 1000 / len(data)
+            total_time += (end_time - epoch_start_time) * 1000 / len(data)
             pred = torch.argmax(output, dim=1)
+            # also use the certainty of the prediction (softmax has not yet been applied inside the model)
+            certainty = torch.max(F.softmax(output, dim=1), dim=1)
             correct += pred.eq(target.view_as(pred)).sum().item()
-            #acc = correct / len(data)
-            #print("acc", acc)
-            #val_acc += acc
-            #print("correct", correct)
-
-
+            
             # Update confusion matrix
             for i in range(len(target)):
                 confusion_matrix[target[i]][pred[i]] += 1
             
             # only plot the last batch
             if  batch_idx == len(val_loader) - 1:
-                #print("val_acc", val_acc)
-                #print("len(val_loader)", len(val_loader))
-                #print("len(val_dataset)", len(val_dataset))
-                #print("correct", correct)
                 val_acc = correct / len(val_dataset)
-
+                print("last batch, size", len(data))
                 # Plot final prediction
                 fig, ax = plt.subplots(2,4)
                 for i in range(8):
@@ -409,7 +387,7 @@ def plot_final_prediction(args, logf):
                         target_name = label_names[target_label]
 
                         color = "green" if pred_label == target_label else "black"
-                        ax[i//4][i%4].set_title(f"Pred: {pred_name}\nActual: {target_name}", color=color)
+                        ax[i//4][i%4].set_title(f"Pred: {pred_name}\nActual: {target_name}\nCertainty: {certainty[0][i]*100:.0f}%", color=color)
                     except:
                         pass
                     ax.flat[i].axes.get_xaxis().set_visible(False)
@@ -495,7 +473,7 @@ def test(args, logf):
     test_acc = 0
     test_loss = 0
     confusion_matrix = np.zeros((args.num_classes, args.num_classes))
-    start_time = time.time()
+    epoch_start_time = time.time()
     criterion = nn.CrossEntropyLoss()
 
     # Disable gradient calculation
@@ -526,7 +504,7 @@ def test(args, logf):
     # Print test results
     print2way(logf, 
         "\nTest Loss: {:.6f}\tTest Accuracy: {:.6f}\tTime: {:.2f}s\n".format(
-            test_loss, test_acc, time.time() - start_time
+            test_loss, test_acc, time.time() - epoch_start_time
         )
     )
 
@@ -553,27 +531,30 @@ def main():
     """
 
     # Set device
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    #device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    cwd = os.getcwd()
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", type=str, default="train", help="Mode: train or test")
-    parser.add_argument("--save_model_dir", type=str, default="models", help="Directory to save model")
-    parser.add_argument("--load_model_dir", type=str, default="models", help="Directory to load model")
+    parser.add_argument("--save_model_dir", type=str, default=os.path.join(cwd, "models"), help="Directory to save model")
+    parser.add_argument("--load_model_dir", type=str, default=os.path.join(cwd, "models"), help="Directory to load model")
     parser.add_argument("--data_dir", type=str, default="TrafficLight", help="Training data directory")
     parser.add_argument("--resnet_layers", type=list, default=[1,1,1,1], help="Number of layers in each block")
     parser.add_argument("--resnet_output_channels", type=list, default=[64, 128, 256, 512], help="Number of output channels in each layer")
     parser.add_argument("--resnet_block", type=str, default="bottleneck", help="Type of block")
-    parser.add_argument("--batch_size", type=int, default=64, help="Batch size")
-    parser.add_argument("--num_epochs", type=int, default=30, help="Number of epochs")
+    parser.add_argument("--batch_size", type=int, default=32, help="Batch size")
+    parser.add_argument("--num_epochs", type=int, default=5, help="Number of epochs")
     parser.add_argument("--lr", type=float, default=1e-3, help="Learning rate")
-    parser.add_argument("--num_workers", type=int, default=4, help="Number of workers")
-    parser.add_argument("--log_interval", type=int, default=4, help="Logging interval")
+    parser.add_argument("--num_workers", type=int, default=1, help="Number of workers")
+    parser.add_argument("--log_interval", type=int, default=1, help="Logging interval")
     parser.add_argument("--seed", type=int, default=0, help="Random seed")
     parser.add_argument("--device", type=str, default="cpu", help="Device")
     parser.add_argument("--input_sizes", type=tuple, default=(128, 128), help="Input image size")
     parser.add_argument("--num_classes", type=int, default=10, help="Number of classes")
     parser.add_argument("--channel_size", type=int, default=3, help="Number of channels")
     parser.add_argument("--predefined_model", type=str, default=None, help="Predefined model")
+    parser.add_argument("--max_keep", type=int, default=None, help="Maximum number of samples per class")
 
     args = parser.parse_args()
 
@@ -585,7 +566,23 @@ def main():
         os.makedirs(exp_dir)
     args.save_model_dir = exp_dir
     args.custom_id = custom_id
-    args.device = device
+
+    # Set device
+    if args.device == "cuda" and not torch.cuda.is_available():
+        print("Warning: cuda not available, using cpu instead")
+        args.device = torch.device("cpu")
+    elif args.device == "cuda":
+        args.device = torch.device("cuda")
+    elif args.device == "dml":
+        try:
+            import torch_directml
+            args.device = torch_directml.device(torch_directml.default_device())
+            print("Using DirectML")
+        except:
+            pass
+    
+
+    print("args.save_model_dir", args.save_model_dir)
 
     logf = open(os.path.join(args.save_model_dir, "log.txt"), "w")
     args.logf = logf
@@ -639,3 +636,5 @@ if __name__ == "__main__":
 
 # good for overfitting:
 # python train.py --predefined_model "resnet18" --data_dir "TrafficLight" --batch_size 16 --lr 0.005 --num_epochs 2  
+
+# python train.py --device "dml" --max_keep 80 --num_epochs 3 --resnet_block "simple"
