@@ -16,11 +16,12 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import json
 
+
 from utils import print2way
 
 # load a predefined dataset
 class StateDetectionDataset(Dataset):
-    def __init__(self, train=True, input_size=(128,128), num_classes=5, data_dir="/home/stud468/TrafficLightDetection/StateDetection/sd_train_data", transform=None, args=None):
+    def __init__(self, train=True, input_size=(128,128), num_classes=5, data_dir=".\..\StateDetection\sd_train_data", transform=None, args=None):
         '''
         Load the dataset and perform preprocessing transformations.
         
@@ -49,25 +50,17 @@ class StateDetectionDataset(Dataset):
         self.data, self.label = self.load_data()
 
         if train:
+            print2way(logf, "Original Distribution: ")
             for i in range(self.num_classes):
                 print2way(logf, self.label_names[i], self.label.count(i))
             print2way(logf, "\n ")
 
-        # get the minimum number of samples per class
-        min_num_samples = min([self.label.count(i) for i in range(self.num_classes)])
-
-        max_keep = 60
+        max_keep = args.max_keep
         # only keep min_num_samples number of samples per class to even out hte dataset
         # first, group the data and label by label
         data_grouped_by_label = [[] for i in range(self.num_classes)]
         for i in range(len(self.data)):
             data_grouped_by_label[self.label[i]].append(self.data[i])
-        
-        if train:
-            for i in range(self.num_classes):
-                print2way(logf, self.label_names[i], len(data_grouped_by_label[i]))
-            print2way(logf, "\n ")
-            # still correct
         
 
         self.data = []
@@ -90,6 +83,7 @@ class StateDetectionDataset(Dataset):
                 
 
         if train:
+            print2way(logf, "Distribution after keeping max_keep samples per class: ")
             for i in range(self.num_classes):
                 print2way(logf, self.label_names[i], self.label.count(i))
             print2way(logf, "\n ")
@@ -143,25 +137,9 @@ class StateDetectionDataset(Dataset):
         val_data = data[num_train:]
         val_label = label[num_train:]
 
-        print("Number of training samples: ", len(train_data)) #
-        print("shape of training data: ", train_data[0].shape) # torch.Size([128, 128, 3]
-        print("shape of training data: ", train_data[1].shape) # torch.Size([128, 128, 3]
-        print("shape of training data: ", train_data[2].shape) # torch.Size([128, 128, 3]
-        print("shape of training data: ", train_data[3].shape)  # torch.Size([128, 128, 3]
-
         # convert list to numpy array
-        #train_data = np.array(train_data)
-        #val_data = np.array(val_data)
-        train_data_arr = np.zeros((len(train_data), self.input_size[0], self.input_size[1], 3))
-        val_data_arr = np.zeros((len(val_data), self.input_size[0], self.input_size[1], 3))
-        for i in range(len(train_data)):
-            train_data_arr[i] = train_data[i]
-        for i in range(len(val_data)):
-            val_data_arr[i] = val_data[i]
-
-        train_data = train_data_arr
-        val_data = val_data_arr
-
+        train_data = np.array(train_data)
+        val_data = np.array(val_data)
 
         return train_data, train_label, val_data, val_label
     

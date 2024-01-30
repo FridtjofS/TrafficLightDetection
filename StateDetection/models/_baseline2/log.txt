@@ -1,0 +1,141 @@
+Original Distribution: 
+off 9
+red 367
+red_yellow 55
+yellow 100
+green 790
+
+ 
+Distribution after keeping max_keep samples per class: 
+off 100
+red 100
+red_yellow 100
+yellow 100
+green 100
+
+ 
+Train dataset shape:  (400, 128, 128, 3)
+Val dataset shape:  (100, 128, 128, 3)
+Train dataset labels shape:  400
+Val dataset labels shape:  100
+
+Total number of parameters:  4911237 
+
+
+Arguments:
+
+mode: train
+save_model_dir: C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\models\model_26059
+load_model_dir: C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\models
+data_dir: TrafficLight
+resnet_layers: [1, 1, 1, 1]
+resnet_output_channels: [64, 128, 256, 512]
+resnet_block: simple
+batch_size: 32
+num_epochs: 5
+lr: 0.001
+num_workers: 1
+log_interval: 1
+seed: 0
+device: privateuseone:0
+input_sizes: (128, 128)
+num_classes: 5
+channel_size: 3
+predefined_model: None
+max_keep: 100
+custom_id: 26059
+logf: <_io.TextIOWrapper name='C:\\Users\\Magnus\\OneDrive\\Studium\\3. Semester WS2324\\Praktikum BV\\TrafficLightDetection\\StateDetection\\models\\model_26059\\log.txt' mode='w' encoding='cp1252'>
+
+
+
+Train Epoch: 0 [0/400 (0%)] 	Loss: 1.702890	Accuracy: 0.125000
+Train Epoch: 0 [32/400 (8%)] 	Loss: 1.649829	Accuracy: 0.281250
+Train Epoch: 0 [64/400 (15%)] 	Loss: 1.649805	Accuracy: 0.187500
+Train Epoch: 0 [96/400 (23%)] 	Loss: 1.667377	Accuracy: 0.187500
+Train Epoch: 0 [128/400 (31%)] 	Loss: 1.628960	Accuracy: 0.281250
+Train Epoch: 0 [160/400 (38%)] 	Loss: 1.585640	Accuracy: 0.218750
+Train Epoch: 0 [192/400 (46%)] 	Loss: 1.736944	Accuracy: 0.125000
+Train Epoch: 0 [224/400 (54%)] 	Loss: 1.685091	Accuracy: 0.093750
+Train Epoch: 0 [256/400 (62%)] 	Loss: 1.558582	Accuracy: 0.281250
+Train Epoch: 0 [288/400 (69%)] 	Loss: 1.688815	Accuracy: 0.062500
+Train Epoch: 0 [320/400 (77%)] 	Loss: 1.563556	Accuracy: 0.250000
+Train Epoch: 0 [352/400 (85%)] 	Loss: 1.541883	Accuracy: 0.250000
+Train Epoch: 0 [192/400 (92%)] 	Loss: 1.557389	Accuracy: 0.187500
+
+Epoch: 0	Train Loss: 1.632059	Train Acc: 0.194712	Val Loss: 1.595898 	Val Acc: 0.304688	Time: 6.45s
+
+Model saved to C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\models\model_26059
+Train Epoch: 1 [0/400 (0%)] 	Loss: 1.616097	Accuracy: 0.156250
+Train Epoch: 1 [32/400 (8%)] 	Loss: 1.546735	Accuracy: 0.375000
+Train Epoch: 1 [64/400 (15%)] 	Loss: 1.583830	Accuracy: 0.156250
+Train Epoch: 1 [96/400 (23%)] 	Loss: 1.484691	Accuracy: 0.281250
+Train Epoch: 1 [128/400 (31%)] 	Loss: 1.503096	Accuracy: 0.343750
+Train Epoch: 1 [160/400 (38%)] 	Loss: 1.507149	Accuracy: 0.406250
+Train Epoch: 1 [192/400 (46%)] 	Loss: 1.513665	Accuracy: 0.312500
+Train Epoch: 1 [224/400 (54%)] 	Loss: 1.498008	Accuracy: 0.375000
+Train Epoch: 1 [256/400 (62%)] 	Loss: 1.456877	Accuracy: 0.406250
+Train Epoch: 1 [288/400 (69%)] 	Loss: 1.511878	Accuracy: 0.343750
+Train Epoch: 1 [320/400 (77%)] 	Loss: 1.483568	Accuracy: 0.468750
+Train Epoch: 1 [352/400 (85%)] 	Loss: 1.431482	Accuracy: 0.500000
+Train Epoch: 1 [192/400 (92%)] 	Loss: 1.499953	Accuracy: 0.312500
+
+Epoch: 1	Train Loss: 1.510541	Train Acc: 0.341346	Val Loss: 1.564995 	Val Acc: 0.406250	Time: 5.50s
+
+Model saved to C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\models\model_26059
+Train Epoch: 2 [0/400 (0%)] 	Loss: 1.425519	Accuracy: 0.468750
+Train Epoch: 2 [32/400 (8%)] 	Loss: 1.508618	Accuracy: 0.312500
+Train Epoch: 2 [64/400 (15%)] 	Loss: 1.419751	Accuracy: 0.531250
+Train Epoch: 2 [96/400 (23%)] 	Loss: 1.409334	Accuracy: 0.593750
+Train Epoch: 2 [128/400 (31%)] 	Loss: 1.417527	Accuracy: 0.437500
+Train Epoch: 2 [160/400 (38%)] 	Loss: 1.475084	Accuracy: 0.406250
+Train Epoch: 2 [192/400 (46%)] 	Loss: 1.362923	Accuracy: 0.562500
+Train Epoch: 2 [224/400 (54%)] 	Loss: 1.376595	Accuracy: 0.531250
+Train Epoch: 2 [256/400 (62%)] 	Loss: 1.448992	Accuracy: 0.406250
+Train Epoch: 2 [288/400 (69%)] 	Loss: 1.445548	Accuracy: 0.500000
+Train Epoch: 2 [320/400 (77%)] 	Loss: 1.358786	Accuracy: 0.562500
+Train Epoch: 2 [352/400 (85%)] 	Loss: 1.331472	Accuracy: 0.625000
+Train Epoch: 2 [192/400 (92%)] 	Loss: 1.385540	Accuracy: 0.625000
+
+Epoch: 2	Train Loss: 1.412745	Train Acc: 0.504808	Val Loss: 1.456032 	Val Acc: 0.390625	Time: 5.73s
+
+Train Epoch: 3 [0/400 (0%)] 	Loss: 1.345783	Accuracy: 0.687500
+Train Epoch: 3 [32/400 (8%)] 	Loss: 1.337588	Accuracy: 0.656250
+Train Epoch: 3 [64/400 (15%)] 	Loss: 1.348386	Accuracy: 0.625000
+Train Epoch: 3 [96/400 (23%)] 	Loss: 1.441500	Accuracy: 0.531250
+Train Epoch: 3 [128/400 (31%)] 	Loss: 1.404344	Accuracy: 0.375000
+Train Epoch: 3 [160/400 (38%)] 	Loss: 1.299108	Accuracy: 0.562500
+Train Epoch: 3 [192/400 (46%)] 	Loss: 1.391763	Accuracy: 0.562500
+Train Epoch: 3 [224/400 (54%)] 	Loss: 1.346874	Accuracy: 0.562500
+Train Epoch: 3 [256/400 (62%)] 	Loss: 1.349295	Accuracy: 0.593750
+Train Epoch: 3 [288/400 (69%)] 	Loss: 1.411489	Accuracy: 0.500000
+Train Epoch: 3 [320/400 (77%)] 	Loss: 1.391803	Accuracy: 0.687500
+Train Epoch: 3 [352/400 (85%)] 	Loss: 1.332341	Accuracy: 0.500000
+Train Epoch: 3 [192/400 (92%)] 	Loss: 1.350689	Accuracy: 0.437500
+
+Epoch: 3	Train Loss: 1.365459	Train Acc: 0.560096	Val Loss: 1.364640 	Val Acc: 0.562500	Time: 5.67s
+
+Model saved to C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\models\model_26059
+Train Epoch: 4 [0/400 (0%)] 	Loss: 1.318377	Accuracy: 0.531250
+Train Epoch: 4 [32/400 (8%)] 	Loss: 1.308812	Accuracy: 0.593750
+Train Epoch: 4 [64/400 (15%)] 	Loss: 1.295575	Accuracy: 0.687500
+Train Epoch: 4 [96/400 (23%)] 	Loss: 1.311316	Accuracy: 0.625000
+Train Epoch: 4 [128/400 (31%)] 	Loss: 1.375969	Accuracy: 0.531250
+Train Epoch: 4 [160/400 (38%)] 	Loss: 1.272059	Accuracy: 0.562500
+Train Epoch: 4 [192/400 (46%)] 	Loss: 1.320324	Accuracy: 0.562500
+Train Epoch: 4 [224/400 (54%)] 	Loss: 1.248401	Accuracy: 0.687500
+Train Epoch: 4 [256/400 (62%)] 	Loss: 1.327815	Accuracy: 0.656250
+Train Epoch: 4 [288/400 (69%)] 	Loss: 1.327490	Accuracy: 0.593750
+Train Epoch: 4 [320/400 (77%)] 	Loss: 1.249268	Accuracy: 0.656250
+Train Epoch: 4 [352/400 (85%)] 	Loss: 1.337518	Accuracy: 0.562500
+Train Epoch: 4 [192/400 (92%)] 	Loss: 1.258487	Accuracy: 0.562500
+
+Epoch: 4	Train Loss: 1.303955	Train Acc: 0.600962	Val Loss: 1.324777 	Val Acc: 0.601562	Time: 5.60s
+
+Model saved to C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\models\model_26059
+Total training time:  00:00:30
+
+Total number of parameters:  4911237 
+
+Average inference time:  0.21160336641164926 ms
+Final Validation Accuracy:  0.63
+Final prediction saved to C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\models\model_26059\final_prediction.png
