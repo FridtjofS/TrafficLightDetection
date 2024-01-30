@@ -50,18 +50,161 @@ class StateDetectionDataset(Dataset):
         self.data, self.label = self.load_data()
 
         if train:
-            print2way(logf, "Original Distribution: ")
+            print2way(logf, "\nOriginal Distribution: ")
             for i in range(self.num_classes):
                 print2way(logf, self.label_names[i], self.label.count(i))
             print2way(logf, "\n ")
 
         max_keep = args.max_keep
+        # Split the data into training and validation sets
+        if max_keep is not None:
+            # shorten or bootstrap the data per class, and split the data
+            self.data, self.label, self.val_data, self.val_label = self.keep_max_samples(max_keep, train, logf, train_ratio=0.8)
+        else:
+            # split the data without changing the number of samples per class
+            self.data, self.label, self.val_data, self.val_label = self.split_data(self.data, self.label, train_ratio=0.8)
+
+        # Set the data and label for training or validation
+        if train:
+            self.data = self.data
+            self.label = self.label
+        else:
+            self.data = self.val_data
+            self.label = self.val_label
+
+    def keep_max_samples(self, max_keep, train, logf, train_ratio=0.8):
+        '''
+
+        Args:
+            max_keep (int): maximum number of samples to keep per class
+            train (bool): whether to keep samples for training or validation
+            logf (file): log file
+
+        Returns:
+            None
+        '''
         # only keep min_num_samples number of samples per class to even out hte dataset
         # first, group the data and label by label
         data_grouped_by_label = [[] for i in range(self.num_classes)]
         for i in range(len(self.data)):
             data_grouped_by_label[self.label[i]].append(self.data[i])
         
+    
+        data_train = [[] for i in range(self.num_classes)]
+        label_train = [[] for i in range(self.num_classes)]
+        data_val = [[] for i in range(self.num_classes)]
+        label_val = [[] for i in range(self.num_classes)]
+
+        for i in range(self.num_classes):
+            # split the data into train and validation sets
+            data_train[i], label_train[i], data_val[i], label_val[i] = self.split_data(data_grouped_by_label[i], [i]*len(data_grouped_by_label[i]), train_ratio=train_ratio)
+        
+        if train:
+            print2way(logf, "Distribution BEFORE keeping max_keep samples per class: ")
+            print("\nTrain set: ") 
+            for i in range(self.num_classes):
+                print2way(logf, self.label_names[i], len(label_train[i]))
+            print("\nValidation set: ")
+            for i in range(self.num_classes):
+                print2way(logf, self.label_names[i], len(label_val[i]))
+            print2way(logf, "\n ")
+        
+        # bootstrap the data in the train set (and in the validation set if needed)
+        max_keep_train = int(max_keep * train_ratio)
+        max_keep_val = int(0.2 * max_keep)
+        for i in range(self.num_classes):
+            if len(data_train[i]) == 0 or len(data_train[i]) == max_keep_train:
+                continue
+            elif len(data_train[i]) < max_keep_train:
+                # randomly choose samples with replacement
+                data = random.choices(list(data_train[i]), k=max_keep_train)
+                label = [i] * max_keep_train
+            elif len(data_train[i]) > max_keep_train:
+                # randomly choose max_keep samples
+                data = random.sample(list(data_train[i]), max_keep_train)
+                label = [i] * max_keep_train
+            data_train[i] = np.array(data)
+            label_train[i] = np.array(label)
+
+            if len(data_val[i]) == 0 or len(data_val[i]) == max_keep_val:
+                continue
+            elif len(data_val[i]) < max_keep_val:
+                # randomly choose samples with replacement
+                data = random.choices(list(data_val[i]), k=max_keep_val)
+                label = [i] * max_keep_val
+            elif len(data_val[i]) > max_keep_val:
+                # randomly choose max_keep samples
+                data = random.sample(list(data_val[i]), max_keep_val)
+                label = [i] * max_keep_val
+            data_val[i] = np.array(data)
+            label_val[i] = np.array(label)
+
+
+        # convert list to numpy array
+        data = np.concatenate(data_train, axis=0)
+        label = np.concatenate(label_train, axis=0)
+        val_data = np.concatenate(data_val, axis=0)
+        val_label = np.concatenate(label_val, axis=0)
+
+        # re-shuffle the data and label
+        new_order = list(range(len(data)))
+        random.seed(self.random_seed)
+        random.shuffle(new_order)
+        data = data[new_order]
+        label = label[new_order]
+
+        new_order = list(range(len(val_data)))
+        random.seed(self.random_seed)
+        random.shuffle(new_order)
+        val_data = val_data[new_order]
+        val_label = val_label[new_order]
+
+
+        if train:
+            print2way(logf, "Distribution AFTER keeping max_keep samples per class: ")
+            print("\nTrain set: ") 
+            for i in range(self.num_classes):
+                print2way(logf, self.label_names[i], len(label_train[i]))
+            print("\nValidation set: ")
+            for i in range(self.num_classes):
+                print2way(logf, self.label_names[i], len(label_val[i]))
+            print2way(logf, "\n ")
+
+        return data, label, val_data, val_label
+    
+    def bootstrap_data(self, data, label, max_keep, train, logf):
+        '''
+        Bootstrap the data to have max_keep 
+
+        Args:   
+            data (list): List of sample images.
+            label (list): List of sample labels.
+            max_keep (int): Maximum number of samples to keep 
+            train (bool): Whether to keep samples for training or validation.
+            logf (file): Log file.
+
+        Returns:
+            data (list): List of sample images.
+            label (list): List of sample labels.
+
+        '''
+
+        if len(data) == 0:
+            return data, label
+        elif len(data) < max_keep:
+            # randomly choose samples with replacement
+            data = random.choices(list(data), k=max_keep)
+            label = [label[0]] * max_keep
+            return data, label
+        elif len(data) == max_keep:
+            return data, label
+        elif len(data) > max_keep:
+            # randomly choose max_keep samples
+            data = random.sample(list(data), max_keep)
+            label = [label[0]] * max_keep
+            return data, label
+        
+    def bootstrap_data_old(self, data, label, max_keep, train, logf):
 
         self.data = []
         self.label = []
@@ -87,19 +230,6 @@ class StateDetectionDataset(Dataset):
             for i in range(self.num_classes):
                 print2way(logf, self.label_names[i], self.label.count(i))
             print2way(logf, "\n ")
-
-        
-
-        # Split the data into training and validation sets
-        self.data, self.label, self.val_data, self.val_label = self.split_data(self.data, self.label, train_ratio=0.8)
-
-        # Set the data and label for training or validation
-        if train:
-            self.data = self.data
-            self.label = self.label
-        else:
-            self.data = self.val_data
-            self.label = self.val_label
 
     def split_data(self, data, label, train_ratio):
         '''
@@ -138,8 +268,17 @@ class StateDetectionDataset(Dataset):
         val_label = label[num_train:]
 
         # convert list to numpy array
-        train_data = np.array(train_data)
-        val_data = np.array(val_data)
+        #train_data = np.array(train_data)
+        #val_data = np.array(val_data)
+        train_data_arr = np.zeros((len(train_data), self.input_size[0], self.input_size[1], 3))
+        val_data_arr = np.zeros((len(val_data), self.input_size[0], self.input_size[1], 3))
+        for i in range(len(train_data)):
+            train_data_arr[i] = train_data[i]
+        for i in range(len(val_data)):
+            val_data_arr[i] = val_data[i]
+
+        train_data = train_data_arr
+        val_data = val_data_arr
 
         return train_data, train_label, val_data, val_label
     

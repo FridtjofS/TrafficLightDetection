@@ -225,7 +225,7 @@ def train(args, logf):
             # Print training status
             if batch_idx % args.log_interval == 0:
                 print2way(logf, 
-                    f"Train Epoch: {epoch} [{batch_idx * len(data)}/{len(train_loader.dataset)} ({100.0 * batch_idx / len(train_loader):.0f}%)]",
+                    f"Train Epoch: {epoch} [{batch_idx * args.batch_size}/{len(train_loader.dataset)} ({100.0 * batch_idx / len(train_loader):.0f}%)]",
                     f"\tLoss: {loss:.6f}\tAccuracy: {acc:.6f}"
                 )
         
@@ -281,9 +281,9 @@ def train(args, logf):
     print2way(logf, "Total training time: ", strftime("%H:%M:%S", time.gmtime(time.time() - start_time)))
     
     # plot final prediction on validation set
-    plot_final_prediction(args, logf)
+    plot_final_prediction(args, val_loader, val_dataset, logf)
 
-def plot_final_prediction(args, logf):
+def plot_final_prediction(args, val_loader, val_dataset, logf):
     """
     Plot final prediction on validation set
 
@@ -322,21 +322,21 @@ def plot_final_prediction(args, logf):
     model.eval()
 
     # Load dataset
-    val_dataset = StateDetectionDataset(train=False, transform=transforms.Compose([
-        #transforms.Resize((224, 224)),
-        transforms.ToTensor(),
-        transforms.Normalize((0.1307,), (0.3081,)),
-    ]), args=args)
+    #val_dataset = StateDetectionDataset(train=False, transform=transforms.Compose([
+    #    #transforms.Resize((224, 224)),
+    #    transforms.ToTensor(),
+    #    transforms.Normalize((0.1307,), (0.3081,)),
+    #]), args=args)
     
     label_names = val_dataset.label_names
 
     # Create data loader
-    val_loader = DataLoader(
-        val_dataset,
-        batch_size=8,
-        shuffle=False,
-        num_workers=1,
-    )
+    #val_loader = DataLoader(
+    #    val_dataset,
+    #    batch_size=args.batch_size,
+    #    shuffle=False,
+    #    num_workers=1,
+    #)
 
     confusion_matrix = np.zeros((args.num_classes, args.num_classes))
     val_acc = 0
@@ -366,7 +366,7 @@ def plot_final_prediction(args, logf):
             # only plot the last batch
             if  batch_idx == len(val_loader) - 1:
                 val_acc = correct / len(val_dataset)
-
+                print("last batch, size", len(data))
                 # Plot final prediction
                 fig, ax = plt.subplots(2,4)
                 for i in range(8):
