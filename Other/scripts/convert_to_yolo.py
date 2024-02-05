@@ -3,6 +3,7 @@ import json
 import re
 import argparse
 import shutil
+import cv2
 
 def json_to_yolo(json_data, image_width, image_height, image_id, default_class=0):
     yolo_lines = []
@@ -13,7 +14,7 @@ def json_to_yolo(json_data, image_width, image_height, image_id, default_class=0
         width = (value["x2"] - value["x1"]) / image_width
         height = (value["y2"] - value["y1"]) / image_height
 
-        yolo_line = f"{default_class} {x_center:.6f} {y_center:.6f} {width:.6f} {height:.6f} {image_id}"
+        yolo_line = f"{default_class} {x_center:.6f} {y_center:.6f} {width:.6f} {height:.6f}"
         yolo_lines.append(yolo_line)
 
     return yolo_lines
@@ -51,8 +52,10 @@ def process_annotations(input_folder, output_folder):
                 json_data = json.load(file)
 
             # Get image dimensions
-            with open(image_file_path, 'rb') as img_file:
-                img_width, img_height = get_image_dimensions(img_file)
+            img = cv2.imread(image_file_path)
+            
+            # with open(image_file_path, 'rb') as img_file:
+            img_width, img_height = get_image_dimensions(img)
 
             yolo_lines = json_to_yolo(json_data, img_width, img_height, image_id)
 
@@ -63,7 +66,7 @@ def get_image_dimensions(img_file):
     # Implement image dimension extraction logic here
     # For simplicity, let's assume the image dimensions are known
     # In practice, you may want to use a library like PIL or OpenCV to obtain the dimensions
-    img_width, img_height = 1024, 768
+    img_height, img_width, _ = img_file.shape
     return img_width, img_height
 
 if __name__ == "__main__":

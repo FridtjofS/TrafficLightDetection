@@ -22,7 +22,7 @@ import glob
 import numpy as np
 import random
 
-ROOT_DIR = '/Users/jakobsnel/Development/MLMaster/ComputerVision Praktikum/TrafficLightDetection/Other/dataset'
+ROOT_DIR = '/Users/jakobsnel/Development/MLMaster/ComputerVisionPraktikum/TrafficLightDetection/Other/dataset'
 train_imgs_dir = 'images/train'
 train_labels_dir = 'labels/train'
 val_imgs_dir = 'images/val'
@@ -43,9 +43,9 @@ dataset_params = {
 }
 
 # Global parameters.
-EPOCHS = 50
-BATCH_SIZE = 16
-WORKERS = 8
+EPOCHS = 5
+BATCH_SIZE = 2
+WORKERS = 1
 
 colors = np.random.uniform(0, 255, size=(len(classes), 3))
 
@@ -139,7 +139,7 @@ def plot(image_path, label_path, num_samples):
             labels = []
             label_lines = f.readlines()
             for label_line in label_lines:
-                label, x_c, y_c, w, h, id = label_line.split(' ')
+                label, x_c, y_c, w, h = label_line.split(' ')
                 x_c = float(x_c)
                 y_c = float(y_c)
                 w = float(w)
@@ -192,7 +192,7 @@ train_data.dataset.transforms
 train_data.dataset.transforms[0]
 
 train_data.dataset.transforms.pop(2)
-train_data.dataset.plot(plot_transformed_data=True)
+#train_data.dataset.plot(plot_transformed_data=True)
 
 train_params = {
     'silent_mode': False,
