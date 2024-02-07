@@ -1,0 +1,7 @@
+path: //Users/jakobsnel/Development/MLMaster/ComputerVision Praktikum/TrafficLightDetection/Other/dataset
+train: //Users/jakobsnel/Development/MLMaster/ComputerVision Praktikum/TrafficLightDetection/Other/dataset/images/train
+val: //Users/jakobsnel/Development/MLMaster/ComputerVision Praktikum/TrafficLightDetection/Other/dataset/images/val
+test: //Users/jakobsnel/Development/MLMaster/ComputerVision Praktikum/TrafficLightDetection/Other/dataset/images/test
+names:
+  0: Traffic Light
+nc: 1
