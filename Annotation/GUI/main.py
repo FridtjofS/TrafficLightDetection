@@ -353,26 +353,48 @@ class MainWindow(QWidget):
         
         input_path = self.settings_window.input_folder.text()
         od_output_path = self.settings_window.od_output_folder.text()
+        sd_output_path = self.settings_window.sd_output_folder.text()
 
-        path = os.path.join(od_output_path, os.path.basename(self.undo_stack.pop()))
+        base = os.path.basename(self.undo_stack.pop())
+
+        path = os.path.join(od_output_path, "images", base)
 
         # copy image into IMAGE_DIR
         shutil.copy(path, input_path)
+        self.load_image(path)
 
-        # get json data and set as self.annotated
-        with open(os.path.join(od_output_path, Path(path).stem + ".json" ), 'r') as f:
-            json_data = json.load(f)
-            self.annotated = []
-            for key in json_data:
-                resolution = self.settings_window.output_size.currentText()
-                res_x = int(resolution.split("x")[0])
-                res_y = int(resolution.split("x")[1])
-                self.annotated.append(self.translate_coordinates(res_x, res_y, json_data[key], True))
+        # delete txt file with the same name as the image in od_output_path + annotations
+        if os.path.exists(os.path.join(od_output_path, "annotations", Path(path).stem + ".txt")):
+            # read in the txt file and count the number of annotations
+            with open(os.path.join(od_output_path, "annotations", Path(path).stem + ".txt"), "r") as f:
+                for line in f:
+                    # translate yolo format to json format
+                    line = line.split(" ")
+                    x = float(line[1]) * self.label.pixmap().width()
+                    y = float(line[2]) * self.label.pixmap().height()
+                    width = float(line[3]) * self.label.pixmap().width()
+                    height = float(line[4]) * self.label.pixmap().height()
+                    self.annotated.append({
+                        'x1': int(x - width / 2),
+                        'y1': int(y - height / 2),
+                        'x2': int(x + width / 2),
+                        'y2': int(y + height / 2),
+                        'state': 5
+                    })
+            os.remove(os.path.join(od_output_path, "annotations", Path(path).stem + ".txt"))
+
+        # get all json files with same basename + "_i" in sd_output_path
+        for i in range(len(self.annotated)):
+            tf_path = os.path.join(sd_output_path, Path(path).stem + "_" + str(i) + ".json")
+            if os.path.exists(tf_path):
+                with open(tf_path, "r") as f:
+                    data = json.load(f)
+                    self.annotated[i]['state'] = data['state']
+                os.remove(tf_path)
 
         self.update_stats(True)
 
         # load image into GUI
-        self.load_image(path)
         self.update_annotation_window()
         self.update_bounding_box()
 
@@ -381,8 +403,8 @@ class MainWindow(QWidget):
             os.remove(path)
 
         # delete the json file with the same name as the image
-        if os.path.exists(os.path.join(od_output_path, Path(path).stem + ".json")):
-            os.remove(os.path.join(od_output_path, Path(path).stem + ".json"))
+        #if os.path.exists(os.path.join(od_output_path, Path(path).stem + ".json")):
+        #    os.remove(os.path.join(od_output_path, Path(path).stem + ".json"))
 
         # delete cropped traffic lights
         for i in range(len(self.annotated)):
@@ -782,18 +804,25 @@ class MainWindow(QWidget):
             self.settings_error("The SD-output directory you selected does not exist,\nplease select a different directory")
 
         # save image in "od_output_path" directory
-        shutil.copy(path, os.path.join(od_output_path, os.path.basename(path)))
+        shutil.copy(path, os.path.join(od_output_path, os.path.join("images", os.path.basename(path))))
 
-        # save bounding box coordinates and traffic light state in json file with same name as image
-        json_data = {}
+        res_x = self.label.pixmap().width()
+        res_y = self.label.pixmap().height()
+
+        # translate json data to yolo format
+        yolo_data = []
         for i in range(len(self.annotated)):
-            resolution = self.settings_window.output_size.currentText()
-            res_x = int(resolution.split("x")[0])
-            res_y = int(resolution.split("x")[1])
-            json_data['traffic_light_' + str(i)] = self.translate_coordinates(res_x, res_y, self.annotated[i])
+            bbox = self.annotated[i]
+            x = (bbox['x1'] + bbox['x2']) / (2 * res_x)
+            y = (bbox['y1'] + bbox['y2']) / (2 * res_y)
+            width = (bbox['x2'] - bbox['x1']) / res_x
+            height = (bbox['y2'] - bbox['y1']) / res_y
+            yolo_data.append([x, y, width, height])
 
-        with open(os.path.join(od_output_path, Path(path).stem + ".json" ), 'w') as f:
-            json.dump(json_data, f)
+        # save yolo data in txt file
+        with open(os.path.join(od_output_path, os.path.join("annotations" , Path(path).stem + ".txt" )), 'w') as f:
+            for item in yolo_data:
+                f.write("0 " + " ".join([str(x) for x in item]) + "\n")
 
         # save cropped traffic lights in "sd_output_path" directory
         self.save_cropped_traffic_lights(sd_output_path, path)
