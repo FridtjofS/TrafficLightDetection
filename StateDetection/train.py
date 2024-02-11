@@ -273,7 +273,8 @@ def train(args, logf):
         # Save model if validation accuracy is greater than best validation accuracy
         if val_acc > best_val_acc:
             best_val_acc = val_acc
-            torch.save(model.state_dict(), os.path.join(args.save_model_dir, "model.pt"))
+            # save independently of the device  (https://pytorch.org/tutorials/beginner/saving_loading_models.html)
+            torch.save(model.state_dict(), os.path.join(args.save_model_dir, "model.pth"))
             args.load_model_dir = args.save_model_dir
             print2way(logf, "Model saved to %s" % args.save_model_dir)
 
@@ -612,37 +613,6 @@ def main():
 if __name__ == "__main__":
     main()
 
-
-
-# ResNet18: 
-#    layers=[2, 2, 2, 2],
-#    out_channels=[64, 128, 256, 512],
-#    blocktype='simple',
-    
-# ResNet34:
-#    layers=[3, 4, 6, 3],
-#    out_channels=[64, 128, 256, 512],
-#    blocktype='simple',
-    
-# ResNet50:
-#    layers=[3, 4, 6, 3],
-#    out_channels=[64, 128, 256, 512],
-#    blocktype='bottleneck',
-    
-# ResNet101:
-#    layers=[3, 4, 23, 3],
-#    out_channels=[64, 128, 256, 512],
-#    blocktype='bottleneck',
-    
-# ResNet152:
-#    layers=[3, 8, 36, 3],
-#    out_channels=[64, 128, 256, 512],
-    
-# ResNet200:
-#    layers=[3, 24, 36, 3],
-#    out_channels=[64, 128, 256, 512],
-#    blocktype='bottleneck',
-    
 
 # good for overfitting:
 # python train.py --predefined_model "resnet18" --data_dir "TrafficLight" --batch_size 16 --lr 0.005 --num_epochs 2  

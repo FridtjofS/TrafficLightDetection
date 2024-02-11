@@ -147,6 +147,7 @@ class ResNet(nn.Module):
         blocktype='bottleneck',
         logf=None,
         args=None,
+        device='cpu',
     ):
         """
         Define the layers of the ResNet model.
@@ -169,7 +170,7 @@ class ResNet(nn.Module):
         super(ResNet, self).__init__()
         self.logf = logf
         self.args = args
-        self.device = args.device
+        self.device = args.device if args else device
         in_channels = 64 
         self.conv1 = nn.Sequential(
             nn.Conv2d(channel_size, 64, kernel_size=7, stride=2, padding=3),
@@ -192,7 +193,9 @@ class ResNet(nn.Module):
         self.fc = nn.Linear(out_channels[3] * self.expansion, num_classes) # size: 1 x 1 x num_classes
         self.to(self.device)
         
-        print2way(logf, "\nTotal number of parameters: ", sum(p.numel() for p in self.parameters() if p.requires_grad), "\n")
+        if logf:
+            print2way(logf, "\nTotal number of parameters: ", sum(p.numel() for p in self.parameters() if p.requires_grad), "\n")
+        
 
     def _make_layer(self, block, in_channels, out_channels, layers, stride=1):
         """
