@@ -68,18 +68,16 @@ class TrafficLightStatePredictor:
  
 
 if __name__ == "__main__":
+
     ### Example usage
 
     import matplotlib.pyplot as plt
     from PIL import Image
 
 
-    # load example images
-    img1 = "sd_train_data\Berlin_102_2.jpg"
-    img2 = "sd_train_data\Berlin_220_1.jpg"
-    img3 = "sd_train_data\Fulda_99_1.jpg"
-
-    imgs = [img1, img2, img3]
+    # choosing 3 random images from "sd_train_data" folder 
+    filtered_list = [os.path.join("sd_train_data", f) for f in os.listdir('sd_train_data') if f.endswith('.jpg')]
+    imgs = random.sample(filtered_list, 3)
 
     # load images
     imgs = [Image.open(img) for img in imgs]
@@ -95,13 +93,15 @@ if __name__ == "__main__":
         except:
             device = torch.device("cpu")
 
+    ########################## THIS IS THE MAIN PART ###############################
     # predict
     predictor = TrafficLightStatePredictor(os.path.join('models', 'model_51107', 'model.pth'), device=device)
     pred_states, pred_probs, pred_idxs = predictor.predict(imgs)
+    ################################################################################
     
     print(f'Predicted State: \n{pred_states}\n') # shape (3,)
     print(f'Probability: \n{pred_probs}\n') # shape (3, 5)
-    print(f'Predicted index: \n{pred_idxs}\n') # shape (3,)
+    print(f'Predicted index: \n{pred_idxs}\n') 
 
     # plot images
     fig, ax = plt.subplots(1, 3) 
