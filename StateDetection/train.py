@@ -217,7 +217,7 @@ def train(args, logf):
 
         # Loop over each batch from the training set
         for batch_idx, (data, target) in enumerate(train_loader):
-            data, target = data.to(device), target.to(device)
+            data, target = data.to(device), target.to(device).long()
             optimizer.zero_grad()
             output = model(data)
             loss = criterion(output, target)
@@ -247,7 +247,7 @@ def train(args, logf):
         # Disable gradient calculation
         with torch.no_grad():
             for data, target in val_loader:
-                data, target = data.to(device), target.to(device)
+                data, target = data.to(device), target.to(device).long()
                 output = model(data)
                 loss = criterion(output, target)
                 val_loss += loss.item()
@@ -327,7 +327,7 @@ def plot_final_prediction(args, val_loader, val_dataset, logf):
         args=args,
 
     )
-    model.load_state_dict(torch.load(os.path.join(args.load_model_dir, "model.pt")))
+    model.load_state_dict(torch.load(os.path.join(args.load_model_dir, "model.pth")))
 
     model.to(device)
     model.eval()
@@ -358,7 +358,7 @@ def plot_final_prediction(args, val_loader, val_dataset, logf):
     
         # Loop over each batch from the validation set
         for batch_idx, (data, target) in enumerate(val_loader):
-            data, target = data.to(device), target.to(device)
+            data, target = data.to(device), target.to(device).long()
             # measure time for inference (in milliseconds)
             epoch_start_time = time.time()
             output = model(data)
@@ -492,7 +492,7 @@ def test(args, logf):
         # Loop over each batch from the test set
         for data, target in test_loader:
             # Move data and target to device
-            data, target = data.to(device), target.to(device)
+            data, target = data.to(device), target.to(device).long()
             output = model(data)
 
             loss = criterion(output, target)
@@ -553,9 +553,9 @@ def main():
     parser.add_argument("--data_dir", type=str, default="TrafficLight", help="Training data directory")
     parser.add_argument("--resnet_layers", type=list, default=[1,1,1,1], help="Number of layers in each block")
     parser.add_argument("--resnet_output_channels", type=list, default=[64, 128, 256, 512], help="Number of output channels in each layer")
-    parser.add_argument("--resnet_block", type=str, default="bottleneck", help="Type of block")
+    parser.add_argument("--resnet_block", type=str, default="simple", help="Type of block")
     parser.add_argument("--batch_size", type=int, default=32, help="Batch size")
-    parser.add_argument("--num_epochs", type=int, default=5, help="Number of epochs")
+    parser.add_argument("--num_epochs", type=int, default=30, help="Number of epochs")
     parser.add_argument("--lr", type=float, default=1e-3, help="Learning rate")
     parser.add_argument("--num_workers", type=int, default=1, help="Number of workers")
     parser.add_argument("--log_interval", type=int, default=1, help="Logging interval")
@@ -565,7 +565,7 @@ def main():
     parser.add_argument("--num_classes", type=int, default=10, help="Number of classes")
     parser.add_argument("--channel_size", type=int, default=3, help="Number of channels")
     parser.add_argument("--predefined_model", type=str, default=None, help="Predefined model")
-    parser.add_argument("--max_keep", type=int, default=None, help="Maximum number of samples per class")
+    parser.add_argument("--max_keep", type=int, default=300, help="Maximum number of samples per class")
 
     args = parser.parse_args()
 

@@ -96,12 +96,12 @@ if __name__ == "__main__":
             device = torch.device("cpu")
 
     # predict
-    predictor = TrafficLightStatePredictor('models\_baseline4\model.pt', device=device)
-    names, probs, predicted = predictor.predict(imgs)
+    predictor = TrafficLightStatePredictor(os.path.join('models', 'model_51107', 'model.pth'), device=device)
+    pred_states, pred_probs, pred_idxs = predictor.predict(imgs)
     
-    print(f'Predicted: \n{names}\n')
-    print(f'Probability: \n{probs}\n')
-    print(f'Predicted index: \n{predicted}\n')
+    print(f'Predicted State: \n{pred_states}\n') # shape (3,)
+    print(f'Probability: \n{pred_probs}\n') # shape (3, 5)
+    print(f'Predicted index: \n{pred_idxs}\n') # shape (3,)
 
     # plot images
     fig, ax = plt.subplots(1, 3) 
@@ -111,8 +111,20 @@ if __name__ == "__main__":
 
     for i in range(3):
         ax[i].imshow(imgs[i])
-        ax[i].set_title(f'Prediction:\n{probs[i][predicted[i]]*100:0.2f}% {names[i]}')
+        ax[i].set_title(f'Prediction:\n{pred_probs[i][pred_idxs[i]]*100:0.2f}% {pred_states[i]}')
         ax[i].axis('off')
     plt.show()
 
 
+# prints something like:
+#     
+# Predicted State: 
+# ['red_yellow', 'red', 'green']
+# 
+# Probability:
+# [[7.3754409e-04 4.3039691e-02 9.3485707e-01 2.0665282e-02 7.0042029e-04]
+#  [1.2054642e-03 9.7605747e-01 1.8882029e-02 1.9762770e-03 1.8787937e-03]
+#  [1.8353603e-03 1.5284615e-02 6.3486211e-04 3.1636301e-03 9.7908151e-01]]
+# 
+# Predicted index:
+# [2 1 4]
