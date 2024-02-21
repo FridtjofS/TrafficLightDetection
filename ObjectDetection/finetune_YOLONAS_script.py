@@ -11,6 +11,10 @@ from super_gradients.training.metrics import (
     DetectionMetrics_050,
     DetectionMetrics_050_095
 )
+import torchvision.transforms as transforms
+import torch
+from PIL import Image
+
 from super_gradients.training.models.detection_models.pp_yolo_e import PPYoloEPostPredictionCallback
 from tqdm.auto import tqdm
  
@@ -35,34 +39,13 @@ MODELS = [
     
 # CHECKPOINT_DIR = 'checkpoints'
 
-
-def train_model(dataset_folder, save_weights):
-    train_imgs_dir = 'images/train'
-    train_labels_dir = 'labels/train'
-    val_imgs_dir = 'images/val'
-    val_labels_dir = 'labels/val'
-    test_imgs_dir = 'images/test'
-    test_labels_dir = 'labels/test'
-
-
-    dataset_params = {
-        'data_dir':dataset_folder,
-        'train_images_dir':train_imgs_dir,
-        'train_labels_dir':train_labels_dir,
-        'val_images_dir':val_imgs_dir,
-        'val_labels_dir':val_labels_dir,
-        'test_images_dir':test_imgs_dir,
-        'test_labels_dir':test_labels_dir,
-        'classes':CLASSES 
-    }
-
-    # Function to convert bounding boxes in YOLO format to xmin, ymin, xmax, ymax.
-    def yolo2bbox(bboxes):
+# Function to convert bounding boxes in YOLO format to xmin, ymin, xmax, ymax.
+def yolo2bbox(bboxes):
         xmin, ymin = bboxes[0]-bboxes[2]/2, bboxes[1]-bboxes[3]/2
         xmax, ymax = bboxes[0]+bboxes[2]/2, bboxes[1]+bboxes[3]/2
         return xmin, ymin, xmax, ymax
 
-    def plot_box(image, bboxes, labels):
+def plot_box(image, bboxes, labels):
         # Need the image height and width to denormalize bounding box coordinates
         height, width, _ = image.shape
         lw = max(round(sum(image.shape) / 2 * 0.003), 2)  # Line width.
@@ -120,7 +103,7 @@ def train_model(dataset_folder, save_weights):
         return image
 
     # Function to plot images with the bounding boxes.
-    def plot(image_path, label_path, num_samples, dataset_folder):
+def plot(image_path, label_path, num_samples, dataset_folder):
         all_training_images = glob.glob(image_path+'/*')
         all_training_labels = glob.glob(label_path+'/*')
         all_training_images.sort()
@@ -158,14 +141,35 @@ def train_model(dataset_folder, save_weights):
             plt.axis('off')
         plt.tight_layout()
         plt.show()
+        
+def train_model(dataset_folder, save_weights):
+    
+    train_imgs_dir = 'images/train'
+    train_labels_dir = 'labels/train'
+    val_imgs_dir = 'images/val'
+    val_labels_dir = 'labels/val'
+    test_imgs_dir = 'images/test'
+    test_labels_dir = 'labels/test'
+
+
+    dataset_params = {
+        'data_dir':dataset_folder,
+        'train_images_dir':train_imgs_dir,
+        'train_labels_dir':train_labels_dir,
+        'val_images_dir':val_imgs_dir,
+        'val_labels_dir':val_labels_dir,
+        'test_images_dir':test_imgs_dir,
+        'test_labels_dir':test_labels_dir,
+        'classes':CLASSES 
+    }
 
     # Visualize a few training images.
-    plot(
-        image_path=os.path.join(dataset_folder, train_imgs_dir), 
-        label_path=os.path.join(dataset_folder, train_labels_dir),
-        num_samples=4,
-        dataset_folder = dataset_folder
-    )
+    # plot(
+    #     image_path=os.path.join(dataset_folder, train_imgs_dir), 
+    #     label_path=os.path.join(dataset_folder, train_labels_dir),
+    #     num_samples=4,
+    #     dataset_folder = dataset_folder
+    # )
 
     train_data = coco_detection_yolo_format_train(
         dataset_params={
@@ -252,9 +256,7 @@ def train_model(dataset_folder, save_weights):
 
     #Model Training
 
-    import torchvision.transforms as transforms
-    import torch
-    from PIL import Image
+
 
     transform = transforms.Compose([
         transforms.Resize((224, 224)),  # Resize to match model's input size
@@ -320,7 +322,6 @@ def train_model(dataset_folder, save_weights):
 
         return predictions
 
-    import cv2
 
     def save_prediction_image(images, pred_output, target, save_dir):
         # Print the keys of the pred_output dictionary

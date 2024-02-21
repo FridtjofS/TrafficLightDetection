@@ -1,3 +1,4 @@
+import argparse
 from super_gradients.training import Trainer
 from super_gradients.training import dataloaders
 from super_gradients.training.dataloaders.dataloaders import (
@@ -14,15 +15,14 @@ from super_gradients.training.models.detection_models.pp_yolo_e import PPYoloEPo
 from tqdm.auto import tqdm
  
 import os
-import requests
-import zipfile
 import cv2
 import matplotlib.pyplot as plt
 import glob
 import numpy as np
 import random
 
-ROOT_DIR = '/Users/jakobsnel/Development/MLMaster/ComputerVisionPraktikum/TrafficLightDetection/Other/dataset'
+
+ROOT_DIR = '/home/jakob/uni/TrafficLightDetection/ObjectDetection/od_train_data/dataset'
 train_imgs_dir = 'images/train'
 train_labels_dir = 'labels/train'
 val_imgs_dir = 'images/val'
@@ -43,7 +43,7 @@ dataset_params = {
 }
 
 # Global parameters.
-EPOCHS = 5
+EPOCHS = 14
 BATCH_SIZE = 2
 WORKERS = 1
 
@@ -119,7 +119,6 @@ def plot(image_path, label_path, num_samples):
     all_training_labels = glob.glob(label_path+'/*')
     all_training_images.sort()
     all_training_labels.sort()
-    
     temp = list(zip(all_training_images, all_training_labels))
     random.shuffle(temp)
     all_training_images, all_training_labels = zip(*temp)
@@ -154,11 +153,11 @@ def plot(image_path, label_path, num_samples):
     plt.show()
     
 # Visualize a few training images.
-plot(
-    image_path=os.path.join(ROOT_DIR, train_imgs_dir), 
-    label_path=os.path.join(ROOT_DIR, train_labels_dir),
-    num_samples=4,
-)
+# plot(
+#     image_path=os.path.join(ROOT_DIR, train_imgs_dir), 
+#     label_path=os.path.join(ROOT_DIR, train_labels_dir),
+#     num_samples=4,
+# )
 
 train_data = coco_detection_yolo_format_train(
     dataset_params={
@@ -246,14 +245,24 @@ train_params = {
 
 
 models_to_train = [
-    'yolo_nas_s'#,
+    #'yolo_nas_s'#,
     #'yolo_nas_m',
-    #'yolo_nas_l'
+    'yolo_nas_l'
 ]
  
 CHECKPOINT_DIR = 'checkpoints'
 
 #Model Training
+
+import torchvision.transforms as transforms
+import torch
+from PIL import Image
+
+transform = transforms.Compose([
+    transforms.Resize((224, 224)),  # Resize to match model's input size
+    transforms.ToTensor(),           # Convert PIL Image to tensor
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),  # Normalize
+])
  
 for model_to_train in models_to_train:
     trainer = Trainer(
@@ -273,3 +282,101 @@ for model_to_train in models_to_train:
         train_loader=train_data, 
         valid_loader=val_data
     )
+    
+model.eval()
+
+import torch
+from tqdm import tqdm
+
+def evaluate_detection(model, dataloader, save_dir=None, num_samples=5):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.to(device)
+    model.eval()
+
+    predictions = []
+
+    with torch.no_grad():
+        for images, targets in tqdm(dataloader):
+            images = images.to(device)
+
+            outputs = model(images)
+
+            for output, target in zip(outputs, targets):
+                if isinstance(output, tuple):
+                    output = output[0]  # Assuming the first element of the tuple is the predictions
+
+                pred_boxes = output[:, :4]  # Extract bounding boxes
+                pred_scores = output[:, 4]   # Extract confidence scores
+
+                # Convert predictions to numpy arrays
+                pred_boxes = pred_boxes.cpu().numpy()
+                pred_scores = pred_scores.cpu().numpy()
+
+                # Combine boxes and scores
+                pred_output = {"boxes": pred_boxes, "scores": pred_scores}
+                predictions.append(pred_output)
+
+                # Save sample output
+                if save_dir and len(predictions) <= num_samples:
+                    save_prediction_image(images, pred_output, target, save_dir)
+
+    return predictions
+
+import cv2
+
+def save_prediction_image(images, pred_output, target, save_dir):
+    # Print the keys of the pred_output dictionary
+    print("Keys of pred_output dictionary:", pred_output.keys())
+
+    # Convert image tensor to numpy array
+    images = images.cpu().numpy()
+
+    # Iterate over each image in the batch
+    for i, image in enumerate(images):
+        # Check if the pred_output contains the expected keys
+        if i in pred_output:
+            pred_boxes = pred_output[i]["boxes"]
+            pred_scores = pred_output[i]["scores"]
+            pred_classes = pred_output[i]["labels"]
+
+            # Iterate over each predicted box
+            for box, score, cls in zip(pred_boxes, pred_scores, pred_classes):
+                xmin, ymin, xmax, ymax = box.astype(int)
+
+                # Draw bounding box on the image
+                cv2.rectangle(image, (xmin, ymin), (xmax, ymax), (0, 255, 0), 2)
+
+                # Add label and score to the bounding box
+                label = f"{classes[cls]}: {score:.2f}"
+                cv2.putText(image, label, (xmin, ymin - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+
+            # Save the image
+            image_name = os.path.join(save_dir, f"prediction_{i + 1}.jpg")
+            cv2.imwrite(image_name, image)
+        else:
+            print(f"Prediction output not found for image {i}")
+
+
+
+# Usage example:
+predictions = evaluate_detection(model, val_data, save_dir="/home/uni/sample_output", num_samples=5)
+
+# Print some sample predictions for analysis
+for i, pred_output in enumerate(predictions[:5]):
+    print(f"Sample Prediction {i + 1}:")
+    print(pred_output)
+    print()
+
+
+    
+    # img = cv2.imread('/home/jakob/uni/TrafficLightDetection/ObjectDetection/od_train_data/dataset/images/test/Bremen_5.jpg')
+    # img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    # #input_tensor = transform(input).unsqueeze(0) 
+    # with torch.no_grad():
+    #     output = model.predict(img_rgb)
+        
+    # print(output)
+
+    
+    # probabilities = torch.softmax(output, dim=1)
+    # predicted_class = torch.argmax(probabilities, dim=1).item()
