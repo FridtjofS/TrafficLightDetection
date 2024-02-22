@@ -44,6 +44,7 @@ class TrafficLightStatePredictor:
             probs: probability of the predicted state
             names: name of the predicted state
         '''
+        imgs = [img.convert('RGB') for img in imgs]
 
         # Preprocess image
         transform =transforms.Compose([
@@ -76,11 +77,19 @@ if __name__ == "__main__":
 
 
     # choosing 3 random images from "sd_train_data" folder 
-    filtered_list = [os.path.join("sd_train_data", f) for f in os.listdir('sd_train_data') if f.endswith('.jpg')]
-    imgs = random.sample(filtered_list, 3)
+    #filtered_list = [os.path.join("sd_train_data", f) for f in os.listdir('sd_train_data') if f.endswith('.jpg')]
+    #imgs = random.sample(filtered_list, 3)
+    
+    img1 = r"StateDetection\examples\green.jpg"
+    img2 = r"StateDetection\examples\yellow.jpg"
+    img3 = r"StateDetection\examples\red_yellow.jpg"
+    imgs = [img1, img2, img3]
 
     # load images
-    imgs = [Image.open(img) for img in imgs]
+    imgs = [Image.open(img) for img in imgs] # apparently those images have 4 channels
+    
+    
+
 
     
     # set device
@@ -95,7 +104,7 @@ if __name__ == "__main__":
 
     ########################## THIS IS THE MAIN PART ###############################
     # predict
-    predictor = TrafficLightStatePredictor(os.path.join('models', 'model_51107', 'model.pth'), device=device)
+    predictor = TrafficLightStatePredictor(os.path.join('StateDetection', 'models', 'model_51107', 'model.pth'), device=device)
     pred_states, pred_probs, pred_idxs = predictor.predict(imgs)
     ################################################################################
     
