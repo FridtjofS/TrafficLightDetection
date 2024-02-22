@@ -77,16 +77,17 @@ if __name__ == "__main__":
 
 
     # choosing 3 random images from "sd_train_data" folder 
-    #filtered_list = [os.path.join("sd_train_data", f) for f in os.listdir('sd_train_data') if f.endswith('.jpg')]
-    #imgs = random.sample(filtered_list, 3)
+    filtered_list = [os.path.join('StateDetection', "sd_train_data", f) for f in os.listdir(os.path.join('StateDetection', "sd_train_data")) if f.endswith('.jpg')]
+    imgs = random.sample(filtered_list, 3)
     
-    img1 = r"StateDetection\examples\green.jpg"
-    img2 = r"StateDetection\examples\yellow.jpg"
+    
+    img1 = r"StateDetection\examples\yellow.jpg"
+    img2 = r"StateDetection\examples\green.jpg"
     img3 = r"StateDetection\examples\red_yellow.jpg"
     imgs = [img1, img2, img3]
 
     # load images
-    imgs = [Image.open(img) for img in imgs] # apparently those images have 4 channels
+    imgs = [Image.open(img) for img in imgs]
     
     
 
