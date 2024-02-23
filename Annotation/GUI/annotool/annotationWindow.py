@@ -332,11 +332,13 @@ class AnnotationWindow(QWidget):
 
         green_button = QCheckBox()
         if parent == self.current_annotation:
-            green_button.setToolTip("""Press 1 to set state to off
-Press 2 to set state to red
-Press 3 to set state to red-yellow
-Press 4 to set state to yellow
-Press 5 to set state to green""")
+            green_button.setToolTip("""
+            Press 1 to set state to off
+            Press 2 to set state to red
+            Press 3 to set state to red-yellow
+            Press 4 to set state to yellow
+            Press 5 to set state to green
+            """)
         green_button.setStyleSheet("""
         QCheckBox::indicator { width: 18px; height: 18px; }
         QCheckBox::indicator::unchecked { image: url(annotool/img/green_unchecked.svg); }
