@@ -15,7 +15,6 @@ class TrafficLightObjectDetector:
             model_path: path to the model file
             device: device to run the model
         '''
-        print(device)
         self.model = models.get('yolo_nas_s',
                         num_classes=1,
                         checkpoint_path=model_path)
