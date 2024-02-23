@@ -171,6 +171,7 @@ train_data = coco_detection_yolo_format_train(
         'num_workers':WORKERS
     }
 )
+
  
 val_data = coco_detection_yolo_format_val(
     dataset_params={
@@ -186,11 +187,11 @@ val_data = coco_detection_yolo_format_val(
 )
 
 	
-train_data.dataset.transforms
+# train_data.dataset.transforms
 
-train_data.dataset.transforms[0]
+# train_data.dataset.transforms[0]
 
-train_data.dataset.transforms.pop(2)
+# train_data.dataset.transforms.pop(2)
 #train_data.dataset.plot(plot_transformed_data=True)
 
 train_params = {
@@ -245,9 +246,9 @@ train_params = {
 
 
 models_to_train = [
-    #'yolo_nas_s'#,
+    'yolo_nas_s'#,
     #'yolo_nas_m',
-    'yolo_nas_l'
+    #'yolo_nas_l'
 ]
  
 CHECKPOINT_DIR = 'checkpoints'
