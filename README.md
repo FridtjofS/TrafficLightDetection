@@ -1,2 +1,2 @@
 # TrafficLightDetection
-Visualization Tool to show results.
+Visualization Tool.
