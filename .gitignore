@@ -133,6 +133,9 @@ dmypy.json
 *.err
 *.out
 
+# weights
+*.pth
+
 
 /StateDetection/data/
 .vscode/launch.json

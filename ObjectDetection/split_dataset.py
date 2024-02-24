@@ -3,8 +3,8 @@ import shutil
 import argparse
 import random
 
-TRAIN_SPLIT = 0.6
-VAL_SPLIT = 0.2
+TRAIN_SPLIT = 0.8
+VAL_SPLIT = 0.1
 RANDOM_SEED = 42
 
 def split_dataset(dataset_folder, output_folder):
