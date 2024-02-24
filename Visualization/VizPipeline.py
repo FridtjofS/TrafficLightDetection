@@ -8,12 +8,11 @@ import numpy as np
 sys.path.append('TrafficLightDetection')
 
 from StateDetection.predict import TrafficLightStatePredictor
-from ObjectDetection.detect import TrafficLightDetector   ### TODO: implement 
+from ObjectDetection.predict import TrafficLightObjectDetector  
        
 
+class TrafficLightClassifier:
 
-
-def get_predictions(self, img):
     '''
     Using object detection model and state detection model, find traffic lights on given image and evaluate state of traffic lights.
     
@@ -24,15 +23,14 @@ def get_predictions(self, img):
         predictedtrafficlights: list (or json???) of detected traffic lights in image with coordinates and states of traffic lights
     '''
 
-    trafficlight_pos = # Hier kommt die Liste von Koordinaten vom ObjectDetection Model raus
+    def __init__(self, objectdetector, statepredictor, device='cpu'):
+        
+        self.objectdetector = objectdetector
+        self.statepredictor = statepredictor
+        self.device = device
 
-    tafficlight_imgs = # Die Liste aus trafficlight_pos muss genutzt werden um eine liste an images von den Ampeln zu generieren, die an TrafficLightStatePredictor weitergegeben wird
-    
-    trafficlight_states, trafficlight_probabilities, = # Hier kommen die Ergebnisse vom TrafficLightPredictor raus
+    def classify(self, image):
 
-    predictedtrafficlights = # Hier kommt eine Datei raus, die die ganzen Infos von oben enthält (Liste oder json)
-
-    return predictedtrafficlights
 
 
 
@@ -41,7 +39,28 @@ def get_predictions(self, img):
 
 ### Main
 
-# Parse input
+# Set Device -> Maybe specify in GUI as well??
+
+if torch.cuda.is_available():
+    device = torch.device("cuda")
+else:
+    try:
+        import torch_directml
+        device = torch_directml.device(torch_directml.default_device())
+    except:
+        device = torch.device("cpu")
+
+
+# Set working directory -> Maybe specify in GUI as well??
+
+current_dir = os.getcwd()
+print("Current working directory:", current_dir)
+os.chdir("/Users/nadia/TrafficLightDetection")
+working_dir = os.getcwd()
+print("New current working directory:", working_dir)
+
+
+# Parse input -> Will be done with GUI in the end, CHANGE
 
 def input_parser():
     
@@ -53,7 +72,8 @@ def input_parser():
 
 input_type, input_path = input_parser()
 
-# Capture input
+
+# Capture input -> Will be done with GUI in the end, CHANGE
 
 if input_type == 0:
     while True:
@@ -61,11 +81,13 @@ if input_type == 0:
             cam_idx = int(input("Please specify integer index of input camera (Usually 0 for computers with only one camera): "))
             break
         except ValueError:
-            print("The camera index you sepified was not integer valued. Please try again.")
+            print("The camera index you specified was not integer valued. Please try again.")
     
     cap = cv2.VideoCapture(cam_idx)
            
 elif input_type == 1:
+
+    cap = cv2.VideoCapture(input_path)
 
 else:
     raise Exception('input_type has invalid value. Please choose value 0 or 1.')
@@ -80,8 +102,16 @@ while(cap.isOpened()):
     ret, frame = cap.read()
     if(ret == True):
 
-        # Here we process the frame using the above function. We output the processed frame
-        # TODO
+        detector_path = os.path.join(dir, 'checkpoints/yolo_nas_s', 'RUN_20240223_132442_026334', 'ckpt_best.pth') # Could possibly be changed in GUI as well
+        detector = TrafficLightObjectDetector(detector_path, device=device)
+
+        predictor_path = os.path.join('StateDetection', 'models', 'model_51107', 'model.pth') # Could possibly be changed in GUI as well
+        predictor = TrafficLightStatePredictor(predictor_path, device=device)
+
+        classifier = TrafficLightClassifier(detector, predictor, device)
+        output = classifier.classify(frame) 
+        
+        #TODO: Change output to what output will actually be in the end and show / save it....
 
         # Quit Camera / Video using 'q' key
         if cv.waitKey(1) == ord('q'):

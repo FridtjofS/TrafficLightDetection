@@ -75,15 +75,22 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
     from PIL import Image
 
+    current_dir = os.getcwd()
+    print("Current working directory:", current_dir)
+    os.chdir("/Users/nadia/TrafficLightDetection")
+    working_dir = os.getcwd()
+    print("New current working directory:", working_dir)
+
+
 
     # choosing 3 random images from "sd_train_data" folder 
     filtered_list = [os.path.join('StateDetection', "sd_train_data", f) for f in os.listdir(os.path.join('StateDetection', "sd_train_data")) if f.endswith('.jpg')]
     imgs = random.sample(filtered_list, 3)
     
     
-    img1 = r"StateDetection\examples\yellow.jpg"
-    img2 = r"StateDetection\examples\green.jpg"
-    img3 = r"StateDetection\examples\red_yellow.jpg"
+    img1 = r"StateDetection/examples/yellow.jpg"
+    img2 = r"StateDetection/examples/green.jpg"
+    img3 = r"StateDetection/examples/red_yellow.jpg"
     imgs = [img1, img2, img3]
 
     # load images
