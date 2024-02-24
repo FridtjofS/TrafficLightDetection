@@ -1,28 +1,77 @@
 import sys
-from PyQt6.QtWidgets import (
-    QMainWindow, QApplication,
-    QLabel, QCheckBox, QComboBox, QListWidget, QLineEdit,
-    QLineEdit, QSpinBox, QDoubleSpinBox, QSlider
-)
-from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QRadioButton, QSpinBox, QLineEdit, QPushButton, QMessageBox
 
-class MainWindow(QMainWindow):
-
+class InputCollector(QWidget):
     def __init__(self):
-        super(MainWindow, self).__init__()
+        super().__init__()
+        self.initUI()
 
-        self.setWindowTitle("My App")
+    def initUI(self):
+        self.setWindowTitle('Video Processing Input')
+        self.setGeometry(100, 100, 400, 200)
 
-        widget = QCheckBox()
-        widget.setCheckState(Qt.CheckState.Checked)
+        layout = QVBoxLayout()
 
-        #widget.setCheckState(Qt.PartiallyChecked)
-        #widget.setTriState(True)
-        #widget.stateChanged.connect(self.show_state)
+        self.radio_live = QRadioButton('Live Video Capture')
+        self.radio_file = QRadioButton('Use Video from File')
+        self.radio_live.setChecked(True)  # Default selection
 
-        self.setCentralWidget(widget)
+        self.spinBox = QSpinBox()
+        self.spinBox.setRange(0, 9999)
+        self.spinBox.setEnabled(True)
 
-app = QApplication(sys.argv)
-w = MainWindow()
-w.show()
-app.exec()
+        self.lineEdit = QLineEdit()
+        self.lineEdit.setEnabled(False)
+
+        self.radio_live.toggled.connect(self.toggleSpinBox)
+        self.radio_file.toggled.connect(self.toggleLineEdit)
+
+        self.btn_submit = QPushButton('Submit')
+        self.btn_submit.clicked.connect(self.submit)
+
+        layout.addWidget(self.radio_live)
+        layout.addWidget(self.radio_file)
+        layout.addWidget(self.spinBox)
+        layout.addWidget(self.lineEdit)
+        layout.addWidget(self.btn_submit)
+
+        self.setLayout(layout)
+
+    def toggleSpinBox(self, checked):
+        self.spinBox.setEnabled(checked)
+
+    def toggleLineEdit(self, checked):
+        self.lineEdit.setEnabled(checked)
+
+    def submit(self):
+        global input_type, input_path
+
+        if self.radio_live.isChecked():
+            input_type = 0
+            input_path = self.spinBox.value()
+        elif self.radio_file.isChecked():
+            input_type = 1
+            input_path = self.lineEdit.text()
+
+        # Show a message box indicating successful submission
+        QMessageBox.information(self, 'Submission', f'Input Type: {input_type}\nInput Path: {input_path}')
+        self.close()
+
+
+def main():
+    global input_type, input_path
+
+    app = QApplication(sys.argv)
+    window = InputCollector()
+    window.show()
+    app.exec()
+
+    # Do further processing using input_type and input_path
+    print("Input Type:", input_type)
+    print("Input Path:", input_path)
+    # Example: process_video(input_type, input_path)
+
+if __name__ == '__main__':
+    input_type = None
+    input_path = None
+    main()

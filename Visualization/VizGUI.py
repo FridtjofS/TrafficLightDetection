@@ -1,6 +1,6 @@
 import sys
 
-from PyQt6.QtWidgets import QWidget, QApplication, QRadioButton, QLineEdit, QSpinBox, QCheckBox, QPushButton, QVBoxLayout
+from PyQt6.QtWidgets import QWidget, QApplication, QRadioButton, QLineEdit, QSpinBox, QCheckBox, QPushButton, QVBoxLayout, QHBoxLayout, QGridLayout
 from PyQt6.QtGui import QIcon
 
 
