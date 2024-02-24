@@ -4,6 +4,8 @@ import cv2
 import argparse
 import numpy as np
 
+ from PIL import Image
+
 ### SPECIFY PATH TO PARENT DIRECTORY 'TrafficLightDetection' HERE ###
 sys.path.append('TrafficLightDetection')
 
@@ -29,7 +31,32 @@ class TrafficLightClassifier:
         self.statepredictor = statepredictor
         self.device = device
 
-    def classify(self, image):
+    def classify(self, img):
+
+        image = Image.open(img)
+
+        # find traffic lights, return pixel valued bboxes [x_min, y_min, x_max, y_max] and confidences.
+        bboxes_coordinates, bboxes_confidences = self.objectdetector.predict(image)
+        
+        # cut out traffic lights in order for them to be passed to state prediction
+        num_tl = len(bboxes_coordinates)
+        tl_imgs = []
+        for i in range(num_tl):
+            img_crop = image.crop(bboxes_coordinates[i])
+            tl_imgs.append(img_crop)
+
+        # predict trafficlight states
+        tl_states, tl_probs, tl_idxs = self.statepredictor.predict(tl_imgs)
+
+        classification = {
+            'bboxes' : bboxes_coordinates,
+            'bboxes_conf' : bboxes_confidences,
+            'states' : tl_states,
+            'states_conf' : tl_probs,
+            'states_idx' : tl_idxs
+            }
+
+        return classification
 
 
 
@@ -109,9 +136,9 @@ while(cap.isOpened()):
         predictor = TrafficLightStatePredictor(predictor_path, device=device)
 
         classifier = TrafficLightClassifier(detector, predictor, device)
-        output = classifier.classify(frame) 
+        classification = classifier.classify(frame) 
         
-        #TODO: Change output to what output will actually be in the end and show / save it....
+        #TODO: Do something with output
 
         # Quit Camera / Video using 'q' key
         if cv.waitKey(1) == ord('q'):
