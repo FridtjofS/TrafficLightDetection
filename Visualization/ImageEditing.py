@@ -18,8 +18,8 @@ class TrafficLightObject:
     def get_labeled_image(self):
 
         image = self.frame
-        boxed_image = cv2.rectangle(image, (self.xmin, self.ymin), (self.xmax, self.ymax), self.color, 1)
-        labeled_image = cv2.putText(boxed_image, str(self.conf), cv2.FONT_HERSHEY_SIMPLEX, 0.9, self.color, 2)
+        boxed_image = cv2.rectangle(image, (int(self.xmin), int(self.ymin)), (int(self.xmax), int(self.ymax)), self.color, 1)
+        labeled_image = cv2.putText(boxed_image, str(self.conf), (int(self.xmin), int(self.ymin) - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, self.color, 2)
        
         return labeled_image
 

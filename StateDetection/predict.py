@@ -1,12 +1,16 @@
 import os
+import sys
 import torch
 import torchvision
 import torchvision.transforms as transforms
 import numpy as np
 import random
 
-from utils import set_seed, print2way
-from ResNet_withBottleneck import ResNet
+sys.path.append('/Users/nadia/TrafficLightDetection')
+
+from StateDetection.utils import set_seed
+from StateDetection.utils import print2way
+from StateDetection.ResNet_withBottleneck import ResNet
 
 LABELS = ['off', 'red', 'red_yellow', 'yellow', 'green']
 

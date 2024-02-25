@@ -44,7 +44,7 @@ class InputCollector(QWidget):
         self.lineEdit.setEnabled(checked)
 
     def submit(self):
-        global input_type, input_path
+        #global input_type, input_path, 
 
         if self.radio_live.isChecked():
             input_type = 0

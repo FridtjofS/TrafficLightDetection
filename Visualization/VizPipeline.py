@@ -25,7 +25,7 @@ class TrafficLightClassifier:
 
     def classify(self, img):
 
-        image = Image.open(img)
+        image = Image.fromarray(img)
 
         # find traffic lights, return pixel valued bboxes [x_min, y_min, x_max, y_max] and confidences.
         bboxes_coordinates, bboxes_confidences = self.objectdetector.predict(image)
@@ -34,7 +34,9 @@ class TrafficLightClassifier:
         num_tl = len(bboxes_coordinates)
         tl_imgs = []
         for i in range(num_tl):
-            img_crop = image.crop(bboxes_coordinates[i])
+            bboxes_coordinates_int = [int(x) for x in bboxes_coordinates[i]]
+            img_crop = image.crop(bboxes_coordinates_int)
+            img_crop.show()
             tl_imgs.append(img_crop)
 
         # predict trafficlight states
@@ -65,13 +67,18 @@ def main():
     import torch
 
 
+    # Set system path
+
+    sys.path.append('/Users/nadia/TrafficLightDetection')
+    print('sys path:', sys.path)
+
     # Set working directory 
     
     current_dir = os.getcwd()
     print("Current working directory:", current_dir)
     os.chdir("/Users/nadia/TrafficLightDetection")
     working_dir = os.getcwd()
-    print("New current working directory:", working_dir)
+    print("New working directory:", working_dir)
 
 
     # Imports 
@@ -83,7 +90,7 @@ def main():
     from StateDetection.predict import TrafficLightStatePredictor
     from ObjectDetection.predict import TrafficLightObjectDetector  
     from Visualization.ImageEditing import TrafficLightObject
-    from Visualization.VizGUI import VizGUI
+    from Visualization.VizGUI import get_input
 
 
     # Set Device 
@@ -99,14 +106,8 @@ def main():
 
 
     # Get input using GUI
-
-    global input_type, input_path, save, save_path
-
-    app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon("TL_icon.png"))
-    window = VizGUI()
-    window.show()
-    app.exec()
+   
+    input_type, input_path, save, save_path = get_input()
 
     print("The input has been specified as follows.")
     print("Input Type:", input_type)
@@ -132,11 +133,11 @@ def main():
         cap = cv2.VideoCapture(input_path)
 
     else:
-        raise Exception('input_type has invalid value. Please choose value 0 or 1.')
+        raise Exception('No input has been specified. Choose input to continue.')
     
 
     # Specify path to parent directory 'TrafficLightDetection'
-    sys.path.append('TrafficLightDetection')
+    #sys.path.append('TrafficLightDetection')
 
 
     # Process input video
@@ -149,7 +150,7 @@ def main():
         ret, frame = cap.read()
         if(ret == True):
 
-            detector_path = os.path.join(dir, 'checkpoints/yolo_nas_s', 'RUN_20240223_132442_026334', 'ckpt_best.pth') 
+            detector_path = os.path.join('ObjectDetection', 'checkpoints/yolo_nas_s', 'RUN_20240223_132442_026334', 'ckpt_best.pth') 
             detector = TrafficLightObjectDetector(detector_path, device=device)
 
             predictor_path = os.path.join('StateDetection', 'models', 'model_51107', 'model.pth') 
@@ -162,18 +163,24 @@ def main():
 
             for i in range(num_lights):
 
-                if classification['states_idx'][i] == 0:
+                color = (255, 255, 255)
+
+                print(classification['states'][i])
+
+                if classification['states'][i] == 'off':
                     color = (20, 20, 86)
-                elif classification['states_idx'][i] == 1:
+                elif classification['states'][i] == 'red':
                     color = (245, 86, 86)
-                elif classification['states_idx'][i] == 2:
+                elif classification['states'][i] == 'red_yellow':
                     color = (245, 150, 86)
-                elif classification['states_idx'][i] == 3:
+                elif classification['states'][i] == 'yellow':
                     color = (245, 245, 86)
-                elif classification['states_idx'][i] == 4:
+                elif classification['states'][i] == 'green':
                     color = (100, 245, 86)
 
-                confidence = classification['bboxes_conf'][i] * classification['states_conf'][i]
+                c1 = classification['bboxes_conf'][i]
+                c2 = max(classification['states_conf'][i])
+                confidence = c1 * c2
 
                 class_dict = {
                     'frame' : frame,
@@ -181,12 +188,20 @@ def main():
                     'color' : color,
                     'conf' : confidence
                     }
+
+                '''
+                print('The bounding box has the following coordinates.')
+                print('xmin:', class_dict['bbox'][0])
+                print('ymin:', class_dict['bbox'][1])
+                print('xmax:', class_dict['bbox'][2])
+                print('ymax:', class_dict['bbox'][3])
+                '''
                 
                 object = TrafficLightObject(class_dict)
            
                 frame = object.get_labeled_image()
 
-            cv2.imshow(frame)
+            cv2.imshow('TrafficLightDetection Visualized', frame)
             
 
             # Quit Camera / Video using 'q' key
@@ -194,7 +209,8 @@ def main():
                 break
             
         else:
-            break
+            if cv2.waitKey(1) == ord('q'):
+                break
 
 
     cap.release()
@@ -204,11 +220,6 @@ def main():
 
 
 if __name__ == '__main__':
-
-    input_type = None
-    input_path = None
-    save = None
-    save_path = None
 
     main()
 

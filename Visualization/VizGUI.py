@@ -1,4 +1,5 @@
 import sys
+import os
 from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QRadioButton, QSpinBox, QLineEdit, QPushButton, QCheckBox
 from PyQt6.QtGui import QIcon
 
@@ -18,33 +19,33 @@ class VizGUI(QWidget):
     def specify_input(self):
         layout = QVBoxLayout()
 
-        live_cap = QRadioButton('Live Video Capture')
-        live_cap.clicked.connect(self.enable_live_video_capture)
-        layout.addWidget(live_cap)
+        self.live_cap = QRadioButton('Live Video Capture')
+        self.live_cap.clicked.connect(self.enable_live_video_capture)
+        layout.addWidget(self.live_cap)
 
         self.live_cap_input = QSpinBox()
         self.live_cap_input.setEnabled(False)
         layout.addWidget(self.live_cap_input)
 
-        file_cap = QRadioButton('Use Video from File')
-        file_cap.clicked.connect(self.enable_video_from_file)
-        layout.addWidget(file_cap)
+        self.file_cap = QRadioButton('Use Video from File')
+        self.file_cap.clicked.connect(self.enable_video_from_file)
+        layout.addWidget(self.file_cap)
 
         self.file_cap_input = QLineEdit()
         self.file_cap_input.setEnabled(False)
         layout.addWidget(self.file_cap_input)
 
-        save_check = QCheckBox('Save Video')
-        save_check.stateChanged.connect(self.enable_video_save)
-        layout.addWidget(save_check)
+        self.save_check = QCheckBox('Save Video')
+        self.save_check.stateChanged.connect(self.enable_video_save)
+        layout.addWidget(self.save_check)
 
-        self.save_path = QLineEdit()
-        self.save_path.setEnabled(False)
-        layout.addWidget(self.save_path)
+        self.save_path_input = QLineEdit()
+        self.save_path_input.setEnabled(False)
+        layout.addWidget(self.save_path_input)
 
-        start_button = QPushButton('Process Video')
-        start_button.clicked.connect(self.start)
-        layout.addWidget(start_button)
+        self.start_button = QPushButton('Process Video')
+        self.start_button.clicked.connect(self.start)
+        layout.addWidget(self.start_button)
 
         self.setLayout(layout)
         self.setWindowTitle('Traffic Light Detection Visualization')
@@ -52,50 +53,51 @@ class VizGUI(QWidget):
     def enable_live_video_capture(self):
         self.input_type = 0
         self.live_cap_input.setEnabled(True)
-        self.file_cap_input.setEnabled(False)
+        self.file_cap_input.setEnabled(False) 
 
     def enable_video_from_file(self):
         self.input_type = 1
         self.live_cap_input.setEnabled(False)
         self.file_cap_input.setEnabled(True)
-
+    
     def enable_video_save(self, state):
-        self.save = state == 2
-        self.save_path.setEnabled(state == 2)
+        if state == 2:  # 2 represents checked state
+            self.save = True
+            self.save_path_input.setEnabled(True)
+        else:
+            self.save = False
 
     def start(self):
+        global input_type, input_path, save, save_path
+
+        input_type = self.input_type
+
         if self.input_type == 0:
             self.input_path = self.live_cap_input.value()
         elif self.input_type == 1:
             self.input_path = self.file_cap_input.text()
+        else:
+            print('Input Type has to be specified')
+        
+        input_path = self.input_path
 
-        if self.save:
-            self.save_path = self.save_path.text()
+        save = self.save
+
+        save_path = self.save_path_input.text()
+
+       
+        self.close()
 
 
 
-def main():
+def get_input():
 
     global input_type, input_path, save, save_path
 
     app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon("TL_icon.png"))
+    app.setWindowIcon(QIcon(os.path.join('Visualization', 'TL_icon.png')))
     window = VizGUI()
     window.show()
-    sys.exit(app.exec())
+    app.exec()
 
-    print("Input Type:", input_type)
-    print("Input Path:", input_path)
-    print("Save Video:", self.save)
-    if self.save:
-        print("Save Path:", self.save_path)
-
-
-if __name__ == '__main__':
-
-    input_type = None
-    input_path = None
-    save = None
-    save_path = None
-
-    main()
+    return input_type, input_path, save, save_path
