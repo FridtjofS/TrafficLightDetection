@@ -8,7 +8,7 @@ import numpy as np
 
 from PIL import Image
 from PyQt6.QtGui import QIcon
-from PyQt6.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication, QWidget
 
 
 ### SPECIFY PATH TO PARENT DIRECTORY 'TrafficLightDetection' HERE ###
@@ -16,6 +16,7 @@ sys.path.append('TrafficLightDetection')
 
 from StateDetection.predict import TrafficLightStatePredictor
 from ObjectDetection.predict import TrafficLightObjectDetector  
+from Visualization.ImageEditing import TrafficLightObject
 from Visualization.VizGUI import VizGUI
 
 
@@ -56,6 +57,7 @@ class TrafficLightClassifier:
         tl_states, tl_probs, tl_idxs = self.statepredictor.predict(tl_imgs)
 
         classification = {
+            'lights' : num_tl,
             'bboxes' : bboxes_coordinates,
             'bboxes_conf' : bboxes_confidences,
             'states' : tl_states,
@@ -64,7 +66,6 @@ class TrafficLightClassifier:
             }
 
         return classification
-
 
 
 
@@ -128,6 +129,7 @@ def main():
 
     else:
         raise Exception('input_type has invalid value. Please choose value 0 or 1.')
+    
 
     # Process input video
 
@@ -139,17 +141,35 @@ def main():
         ret, frame = cap.read()
         if(ret == True):
 
-            detector_path = os.path.join(dir, 'checkpoints/yolo_nas_s', 'RUN_20240223_132442_026334', 'ckpt_best.pth') # Could possibly be changed in GUI as well
+            detector_path = os.path.join(dir, 'checkpoints/yolo_nas_s', 'RUN_20240223_132442_026334', 'ckpt_best.pth') 
             detector = TrafficLightObjectDetector(detector_path, device=device)
 
-            predictor_path = os.path.join('StateDetection', 'models', 'model_51107', 'model.pth') # Could possibly be changed in GUI as well
+            predictor_path = os.path.join('StateDetection', 'models', 'model_51107', 'model.pth') 
             predictor = TrafficLightStatePredictor(predictor_path, device=device)
 
             classifier = TrafficLightClassifier(detector, predictor, device)
             classification = classifier.classify(frame) 
-            
-            #TODO: Do something with output
 
+            num_lights = classification['lights']
+
+            for i in range(num_lights):
+
+                object = TrafficLightObject()
+
+                class_dict = {
+                    'frame' : frame,
+                    'bbox' : classification['bboxes'][i],
+                    'bbox_conf' : classification['bboxes_conf'][i],
+                    'state' : classification['states'][i],
+                    'state_ conf': classification['states_conf'][i],
+                    'state_idx' : classification['states_idx'][i]
+                    }
+                
+                frame = object.get_labeled_image(class_dict)
+
+            cv2.imshow(frame)
+            
+            
             # Quit Camera / Video using 'q' key
             if cv.waitKey(1) == ord('q'):
                 break
