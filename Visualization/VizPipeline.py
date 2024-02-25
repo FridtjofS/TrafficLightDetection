@@ -154,24 +154,35 @@ def main():
 
             for i in range(num_lights):
 
-                object = TrafficLightObject()
+                if classification['states_idx'][i] == 0:
+                    color = (20, 20, 86)
+                elif classification['states_idx'][i] == 1:
+                    color = (245, 86, 86)
+                elif classification['states_idx'][i] == 2:
+                    color = (245, 150, 86)
+                elif classification['states_idx'][i] == 3:
+                    color = (245, 245, 86)
+                elif classification['states_idx'][i] == 4:
+                    color = (100, 245, 86)
+
+                confidence = classification['bboxes_conf'][i] * classification['states_conf'][i]
 
                 class_dict = {
                     'frame' : frame,
                     'bbox' : classification['bboxes'][i],
-                    'bbox_conf' : classification['bboxes_conf'][i],
-                    'state' : classification['states'][i],
-                    'state_ conf': classification['states_conf'][i],
-                    'state_idx' : classification['states_idx'][i]
+                    'color' : color,
+                    'conf' : confidence
                     }
                 
-                frame = object.get_labeled_image(class_dict)
+                object = TrafficLightObject(class_dict)
+           
+                frame = object.get_labeled_image()
 
             cv2.imshow(frame)
             
-            
+
             # Quit Camera / Video using 'q' key
-            if cv.waitKey(1) == ord('q'):
+            if cv2.waitKey(1) == ord('q'):
                 break
             
         else:
