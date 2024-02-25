@@ -14,27 +14,29 @@ from super_gradients.training.metrics import (
 )
 from super_gradients.training.models.detection_models.pp_yolo_e import PPYoloEPostPredictionCallback
 
-#did not import variables because this would trigger training run
-BATCH_SIZE = 2
-WORKERS = 1
-#ROOT_DIR = '/home/jakob/uni/TrafficLightDetection/ObjectDetection/od_train_data/dataset'
-ROOT_DIR = '/home/jakob/uni/TrafficLightDetection/ObjectDetection/od_train_data/backup/dataset_60_20_20'
-CHECKPOINT_DIR = 'ObjectDetection/checkpoints'
+with open('ObjectDetection/config.json', 'r') as json_file:
+    params = json.load(json_file)
+
+BATCH_SIZE = params['batch_size']
+WORKERS = params['workers']
+ROOT_DIR = params['data_dir']
+CHECKPOINT_DIR = params['checkpoint_dir']
 
 def test_yolo_nas(architecture, run):
     classes = ['traffic light']
     test_data = coco_detection_yolo_format_val(
         dataset_params={
-            'data_dir': ROOT_DIR,
-            'images_dir': 'images/test',
-            'labels_dir': 'labels/test',
-            'classes': classes
+            'data_dir': params['data_dir'],
+            'images_dir': params['test_images_dir'],
+            'labels_dir': params['test_labels_dir'],
+            'classes': params['classes']
         },
         dataloader_params={
             'batch_size':BATCH_SIZE,
             'num_workers':WORKERS
         }
     )
+    print(CHECKPOINT_DIR)
     trainer =  Trainer(
             experiment_name=architecture, 
             ckpt_root_dir=CHECKPOINT_DIR
@@ -57,7 +59,7 @@ def test_yolo_nas(architecture, run):
                     score_threshold=0.01, 
                     nms_top_k=1000, 
                     max_predictions=300,                                                                              
-                    nms_threshold=0.7
+                    nms_threshold=0.7 #adapt
                 )
                 ),
                 DetectionMetrics_050_095(
@@ -79,9 +81,10 @@ def test_yolo_nas(architecture, run):
         for key in test_metrics.keys():
             prefix = 'avg' if average else 'best'
             print(f'{prefix} {key}: {test_metrics[key]}')
-            save_dir = os.path.join(run_dir, 'test_metrics_best.json') if not average else os.path.join(run_dir, 'test_metrics_average.json')
-        with open(save_dir, 'w') as file:
+            save_path = os.path.join(run_dir, 'test_metrics_best.json') if not average else os.path.join(run_dir, 'test_metrics_average.json')
+        with open(save_path, 'w') as file:
             json.dump(test_metrics, file, indent=4)
+        print(f'saved {prefix} metrics to {save_path}')
     
 
 
