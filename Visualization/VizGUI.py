@@ -1,48 +1,101 @@
 import sys
-
-from PyQt6.QtWidgets import QWidget, QApplication, QRadioButton, QLineEdit, QSpinBox, QCheckBox, QPushButton, QVBoxLayout, QHBoxLayout, QGridLayout
+from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QRadioButton, QSpinBox, QLineEdit, QPushButton, QCheckBox
 from PyQt6.QtGui import QIcon
 
 
 
-
-class VizWindow(QWidget):
-
+class VizGUI(QWidget):
     def __init__(self):
         super().__init__()
 
+        self.input_type = None
+        self.input_path = None
+        self.save = False
+        self.save_path = None
+
+        self.specify_input()
+
+    def specify_input(self):
         layout = QVBoxLayout()
 
-        self.liveCap_widget = QRadioButton("Live video capture")
-        layout.addWidget(self.liveCap_widget)
+        live_cap = QRadioButton('Live Video Capture')
+        live_cap.clicked.connect(self.enable_live_video_capture)
+        layout.addWidget(live_cap)
 
-        self.liveCapInput_widget = QSpinBox()
-        layout.addWidget(self.liveCapInput_widget)
+        self.live_cap_input = QSpinBox()
+        self.live_cap_input.setEnabled(False)
+        layout.addWidget(self.live_cap_input)
 
-        self.fileCap_widget = QRadioButton("Load video from file")
-        layout.addWidget(self.fileCap_widget)
+        file_cap = QRadioButton('Use Video from File')
+        file_cap.clicked.connect(self.enable_video_from_file)
+        layout.addWidget(file_cap)
 
-        self.fileCapInput_widget = QLineEdit()
-        layout.addWidget(self.fileCapInput_widget)
+        self.file_cap_input = QLineEdit()
+        self.file_cap_input.setEnabled(False)
+        layout.addWidget(self.file_cap_input)
 
-        self.saveAnno_widget = QCheckBox("I would like to save the annotations to the following directory")
-        layout.addWidget(self.saveAnno_widget)
+        save_check = QCheckBox('Save Video')
+        save_check.stateChanged.connect(self.enable_video_save)
+        layout.addWidget(save_check)
 
-        self.saveAnnoPath_widget = QLineEdit()
-        layout.addWidget(self.saveAnnoPath_widget)
+        self.save_path = QLineEdit()
+        self.save_path.setEnabled(False)
+        layout.addWidget(self.save_path)
 
-        self.startViz_widget = QPushButton("Start visualization")
-        layout.addWidget(self.startViz_widget)
+        start_button = QPushButton('Process Video')
+        start_button.clicked.connect(self.start)
+        layout.addWidget(start_button)
 
         self.setLayout(layout)
-        self.setWindowTitle("Traffic Light Visualization Tool")
+        self.setWindowTitle('Traffic Light Detection Visualization')
+
+    def enable_live_video_capture(self):
+        self.input_type = 0
+        self.live_cap_input.setEnabled(True)
+        self.file_cap_input.setEnabled(False)
+
+    def enable_video_from_file(self):
+        self.input_type = 1
+        self.live_cap_input.setEnabled(False)
+        self.file_cap_input.setEnabled(True)
+
+    def enable_video_save(self, state):
+        self.save = state == 2
+        self.save_path.setEnabled(state == 2)
+
+    def start(self):
+        if self.input_type == 0:
+            self.input_path = self.live_cap_input.value()
+        elif self.input_type == 1:
+            self.input_path = self.file_cap_input.text()
+
+        if self.save:
+            self.save_path = self.save_path.text()
 
 
 
+def main():
 
-app = QApplication(sys.argv)
-app.setWindowIcon(QIcon("TL_icon.png"))
-#app.setStyleSheet(Path("annotool/style.qss").read_text())
-window = VizWindow()
-window.show()
-sys.exit(app.exec())
+    global input_type, input_path, save, save_path
+
+    app = QApplication(sys.argv)
+    app.setWindowIcon(QIcon("TL_icon.png"))
+    window = VizGUI()
+    window.show()
+    sys.exit(app.exec())
+
+    print("Input Type:", input_type)
+    print("Input Path:", input_path)
+    print("Save Video:", self.save)
+    if self.save:
+        print("Save Path:", self.save_path)
+
+
+if __name__ == '__main__':
+
+    input_type = None
+    input_path = None
+    save = None
+    save_path = None
+
+    main()
