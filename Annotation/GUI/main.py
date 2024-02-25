@@ -363,6 +363,15 @@ class MainWindow(QWidget):
         shutil.copy(path, input_path)
         self.load_image(path)
 
+        self.annotated = []
+        self.bbox = {
+            'x1': None,
+            'y1': None,
+            'x2': None,
+            'y2': None,
+            'state': None
+        }
+
         # delete txt file with the same name as the image in od_output_path + annotations
         if os.path.exists(os.path.join(od_output_path, "annotations", Path(path).stem + ".txt")):
             # read in the txt file and count the number of annotations
@@ -478,10 +487,13 @@ class MainWindow(QWidget):
     
     # load image into GUI
     def load_image(self, path):
-
         # load image
         if path == None:
+            print("No image to load")
             self.pixmap = QPixmap()
+            self.label.setPixmap(self.pixmap)
+            self.settings_error("The input directory you selected is empty,\nplease select a different directory")
+            return
         else:
             self.pixmap = QPixmap(path)
 
