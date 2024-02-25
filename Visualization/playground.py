@@ -1,88 +1,90 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QRadioButton, QSpinBox, QLineEdit, QPushButton, QCheckBox
+from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QRadioButton, QSpinBox, QLineEdit, QPushButton, QMessageBox
 
-
-class VideoProcessor(QWidget):
+class InputCollector(QWidget):
     def __init__(self):
         super().__init__()
+        self.initUI()
 
-        self.input_type = None
-        self.input_path = None
-        self.save = False
-        self.save_path = None
+    def initUI(self):
+        self.setWindowTitle('Video Processing Input')
+        self.setGeometry(100, 100, 400, 200)
 
-        self.init_ui()
-
-    def init_ui(self):
         layout = QVBoxLayout()
 
-        live_video_radio = QRadioButton('Live Video Capture')
-        live_video_radio.clicked.connect(self.enable_live_video_capture)
-        layout.addWidget(live_video_radio)
+        self.radio_live = QRadioButton('Live Video Capture')
+        self.radio_file = QRadioButton('Use Video from File')
+        self.radio_live.setChecked(True)  # Default selection
 
-        self.live_video_spinbox = QSpinBox()
-        self.live_video_spinbox.setEnabled(False)
-        layout.addWidget(self.live_video_spinbox)
+        self.spinBox = QSpinBox()
+        self.spinBox.setRange(0, 9999)
+        self.spinBox.setEnabled(True)
 
-        file_video_radio = QRadioButton('Use Video from File')
-        file_video_radio.clicked.connect(self.enable_video_from_file)
-        layout.addWidget(file_video_radio)
+        self.lineEdit = QLineEdit()
+        self.lineEdit.setEnabled(False)
 
-        self.file_video_lineedit = QLineEdit()
-        self.file_video_lineedit.setEnabled(False)
-        layout.addWidget(self.file_video_lineedit)
+        self.radio_live.toggled.connect(self.toggleSpinBox)
+        self.radio_file.toggled.connect(self.toggleLineEdit)
 
-        save_checkbox = QCheckBox('Save Video')
-        save_checkbox.stateChanged.connect(self.enable_video_save)
-        layout.addWidget(save_checkbox)
+        self.btn_submit = QPushButton('Submit')
+        self.btn_submit.clicked.connect(self.submit)
 
-        self.save_path_lineedit = QLineEdit()
-        self.save_path_lineedit.setEnabled(False)
-        layout.addWidget(self.save_path_lineedit)
-
-        process_button = QPushButton('Process Video')
-        process_button.clicked.connect(self.process_video)
-        layout.addWidget(process_button)
+        layout.addWidget(self.radio_live)
+        layout.addWidget(self.radio_file)
+        layout.addWidget(self.spinBox)
+        layout.addWidget(self.lineEdit)
+        layout.addWidget(self.btn_submit)
 
         self.setLayout(layout)
-        self.setWindowTitle('Video Processor')
 
-    def enable_live_video_capture(self):
-        self.input_type = 0
-        self.live_video_spinbox.setEnabled(True)
-        self.file_video_lineedit.setEnabled(False)
+    def toggleSpinBox(self, checked):
+        self.spinBox.setEnabled(checked)
 
-    def enable_video_from_file(self):
-        self.input_type = 1
-        self.live_video_spinbox.setEnabled(False)
-        self.file_video_lineedit.setEnabled(True)
+    def toggleLineEdit(self, checked):
+        self.lineEdit.setEnabled(checked)
 
-    def enable_video_save(self, state):
-        self.save = state == 2
-        self.save_path_lineedit.setEnabled(state == 2)
+    def submit(self):
+        global input_type, input_path
 
-    def process_video(self):
-        if self.input_type == 0:
-            self.input_path = self.live_video_spinbox.value()
-        elif self.input_type == 1:
-            self.input_path = self.file_video_lineedit.text()
+        if self.radio_live.isChecked():
+            input_type = 0
+            input_path = self.spinBox.value()
+        elif self.radio_file.isChecked():
+            input_type = 1
+            input_path = self.lineEdit.text()
 
-        if self.save:
-            self.save_path = self.save_path_lineedit.text()
-
-        print("Input Type:", self.input_type)
-        print("Input Path:", self.input_path)
-        print("Save Video:", self.save)
-        if self.save:
-            print("Save Path:", self.save_path)
+        # Show a message box indicating successful submission
+        QMessageBox.information(self, 'Submission', f'Input Type: {input_type}\nInput Path: {input_path}')
+        self.close()
 
 
 def main():
-    app = QApplication(sys.argv)
-    window = VideoProcessor()
-    window.show()
-    sys.exit(app.exec())
+    global input_type, input_path
 
+    app = QApplication(sys.argv)
+    window = InputCollector()
+    window.show()
+    app.exec()
+
+    # Do further processing using input_type and input_path
+    print("Input Type:", input_type)
+    print("Input Path:", input_path)
+    # Example: process_video(input_type, input_path)
 
 if __name__ == '__main__':
+    input_type = None
+    input_path = None
     main()
+
+
+# Parse input -> Will be done with GUI in the end
+
+def input_parser():
+    
+    parser = argparse.ArgumentParser(description='Process input to VizTool')
+    parser.add_argument("--input_type", help="Specify input type (0: live input; 1: input from file). ", choices=[0, 1], default=1, required=True)
+    parser.add_argument("--input_path", help="Path to video or image that serves as input for VizTool. In case of live video capture, leave blank", type=str, required=False)
+
+    return parser.parse_args()
+
+input_type, input_path = input_parser()

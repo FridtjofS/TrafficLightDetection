@@ -1,25 +1,9 @@
-# Imports
-
-import os
-import sys
-import cv2
-import torch
-import numpy as np
+# Imports used for TrafficLightClassifier class
 
 from PIL import Image
-from PyQt6.QtGui import QIcon
-from PyQt6.QtWidgets import QApplication, QWidget
 
 
-### SPECIFY PATH TO PARENT DIRECTORY 'TrafficLightDetection' HERE ###
-sys.path.append('TrafficLightDetection')
-
-from StateDetection.predict import TrafficLightStatePredictor
-from ObjectDetection.predict import TrafficLightObjectDetector  
-from Visualization.ImageEditing import TrafficLightObject
-from Visualization.VizGUI import VizGUI
-
-
+# TrafficLightClassifier
 
 class TrafficLightClassifier:
 
@@ -73,6 +57,35 @@ class TrafficLightClassifier:
     
 def main():
 
+    # Imports 
+        
+    import os
+    import sys
+    import cv2
+    import torch
+
+
+    # Set working directory 
+    
+    current_dir = os.getcwd()
+    print("Current working directory:", current_dir)
+    os.chdir("/Users/nadia/TrafficLightDetection")
+    working_dir = os.getcwd()
+    print("New current working directory:", working_dir)
+
+
+    # Imports 
+
+    from PIL import Image
+    from PyQt6.QtGui import QIcon
+    from PyQt6.QtWidgets import QApplication
+
+    from StateDetection.predict import TrafficLightStatePredictor
+    from ObjectDetection.predict import TrafficLightObjectDetector  
+    from Visualization.ImageEditing import TrafficLightObject
+    from Visualization.VizGUI import VizGUI
+
+
     # Set Device 
 
     if torch.cuda.is_available():
@@ -83,15 +96,6 @@ def main():
             device = torch_directml.device(torch_directml.default_device())
         except:
             device = torch.device("cpu")
-
-
-    # Set working directory 
-
-    current_dir = os.getcwd()
-    print("Current working directory:", current_dir)
-    os.chdir("/Users/nadia/TrafficLightDetection")
-    working_dir = os.getcwd()
-    print("New current working directory:", working_dir)
 
 
     # Get input using GUI
@@ -130,6 +134,10 @@ def main():
     else:
         raise Exception('input_type has invalid value. Please choose value 0 or 1.')
     
+
+    # Specify path to parent directory 'TrafficLightDetection'
+    sys.path.append('TrafficLightDetection')
+
 
     # Process input video
 
