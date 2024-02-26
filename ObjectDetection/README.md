@@ -1,5 +1,5 @@
 <!-- ABOUT THE PROJECT -->
-## ObectDetection
+## Object Detection
 
 ![the picture](assets/READMEtitle.png)
 
