@@ -1,90 +1,97 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QRadioButton, QSpinBox, QLineEdit, QPushButton, QMessageBox
+from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QPushButton, QFileDialog, QMessageBox, QLabel, QFrame, QCheckBox, QInputDialog
+from PyQt6.QtCore import Qt
 
-class InputCollector(QWidget):
+class MyWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.initUI()
 
-    def initUI(self):
-        self.setWindowTitle('Video Processing Input')
-        self.setGeometry(100, 100, 400, 200)
+        self.input_type = None
+        self.input_path = None
+        self.cam_num = None
+        self.save_status = False
+        self.save_path = None
 
-        layout = QVBoxLayout()
+        self.setWindowTitle("GUI with PyQt6")
+        self.setGeometry(100, 100, 400, 300)
 
-        self.radio_live = QRadioButton('Live Video Capture')
-        self.radio_file = QRadioButton('Use Video from File')
-        self.radio_live.setChecked(True)  # Default selection
+        self.central_widget = QWidget()
+        self.setCentralWidget(self.central_widget)
 
-        self.spinBox = QSpinBox()
-        self.spinBox.setRange(0, 9999)
-        self.spinBox.setEnabled(True)
+        self.layout = QVBoxLayout()
+        self.central_widget.setLayout(self.layout)
 
-        self.lineEdit = QLineEdit()
-        self.lineEdit.setEnabled(False)
+        self.live_button = QPushButton("Live Button")
+        self.live_button.clicked.connect(self.live_button_clicked)
+        self.layout.addWidget(self.live_button)
 
-        self.radio_live.toggled.connect(self.toggleSpinBox)
-        self.radio_file.toggled.connect(self.toggleLineEdit)
+        self.or_label = QLabel("OR")
+        self.or_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        self.layout.addWidget(self.or_label)
 
-        self.btn_submit = QPushButton('Submit')
-        self.btn_submit.clicked.connect(self.submit)
+        self.file_button = QPushButton("File Button")
+        self.file_button.clicked.connect(self.file_button_clicked)
+        self.layout.addWidget(self.file_button)
 
-        layout.addWidget(self.radio_live)
-        layout.addWidget(self.radio_file)
-        layout.addWidget(self.spinBox)
-        layout.addWidget(self.lineEdit)
-        layout.addWidget(self.btn_submit)
+        self.line = QFrame()
+        self.line.setFrameShape(QFrame.Shape.HLine)
+        self.line.setFrameShadow(QFrame.Shadow.Sunken)
+        self.layout.addWidget(self.line)
 
-        self.setLayout(layout)
+        self.status_label = QLabel()
+        self.layout.addWidget(self.status_label)
 
-    def toggleSpinBox(self, checked):
-        self.spinBox.setEnabled(checked)
+        self.save_check = QCheckBox("Save")
+        self.layout.addWidget(self.save_check)
 
-    def toggleLineEdit(self, checked):
-        self.lineEdit.setEnabled(checked)
+        self.save_check.stateChanged.connect(self.save_status_changed)
 
-    def submit(self):
-        #global input_type, input_path, 
+    def live_button_clicked(self):
+        self.input_type = 0
+        cam_list = [1, 2, 3]  # Example list of integers
+        chosen_cam, ok = QInputDialog.getItem(self, "Select Camera", "Choose a camera", [str(cam) for cam in cam_list], 0, False)
+        if ok:
+            self.cam_num = int(chosen_cam)
+            self.status_label.setText(f"Processing camera input from camera {self.cam_num}")
+        else:
+            QMessageBox.warning(self, "Warning", "No camera selected!")
+            return
+        self.file_button.setEnabled(False)
 
-        if self.radio_live.isChecked():
-            input_type = 0
-            input_path = self.spinBox.value()
-        elif self.radio_file.isChecked():
-            input_type = 1
-            input_path = self.lineEdit.text()
+    def file_button_clicked(self):
+        self.input_type = 1
+        file_dialog = QFileDialog(self)
+        file_dialog.setWindowTitle("Choose File")
+        file_dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
+        if file_dialog.exec():
+            selected_files = file_dialog.selectedFiles()
+            if selected_files:
+                self.input_path = selected_files[0]
+                self.status_label.setText(f"Processing video specified in the selected file: {self.input_path}")
+            else:
+                QMessageBox.warning(self, "Warning", "No file selected!")
+                return
+        else:
+            QMessageBox.warning(self, "Warning", "File dialog canceled!")
+            return
+        self.live_button.setEnabled(False)
 
-        # Show a message box indicating successful submission
-        QMessageBox.information(self, 'Submission', f'Input Type: {input_type}\nInput Path: {input_path}')
-        self.close()
-
+    def save_status_changed(self, state):
+        if state == 2:
+            self.save_status = True
+            directory = QFileDialog.getExistingDirectory(self, "Select Directory", "/")
+            if directory:
+                self.save_path = directory
+            else:
+                self.save_check.setChecked(False)
+        else:
+            self.save_status = False
 
 def main():
-    global input_type, input_path
-
     app = QApplication(sys.argv)
-    window = InputCollector()
+    window = MyWindow()
     window.show()
-    app.exec()
+    sys.exit(app.exec())
 
-    # Do further processing using input_type and input_path
-    print("Input Type:", input_type)
-    print("Input Path:", input_path)
-    # Example: process_video(input_type, input_path)
-
-if __name__ == '__main__':
-    input_type = None
-    input_path = None
+if __name__ == "__main__":
     main()
-
-
-# Parse input -> Will be done with GUI in the end
-
-def input_parser():
-    
-    parser = argparse.ArgumentParser(description='Process input to VizTool')
-    parser.add_argument("--input_type", help="Specify input type (0: live input; 1: input from file). ", choices=[0, 1], default=1, required=True)
-    parser.add_argument("--input_path", help="Path to video or image that serves as input for VizTool. In case of live video capture, leave blank", type=str, required=False)
-
-    return parser.parse_args()
-
-input_type, input_path = input_parser()

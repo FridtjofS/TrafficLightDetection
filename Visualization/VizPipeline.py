@@ -36,11 +36,16 @@ class TrafficLightClassifier:
         for i in range(num_tl):
             bboxes_coordinates_int = [int(x) for x in bboxes_coordinates[i]]
             img_crop = image.crop(bboxes_coordinates_int)
-            img_crop.show()
+            #img_crop.show()
             tl_imgs.append(img_crop)
 
         # predict trafficlight states
-        tl_states, tl_probs, tl_idxs = self.statepredictor.predict(tl_imgs)
+        if num_tl != 0:
+            tl_states, tl_probs, tl_idxs = self.statepredictor.predict(tl_imgs)
+        else: 
+            tl_states = None
+            tl_probs = None
+            tl_idxs = None
 
         classification = {
             'lights' : num_tl,
@@ -164,19 +169,25 @@ def main():
             for i in range(num_lights):
 
                 color = (255, 255, 255)
+                textcolor = (0, 0, 0)
 
                 print(classification['states'][i])
 
                 if classification['states'][i] == 'off':
-                    color = (20, 20, 86)
+                    color = (146, 146, 146)
+                    textcolor = (30, 30, 30)
                 elif classification['states'][i] == 'red':
-                    color = (245, 86, 86)
+                    color = (60, 20, 220)  
+                    textcolor = (0, 0, 139) 
                 elif classification['states'][i] == 'red_yellow':
-                    color = (245, 150, 86)
+                    color = (0, 165, 255)  
+                    textcolor = (0, 140, 255) 
                 elif classification['states'][i] == 'yellow':
-                    color = (245, 245, 86)
+                    color = (0, 215, 255) 
+                    textcolor = (0, 255, 255)  
                 elif classification['states'][i] == 'green':
-                    color = (100, 245, 86)
+                    color = (0, 100, 0)   
+                    textcolor = (0, 100, 0)
 
                 c1 = classification['bboxes_conf'][i]
                 c2 = max(classification['states_conf'][i])
@@ -186,6 +197,7 @@ def main():
                     'frame' : frame,
                     'bbox' : classification['bboxes'][i],
                     'color' : color,
+                    'textcolor' : textcolor,
                     'conf' : confidence
                     }
 
