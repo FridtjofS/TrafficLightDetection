@@ -1,0 +1,42 @@
+
+Original Distribution: 
+off 12
+red 697
+red_yellow 211
+yellow 288
+green 1286
+
+ 
+Distribution BEFORE keeping max_keep samples per class: 
+off 9
+red 557
+red_yellow 168
+yellow 230
+green 1028
+off 3
+red 140
+red_yellow 43
+yellow 58
+green 258
+
+ 
+Distribution AFTER keeping max_keep samples per class: 
+off 240
+red 240
+red_yellow 240
+yellow 240
+green 240
+off 60
+red 60
+red_yellow 60
+yellow 60
+green 60
+
+ 
+Train dataset shape:  (1200, 128, 128, 3)
+Val dataset shape:  (300, 128, 128, 3)
+Train dataset labels shape:  1200
+Val dataset labels shape:  300
+
+Total number of parameters:  4911237 
+
