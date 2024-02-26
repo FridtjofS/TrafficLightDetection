@@ -10,7 +10,7 @@
     "classes": [
         "traffic light"
     ],
-    "epochs": 3,
+    "epochs": 100,
     "batch_size": 2,
     "workers": 1,
     "models": [

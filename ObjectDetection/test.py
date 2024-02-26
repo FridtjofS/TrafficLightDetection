@@ -59,7 +59,7 @@ def test_yolo_nas(architecture, run):
                     score_threshold=0.01, 
                     nms_top_k=1000, 
                     max_predictions=300,                                                                              
-                    nms_threshold=0.7 #adapt
+                    nms_threshold=0.7
                 )
                 ),
                 DetectionMetrics_050_095(

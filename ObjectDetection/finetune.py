@@ -61,72 +61,72 @@ train_data.dataset.transforms
 train_data.dataset.transforms.pop(2)
  
 for model_to_train in MODELS:
-    for threshold in THRESHOLDS:
-        train_params = {
-            'silent_mode': False,
-            "average_best_models":True,
-            "warmup_mode": "linear_epoch_step",
-            "warmup_initial_lr": 1e-6,
-            "lr_warmup_epochs": 3,
-            "initial_lr": 5e-4,
-            "lr_mode": "cosine",
-            "cosine_final_lr_ratio": 0.1,
-            "optimizer": "Adam",
-            "optimizer_params": {"weight_decay": 0.0001},
-            "zero_weight_decay_on_bias_and_bn": True,
-            "ema": True,
-            "ema_params": {"decay": 0.9, "decay_type": "threshold"},
-            "max_epochs": EPOCHS,
-            "mixed_precision": True,
-            "loss": PPYoloELoss(
-                use_static_assigner=False,
-                num_classes=len(params['classes']),
-                reg_max=16
-            ),
-            "valid_metrics_list": [
-                DetectionMetrics_050(
-                    score_thres=0.1,
-                    top_k_predictions=300,
-                    num_cls=len(params['classes']),
-                    normalize_targets=True,
-                    post_prediction_callback=PPYoloEPostPredictionCallback(
-                        score_threshold=0.01,
-                        nms_top_k=1000,
-                        max_predictions=300,
-                        nms_threshold=threshold
-                    )
-                ),
-                DetectionMetrics_050_095(
-                    score_thres=0.1,
-                    top_k_predictions=300,
-                    num_cls=len(params['classes']),
-                    normalize_targets=True,
-                    calc_best_score_thresholds = True, 
-                    post_prediction_callback=PPYoloEPostPredictionCallback(
-                        score_threshold=0.01,
-                        nms_top_k=1000,
-                        max_predictions=300,
-                        nms_threshold=threshold
-                    )
+    #for threshold in THRESHOLDS:
+    train_params = {
+        'silent_mode': False,
+        "average_best_models":True,
+        "warmup_mode": "linear_epoch_step",
+        "warmup_initial_lr": 1e-6,
+        "lr_warmup_epochs": 3,
+        "initial_lr": 5e-4,
+        "lr_mode": "cosine",
+        "cosine_final_lr_ratio": 0.1,
+        "optimizer": "Adam",
+        "optimizer_params": {"weight_decay": 0.0001},
+        "zero_weight_decay_on_bias_and_bn": True,
+        "ema": True,
+        "ema_params": {"decay": 0.9, "decay_type": "threshold"},
+        "max_epochs": EPOCHS,
+        "mixed_precision": True,
+        "loss": PPYoloELoss(
+            use_static_assigner=False,
+            num_classes=len(params['classes']),
+            reg_max=16
+        ),
+        "valid_metrics_list": [
+            DetectionMetrics_050(
+                score_thres=0.1,
+                top_k_predictions=300,
+                num_cls=len(params['classes']),
+                normalize_targets=True,
+                post_prediction_callback=PPYoloEPostPredictionCallback(
+                    score_threshold=0.01,
+                    nms_top_k=1000,
+                    max_predictions=300,
+                    nms_threshold=0.7
                 )
-            ],
-            "metric_to_watch": 'mAP@0.50:0.95'
-        }
-        
-        trainer = Trainer(
-            experiment_name=model_to_train, 
-            ckpt_root_dir=CHECKPOINT_DIR
-        )
+            ),
+            DetectionMetrics_050_095(
+                score_thres=0.1,
+                top_k_predictions=300,
+                num_cls=len(params['classes']),
+                normalize_targets=True,
+                calc_best_score_thresholds = True, 
+                post_prediction_callback=PPYoloEPostPredictionCallback(
+                    score_threshold=0.01,
+                    nms_top_k=1000,
+                    max_predictions=300,
+                    nms_threshold=0.7
+                )
+            )
+        ],
+        "metric_to_watch": 'mAP@0.50:0.95'
+    }
     
-        model = models.get(
-            model_to_train, 
-            num_classes=len(params['classes']), 
-            pretrained_weights="coco"
-        )
-    
-        trainer.train(
-            model=model, 
-            training_params=train_params, 
-            train_loader=train_data, 
-            valid_loader=val_data
-        )
+    trainer = Trainer(
+        experiment_name=model_to_train, 
+        ckpt_root_dir=CHECKPOINT_DIR
+    )
+
+    model = models.get(
+        model_to_train, 
+        num_classes=len(params['classes']), 
+        pretrained_weights="coco"
+    )
+
+    trainer.train(
+        model=model, 
+        training_params=train_params, 
+        train_loader=train_data, 
+        valid_loader=val_data
+    )
