@@ -133,8 +133,6 @@ dmypy.json
 *.err
 *.out
 
-# weights
-*.pth
 
 # venv
 /traffic_light_venv/

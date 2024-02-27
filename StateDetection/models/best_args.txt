@@ -1,0 +1,22 @@
+mode: train
+save_model_dir: C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\models\model_61086\lr0.01_batch64_block_simple_layers_[1, 1, 1, 1]
+load_model_dir: C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\models\model_61086\lr0.01_batch64_block_simple_layers_[1, 1, 1, 1]
+data_dir: TrafficLight
+train_data_dir: augmented_dataset
+resnet_layers: [1, 1, 1, 1]
+resnet_output_channels: [64, 128, 256, 512]
+resnet_block: simple
+batch_size: 64
+num_epochs: 1
+lr: 0.01
+num_workers: 1
+log_interval: 1
+seed: 0
+device: cpu
+input_sizes: (64, 64)
+num_classes: 5
+channel_size: 3
+predefined_model: None
+max_keep: 1200
+custom_id: 61086
+logf: <_io.TextIOWrapper name='C:\\Users\\Magnus\\OneDrive\\Studium\\3. Semester WS2324\\Praktikum BV\\TrafficLightDetection\\StateDetection\\models\\model_61086\\lr0.01_batch64_block_simple_layers_[1, 1, 1, 1]\\log.txt' mode='w' encoding='cp1252'>

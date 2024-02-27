@@ -30,7 +30,7 @@ def plot_loss_acc(val_losses, train_losses, val_accs, train_accs, dir):
     ax1.plot(val_losses, 'b', label='Validation loss')
     ax1.plot(train_losses, 'b', label='Train loss', linestyle='dashed', alpha=0.5)
     ax2.plot(val_accs, 'r', label='Validation accuracy')
-    ax2.plot(train_accs, 'r ', label='Train accuracy', linestyle='dashed', alpha=0.5)
+    ax2.plot(train_accs, 'r', label='Train accuracy', linestyle='dashed', alpha=0.5)
     ax1.set_xlabel('epoch')
     ax1.set_ylabel('Train loss', color='b')
     ax2.set_ylabel('Accuracy', color='r')

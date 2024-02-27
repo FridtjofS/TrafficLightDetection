@@ -289,8 +289,18 @@ def train(args, logf):
         epoch_start_time = time.time()
         model.train()
 
+        #lr_exp = torch.linspace(-3, 0, len(train_loader))
+        #lrs = 10 ** lr_exp
+
+        #lossi = []
+        #lri = []
+
         # Loop over each batch from the training set
         for batch_idx, (data, target) in enumerate(train_loader):
+            ###
+            #lr = lrs[batch_idx]
+            #optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=5e-4)
+            ###
             data, target = data.to(device), target.to(device).long()
             optimizer.zero_grad()
             output = model(data)
@@ -300,6 +310,9 @@ def train(args, logf):
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimizer.step()
             train_loss += loss.item()
+
+            #lossi.append(loss.item())
+            #lri.append(lr)
 
             pred = torch.argmax(output, dim=1)
             correct = pred.eq(target.view_as(pred)).sum().item()
@@ -312,7 +325,21 @@ def train(args, logf):
                     f"Train Epoch: {epoch} [{batch_idx * args.batch_size}/{len(train_loader.dataset)} ({100.0 * batch_idx / len(train_loader):.0f}%)]",
                     f"\tLoss: {loss:.6f}\tAccuracy: {acc:.6f}"
                 )
+
+        #### plot learning rate and loss
+        #plt.plot(lri, lossi)
+        #plt.title("Learning rate and loss")
+        #plt.xlabel("Learning rate")
+        #plt.ylabel("Loss")
+        ##plt.xscale("log")
+        ##plt.yscale("log")
+        #plt.tight_layout()
+        #plt.savefig(os.path.join(args.save_model_dir, "lr_loss.png"))
+        #plt.close()
+
         
+
+
         scheduler.step()
         train_loss /= len(train_loader)
         train_acc /= len(train_loader)
@@ -350,7 +377,6 @@ def train(args, logf):
         # Save model if validation accuracy is greater than best validation accuracy
         if val_acc > best_val_acc:
             best_val_acc = val_acc
-            # save independently of the device  (https://pytorch.org/tutorials/beginner/saving_loading_models.html)
             torch.save(model.state_dict(), os.path.join(args.save_model_dir, "model.pth"))
             args.load_model_dir = args.save_model_dir
             print2way(logf, "Model saved to %s" % args.save_model_dir)
@@ -370,6 +396,8 @@ def train(args, logf):
     
     # plot final prediction on validation set
     plot_final_prediction(args, val_loader, val_dataset, logf)
+
+    return best_val_acc
 
 def plot_final_prediction(args, val_loader, val_dataset, logf):
     """
@@ -643,50 +671,91 @@ def main():
     parser.add_argument("--num_classes", type=int, default=10, help="Number of classes")
     parser.add_argument("--channel_size", type=int, default=3, help="Number of channels")
     parser.add_argument("--predefined_model", type=str, default=None, help="Predefined model")
-    parser.add_argument("--max_keep", type=int, default=00, help="Maximum number of samples per class")
+    parser.add_argument("--max_keep", type=int, default=1200, help="Maximum number of samples per class")
 
     args = parser.parse_args()
 
     # Set directory to save model
     custom_id = np.random.randint(0, 100000)
 
-    exp_dir = os.path.join(args.save_model_dir, f"model_{custom_id}")
-    if not os.path.exists(exp_dir):
-        os.makedirs(exp_dir)
-    args.save_model_dir = exp_dir
-    args.custom_id = custom_id
+    # prepare grid search
+    lrs = [0.05, 0.01]
+    batch_sizes = [32, 64]
+    resnet_blocks = ["simple", ]
+    resnet_layers = [[1, 1, 1, 1], ]
 
-    # Set device
-    if args.device == "cuda" and not torch.cuda.is_available():
-        print("Warning: cuda not available, using cpu instead")
-        args.device = torch.device("cpu")
-    elif args.device == "cuda":
-        args.device = torch.device("cuda")
-    elif args.device == "dml":
-        try:
-            import torch_directml
-            args.device = torch_directml.device(torch_directml.default_device())
-            print("Using DirectML")
-        except:
-            pass
+    save_model_dir = args.save_model_dir
+
+    best_val_acc = 0
     
+    for lr in lrs:
+        for batch_size in batch_sizes:
+            for resnet_block in resnet_blocks:
+                for resnet_layer in resnet_layers:
+                    args.lr = lr
+                    args.batch_size = batch_size
+                    args.resnet_block = resnet_block
+                    args.resnet_layers = resnet_layer
+                    
 
-    print("args.save_model_dir", args.save_model_dir)
+                    ### end of grid search    
+                    ### Un-indent the following code to run normal training
+                    ###################################################################
+                    exp_dir = os.path.join(save_model_dir, f"model_{custom_id}")
+                    if not os.path.exists(exp_dir):
+                        os.makedirs(exp_dir)
+                    args.save_model_dir = exp_dir
+                    args.custom_id = custom_id
 
-    logf = open(os.path.join(args.save_model_dir, "log.txt"), "w")
-    args.logf = logf
+                    args.save_model_dir = os.path.join(args.save_model_dir, f"lr{lr}_batch{batch_size}_block_{resnet_block}_layers_{resnet_layer}")
+                    os.makedirs(args.save_model_dir)
+                    
+
+                    # Set device
+                    if args.device == "cuda" and not torch.cuda.is_available():
+                        print("Warning: cuda not available, using cpu instead")
+                        args.device = torch.device("cpu")
+                    elif args.device == "cuda":
+                        args.device = torch.device("cuda")
+                    elif args.device == "dml":
+                        try:
+                            import torch_directml
+                            args.device = torch_directml.device(torch_directml.default_device())
+                            print("Using DirectML")
+                        except:
+                            pass
+                    
+
+                    print("args.save_model_dir", args.save_model_dir)
+
+                    logf = open(os.path.join(args.save_model_dir, "log.txt"), "w")
+                    args.logf = logf
+
+                    val_acc = train(args, logf)
+                    if val_acc > best_val_acc:
+                        best_val_acc = val_acc
+                        best_args = args
+                    logf.close()
+
+    print("Best validation accuracy: ", best_val_acc)
+    print("Best arguments saved to ", os.path.join(save_model_dir, "best_args.txt"))
+    with open(os.path.join(save_model_dir, "best_args.txt"), "w") as f:
+        for arg in vars(best_args):
+            print(f"{arg}: {getattr(best_args, arg)}", file=f)
+        print("\n\nBest validation accuracy: ", best_val_acc, file=f)
+
     
-
+    
     
    
-    if args.mode == "train":
-        train(args, logf)
-    elif args.mode == "test":
-        test(args, logf)
-    elif args.mode == "plot":
-        plot_final_prediction(args, logf)
-    else:
-        raise Exception("Invalid mode")
+    #if args.mode == "train":
+    #    train(args, logf)
+    #elif args.mode == "test":
+    #    test(args, logf)
+    #elif args.mode == "plot":
+    #    plot_final_prediction(args, logf)
+    #else:
+    #    raise Exception("Invalid mode")
 
 if __name__ == "__main__":
     main()
