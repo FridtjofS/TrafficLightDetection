@@ -17,11 +17,12 @@ class TrafficLightStatePredictor:
             model_path: path to the model file
             device: device to run the model
         '''
+        self.input_size = (64, 64)
         self.model = ResNet(
             num_classes=5,
-            input_size=(128, 128),
+            input_size=self.input_size,
             channel_size=3,
-            layers=[1, 1, 1, 1],
+            layers=[2, 2, 2, 2],
             out_channels=[64, 128, 256, 512],
             blocktype="simple",
             device=device,
@@ -48,7 +49,7 @@ class TrafficLightStatePredictor:
 
         # Preprocess image
         transform =transforms.Compose([
-                transforms.Resize((128, 128)),
+                transforms.Resize(self.input_size),
                 transforms.ToTensor(),
                 transforms.Normalize((0.1307,), (0.3081,)),
             ])
@@ -105,7 +106,7 @@ if __name__ == "__main__":
 
     ########################## THIS IS THE MAIN PART ###############################
     # predict
-    predictor = TrafficLightStatePredictor(os.path.join('StateDetection', 'models', 'model_51107', 'model.pth'), device=device)
+    predictor = TrafficLightStatePredictor(os.path.join('StateDetection', 'models', '_model_best3', 'model.pth'), device=device)
     pred_states, pred_probs, pred_idxs = predictor.predict(imgs)
     ################################################################################
     
@@ -120,7 +121,11 @@ if __name__ == "__main__":
     fig.set_figwidth(10)
 
     for i in range(3):
-        ax[i].imshow(imgs[i])
+        ax[i].imshow(transforms.Compose([
+                transforms.Resize((64, 64)),
+                transforms.ToTensor(),
+                #transforms.Normalize((0.1307,), (0.3081,)),
+            ])(imgs[i]).transpose(0, 2).transpose(0, 1) )
         ax[i].set_title(f'Prediction:\n{pred_probs[i][pred_idxs[i]]*100:0.2f}% {pred_states[i]}')
         ax[i].axis('off')
     plt.show()

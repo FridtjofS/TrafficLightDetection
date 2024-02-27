@@ -681,9 +681,9 @@ def main():
     custom_id = np.random.randint(0, 100000)
 
     # prepare grid search
-    lrs = [0.001, 0.005, 0.01, 0.05, 0.1, 0.3, 0.5]
-    batch_sizes = [32, 64]
-    premodels = ["resnet18", "resnet34", "resnet50", "resnet101", "resnet152", "resnet200"]
+    lrs = [0.0005]
+    batch_sizes = [32, ]
+    premodels = ["resnet18"]
 
     best_params = {
         "lr": 0,
