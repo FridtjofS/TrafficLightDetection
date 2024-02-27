@@ -320,7 +320,7 @@ def train(args, logf):
             train_acc += acc
 
             # Print training status
-            if batch_idx % args.log_interval == 0:
+            if batch_idx % args.log_interval == 0 and batch_idx > 0:
                 print2way(logf, 
                     f"Train Epoch: {epoch} [{batch_idx * args.batch_size}/{len(train_loader.dataset)} ({100.0 * batch_idx / len(train_loader):.0f}%)]",
                     f"\tLoss: {loss:.6f}\tAccuracy: {acc:.6f}"
@@ -395,9 +395,9 @@ def train(args, logf):
     print2way(logf, "Total training time: ", strftime("%H:%M:%S", time.gmtime(time.time() - start_time)))
     
     # plot final prediction on validation set
-    plot_final_prediction(args, val_loader, val_dataset, logf)
+    test_val_acc = plot_final_prediction(args, val_loader, val_dataset, logf)
 
-    return best_val_acc
+    return test_val_acc
 
 def plot_final_prediction(args, val_loader, val_dataset, logf):
     """
@@ -545,6 +545,8 @@ def plot_final_prediction(args, val_loader, val_dataset, logf):
     print2way(logf, "Final Validation Accuracy: ", val_acc)
     print2way(logf, "Final prediction saved to %s" % os.path.join(args.save_model_dir, "final_prediction.png"))
 
+    return val_acc
+
 
 
 def test(args, logf):
@@ -679,23 +681,32 @@ def main():
     custom_id = np.random.randint(0, 100000)
 
     # prepare grid search
-    lrs = [0.05, 0.01]
+    lrs = [0.001, 0.005, 0.01, 0.05, 0.1, 0.3, 0.5]
     batch_sizes = [32, 64]
-    resnet_blocks = ["simple", ]
-    resnet_layers = [[1, 1, 1, 1], ]
+    premodels = ["resnet18", "resnet34", "resnet50", "resnet101", "resnet152", "resnet200"]
+
+    best_params = {
+        "lr": 0,
+        "batch_size": 0,
+        "premodel": "",
+    }
+
+    total_combinations = len(lrs) * len(batch_sizes) * len(premodels)
+    i = 0
 
     save_model_dir = args.save_model_dir
 
     best_val_acc = 0
     
+    
     for lr in lrs:
         for batch_size in batch_sizes:
-            for resnet_block in resnet_blocks:
-                for resnet_layer in resnet_layers:
+            #for resnet_block in resnet_blocks:
+                for premodel in premodels:
+                    i += 1
                     args.lr = lr
                     args.batch_size = batch_size
-                    args.resnet_block = resnet_block
-                    args.resnet_layers = resnet_layer
+                    args.predefined_model = premodel
                     
 
                     ### end of grid search    
@@ -707,7 +718,7 @@ def main():
                     args.save_model_dir = exp_dir
                     args.custom_id = custom_id
 
-                    args.save_model_dir = os.path.join(args.save_model_dir, f"lr{lr}_batch{batch_size}_block_{resnet_block}_layers_{resnet_layer}")
+                    args.save_model_dir = os.path.join(args.save_model_dir, f"lr{lr}_batch{batch_size}_premodel{premodel}")
                     os.makedirs(args.save_model_dir)
                     
 
@@ -734,15 +745,26 @@ def main():
                     val_acc = train(args, logf)
                     if val_acc > best_val_acc:
                         best_val_acc = val_acc
-                        best_args = args
+                        best_params["lr"] = lr
+                        best_params["batch_size"] = batch_size
+                        best_params["premodel"] = premodel
+
+
                     logf.close()
 
+                    print("Best validation accuracy: ", best_val_acc)
+                    print("-"*25)
+                    print("Progress: ", i, "/", total_combinations)
+                    print("-"*25)
+                    
+
     print("Best validation accuracy: ", best_val_acc)
-    print("Best arguments saved to ", os.path.join(save_model_dir, "best_args.txt"))
-    with open(os.path.join(save_model_dir, "best_args.txt"), "w") as f:
-        for arg in vars(best_args):
-            print(f"{arg}: {getattr(best_args, arg)}", file=f)
+    
+    with open(os.path.join(save_model_dir, f"model_{custom_id}", "best_params.txt"), "w") as f:
         print("\n\nBest validation accuracy: ", best_val_acc, file=f)
+        for k, v in best_params.items():
+            print(f"{k}: {v}", file=f)
+            
 
     
     
