@@ -95,7 +95,8 @@ def main():
     from StateDetection.predict import TrafficLightStatePredictor
     from ObjectDetection.predict import TrafficLightObjectDetector  
     from Visualization.ImageEditing import TrafficLightObject
-    from Visualization.VizGUI import get_input
+    #from Visualization.playground import get_input
+    from Visualization.InputGUI import get_input
 
 
     # Set Device 
@@ -112,30 +113,24 @@ def main():
 
     # Get input using GUI
    
-    input_type, input_path, save, save_path = get_input()
+    input_type, file_path, cam_num, show_status, save_status, save_dir = get_input()
 
     print("The input has been specified as follows.")
     print("Input Type:", input_type)
-    print("Input Path:", input_path)
-    print("Save Video:", save)
-    if save:
-        print("Save Path:", save_path)
-
+    print("Input Path:", file_path)
+    print("Camera Index:", cam_num)
+    print("Show processed video:", show_status)
+    print("Save porcessed video:", save_status)
+    print("Save Video to:", save_dir)
 
     # Capture input 
     if input_type == 0:
-        while True:
-            try:
-                cam_idx = int(input("Please specify integer index of input camera (Usually 0 for computers with only one camera): "))
-                break
-            except ValueError:
-                print("The camera index you specified was not integer valued. Please try again.")
         
         cap = cv2.VideoCapture(cam_idx)
             
     elif input_type == 1:
 
-        cap = cv2.VideoCapture(input_path)
+        cap = cv2.VideoCapture(file_path)
 
     else:
         raise Exception('No input has been specified. Choose input to continue.')
@@ -146,6 +141,8 @@ def main():
 
 
     # Process input video
+
+    frame_count = 0
 
     if (cap.isOpened() == False):
         print('Video / camera stream could not be opened.')
@@ -213,8 +210,10 @@ def main():
            
                 frame = object.get_labeled_image()
 
-            cv2.imshow('TrafficLightDetection Visualized', frame)
-            
+            #cv2.imshow('TrafficLightDetection Visualized', frame)
+            cv2.imwrite(os.path.join(save_dir , 'frame_'+str(frame_count)+'.jpg'), frame)
+        
+            frame_count += 1
 
             # Quit Camera / Video using 'q' key
             if cv2.waitKey(1) == ord('q'):
