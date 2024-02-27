@@ -44,7 +44,8 @@ def augment_data(od_path, sd_path, output_path):
         cropped_img = padded_img[y1 + top_bottom:y2 + top_bottom, x1 + left_right:x2 + left_right]
 
         # rescale image to 256x256
-        cropped_img = cv2.resize(cropped_img, (256, 256))
+        #cropped_img = cv2.resize(cropped_img, (256, 256))
+        cropped_img = cv2.resize(cropped_img, (128, 128))
 
         # save cropped image
         cropped_img_filename = Path(img_filename).stem + "_" + str(i) + ".jpg"

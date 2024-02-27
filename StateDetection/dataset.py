@@ -270,8 +270,8 @@ class StateDetectionDataset(Dataset):
         # convert list to numpy array
         #train_data = np.array(train_data)
         #val_data = np.array(val_data)
-        train_data_arr = np.zeros((len(train_data), self.input_size[0], self.input_size[1], 3))
-        val_data_arr = np.zeros((len(val_data), self.input_size[0], self.input_size[1], 3))
+        train_data_arr = np.zeros((len(train_data), self.input_size[0]*2, self.input_size[1]*2, 3))
+        val_data_arr = np.zeros((len(val_data), self.input_size[0]*2, self.input_size[1]*2, 3))
         for i in range(len(train_data)):
             train_data_arr[i] = train_data[i]
         for i in range(len(val_data)):
@@ -356,6 +356,8 @@ class StateDetectionDataset(Dataset):
         for i in range(len(data_list)):
             # load the data
             img = transforms.ToTensor()(Image.open(os.path.join(self.data_dir, data_list[i])))
+            #img = transforms.Resize((self.input_size[0]*2, self.input_size[1]*2))(img)
+            
             img = img.permute(1,2,0)
             
             # add the image to the list

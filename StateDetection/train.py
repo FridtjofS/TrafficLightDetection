@@ -132,28 +132,50 @@ def train(args, logf):
         print2way(logf, "Train dataset shape: ", train_dataset.data.shape) # (50000, 32, 32, 3)
         print2way(logf, "Train dataset labels shape: ", len(train_dataset.targets)) # 50000
     elif args.data_dir == "TrafficLight":
+        #train_transform_old = transforms.Compose([
+        #
+        #    transforms.RandomHorizontalFlip(),
+        #    transforms.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.4, hue=0),
+        #    
+        #    #transforms.Pad(64 , padding_mode="constant", fill= (255, 0, 0)), # for visualization
+        #    transforms.Pad(64 , padding_mode="edge"), 
+        #    transforms.RandomRotation(15),
+        #    transforms.RandomPerspective(distortion_scale=0.5, p=0.1),
+        #    transforms.RandomResizedCrop(size=(128, 128), scale=(0.5, 0.5), ratio=(1, 1)), 
+        #
+        #    transforms.ToTensor(),
+        #    transforms.Normalize((0.1307,), (0.3081,)),
+        #])
+
         train_transform = transforms.Compose([
-    
             transforms.RandomHorizontalFlip(),
             transforms.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.4, hue=0),
-            
-            #transforms.Pad(64 , padding_mode="constant", fill= (255, 0, 0)), # for visualization
-            transforms.Pad(64 , padding_mode="edge"), 
-            transforms.RandomRotation(15),
-            transforms.RandomPerspective(distortion_scale=0.5, p=0.1),
-            transforms.RandomResizedCrop(size=(128, 128), scale=(0.5, 0.5), ratio=(1, 1)), 
-
+            #transforms.RandomRotation(15),
+            #transforms.RandomPerspective(distortion_scale=0.5, p=0.1),
+            transforms.RandomResizedCrop(size=args.input_sizes, scale=(0.5, 0.5), ratio=(1, 1)), 
             transforms.ToTensor(),
             transforms.Normalize((0.1307,), (0.3081,)),
         ])
 
-        train_dataset = StateDetectionDataset(train=True, data_dir=os.path.join(cwd, "sd_train_data"), transform=train_transform, args=args)
-        val_dataset = StateDetectionDataset(train=False, data_dir=os.path.join(cwd, "sd_train_data"), transform=transforms.Compose([
-            #transforms.Resize((224, 224)),
+        val_transform_resize = transforms.Compose([
+            transforms.Resize(args.input_sizes),
             transforms.ToTensor(),
             transforms.Normalize((0.1307,), (0.3081,)),
-        ]), args=args)
-        args.input_sizes = (train_dataset.data.shape[1], train_dataset.data.shape[2])
+        ])
+        val_transform_centercrop = transforms.Compose([
+            transforms.CenterCrop(args.input_sizes),
+            transforms.ToTensor(),
+            transforms.Normalize((0.1307,), (0.3081,)),
+        ])
+        val_transform_randomresizedcrop = transforms.Compose([
+            transforms.RandomResizedCrop(size=args.input_sizes, scale=(0.5, 0.5), ratio=(1, 1)), 
+            transforms.ToTensor(),
+            transforms.Normalize((0.1307,), (0.3081,)),
+        ])
+
+        train_dataset = StateDetectionDataset(train=True, data_dir=os.path.join(cwd, args.train_data_dir), transform=train_transform, input_size=args.input_sizes, args=args)
+        val_dataset = StateDetectionDataset(train=False, data_dir=os.path.join(cwd, args.train_data_dir), transform=val_transform_centercrop, input_size=args.input_sizes, args=args)
+        
         args.channel_size = train_dataset.data.shape[3]
         args.num_classes = 5
         print2way(logf, "Train dataset shape: ", train_dataset.data.shape) # (40, 128, 128, 3)
@@ -221,7 +243,18 @@ def train(args, logf):
     import torchvision.utils as vutils
     img_grid = vutils.make_grid(images, normalize=True)
     plt.imshow(np.transpose(img_grid, (1, 2, 0)))
+    plt.title("Sample Training images")
+    plt.tight_layout()
     plt.savefig(os.path.join(args.save_model_dir, "sample_images.png"))
+    plt.close()
+    # same for validation set
+    dataiter = iter(val_loader)
+    images, labels = next(dataiter)
+    img_grid = vutils.make_grid(images, normalize=True)
+    plt.imshow(np.transpose(img_grid, (1, 2, 0)))
+    plt.title("Sample Validation images")
+    plt.tight_layout()
+    plt.savefig(os.path.join(args.save_model_dir, "sample_val_images.png"))
     plt.close()
     
 
@@ -235,8 +268,10 @@ def train(args, logf):
 
     # Initialize best validation accuracy
     best_val_acc = 0
+    val_loss_list = []
     train_loss_list = []
     val_acc_list = []
+    train_acc_list = []
 
     print2way(logf, "\nArguments:\n")
     for arg in vars(args):
@@ -306,8 +341,11 @@ def train(args, logf):
         )
 
         # Add loss to list
+        val_loss_list.append(val_loss)
         train_loss_list.append(train_loss)
         val_acc_list.append(val_acc)
+        train_acc_list.append(train_acc)
+
 
         # Save model if validation accuracy is greater than best validation accuracy
         if val_acc > best_val_acc:
@@ -319,7 +357,7 @@ def train(args, logf):
 
         
         # Plot training loss and validation accuracy toegether in the same plot, but on different y axes
-        plot_loss_acc(train_loss_list, val_acc_list, args.save_model_dir)
+        plot_loss_acc(val_loss_list, train_loss_list, val_acc_list, train_acc_list, args.save_model_dir)
         
     # Save training loss and validation accuracy lists
     with open(os.path.join(args.save_model_dir, "train_loss_list.pkl"), "wb") as f:
@@ -590,6 +628,7 @@ def main():
     parser.add_argument("--save_model_dir", type=str, default=os.path.join(cwd, "models"), help="Directory to save model")
     parser.add_argument("--load_model_dir", type=str, default=os.path.join(cwd, "models"), help="Directory to load model")
     parser.add_argument("--data_dir", type=str, default="TrafficLight", help="Training data directory")
+    parser.add_argument("--train_data_dir", type=str, default="augmented_dataset", help="train data directory")
     parser.add_argument("--resnet_layers", type=list, default=[1,1,1,1], help="Number of layers in each block")
     parser.add_argument("--resnet_output_channels", type=list, default=[64, 128, 256, 512], help="Number of output channels in each layer")
     parser.add_argument("--resnet_block", type=str, default="simple", help="Type of block")
@@ -600,11 +639,11 @@ def main():
     parser.add_argument("--log_interval", type=int, default=1, help="Logging interval")
     parser.add_argument("--seed", type=int, default=0, help="Random seed")
     parser.add_argument("--device", type=str, default="cpu", help="Device")
-    parser.add_argument("--input_sizes", type=tuple, default=(128, 128), help="Input image size")
+    parser.add_argument("--input_sizes", type=tuple, default=(64, 64), help="Input image size")
     parser.add_argument("--num_classes", type=int, default=10, help="Number of classes")
     parser.add_argument("--channel_size", type=int, default=3, help="Number of channels")
     parser.add_argument("--predefined_model", type=str, default=None, help="Predefined model")
-    parser.add_argument("--max_keep", type=int, default=1200, help="Maximum number of samples per class")
+    parser.add_argument("--max_keep", type=int, default=00, help="Maximum number of samples per class")
 
     args = parser.parse_args()
 
