@@ -10,37 +10,62 @@ class EndGUI(QMainWindow):
         
         self.setWindowTitle("Traffic Light Detection - Visualizer")
         self.setGeometry(100, 100, 370, 110)
-        
+
         self.initUI()
         
     def initUI(self):
 
-        text_or = QLabel("Processing finished. How would you like to proceed?", self)
-        text_or.setGeometry(30, 20, 330, 15)
+        self.text = QLabel("Processing finished. How would you like to proceed?", self)
+        self.text.setGeometry(30, 20, 330, 15)
 
-        playvid_button = QPushButton('Play Video', self)
-        playvid_button.setGeometry(10, 50, 110, 50)
+        self.playvid_button = QPushButton('Play Video', self)
+        self.playvid_button.setGeometry(10, 50, 110, 50)
+        self.playvid_button.clicked.connect(self.play_video)
     
-        newvid_button = QPushButton('New Video', self)
-        newvid_button.setGeometry(130, 50, 110, 50) 
+        self.newvid_button = QPushButton('New Video', self)
+        self.newvid_button.setGeometry(130, 50, 110, 50) 
+        self.newvid_button.clicked.connect(self.new_video)
 
-        close_button = QPushButton('Close Tool', self)
-        close_button.setGeometry(250, 50, 110, 50)
+        self.close_button = QPushButton('Close Tool', self)
+        self.close_button.setGeometry(250, 50, 110, 50)
+        self.close_button.clicked.connect(self.close_tool)
+    
+
+    def play_video(self):
+
+        global task
+        task = 'play'
+
+        self.close()
+
+    def new_video(self):
+
+        global task
+        task = 'new'
+
+        self.close()
+
+    def close_tool(self):
+
+        global task
+        task = 'close'
+
+        self.close()
+
 
         
 
         
 
-def main():
+def todo_next():
 
-    os.chdir("/Users/nadia/TrafficLightDetection")
+    global task
 
     app = QApplication(sys.argv)
     window = EndGUI()
     app.setWindowIcon(QIcon(os.path.join('Visualization', 'TL_icon.png')))
     window.show()
-    sys.exit(app.exec())
+    app.exec()
 
+    return task
 
-if __name__ == "__main__":
-    main()

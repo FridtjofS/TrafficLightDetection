@@ -72,12 +72,13 @@ def main():
     import torch
 
 
-    # Set system path
+    ################### Set system path -> Needs to be specified !!! #################
 
     sys.path.append('/Users/nadia/TrafficLightDetection')
     print('sys path:', sys.path)
 
-    # Set working directory 
+
+    ############### Set working directory -> Needs to be specified !!! ###############
     
     current_dir = os.getcwd()
     print("Current working directory:", current_dir)
@@ -85,6 +86,7 @@ def main():
     working_dir = os.getcwd()
     print("New working directory:", working_dir)
 
+    ###################################################################################
 
     # Imports 
 
@@ -95,8 +97,9 @@ def main():
     from StateDetection.predict import TrafficLightStatePredictor
     from ObjectDetection.predict import TrafficLightObjectDetector  
     from Visualization.ImageEditing import TrafficLightObject
-    #from Visualization.playground import get_input
     from Visualization.InputGUI import get_input
+    from Visualization.EndGUI import todo_next
+    from Visualization.VideoProcessing import TrafficLightVideo
 
 
     # Set Device 
@@ -126,18 +129,11 @@ def main():
     # Capture input 
     if input_type == 0:
         
-        cap = cv2.VideoCapture(cam_idx)
+        cap = cv2.VideoCapture(cam_num)  # TODO: Noch testen !!!
             
     elif input_type == 1:
 
         cap = cv2.VideoCapture(file_path)
-
-    else:
-        raise Exception('No input has been specified. Choose input to continue.')
-    
-
-    # Specify path to parent directory 'TrafficLightDetection'
-    #sys.path.append('TrafficLightDetection')
 
 
     # Process input video
@@ -152,7 +148,7 @@ def main():
         ret, frame = cap.read()
         if(ret == True):
 
-            detector_path = os.path.join('ObjectDetection', 'checkpoints/yolo_nas_s', 'RUN_20240223_132442_026334', 'ckpt_best.pth') 
+            detector_path = os.path.join('ObjectDetection', 'checkpoints', 'yolo_nas_s', 'RUN_20240223_132442_026334', 'ckpt_best.pth') 
             detector = TrafficLightObjectDetector(detector_path, device=device)
 
             predictor_path = os.path.join('StateDetection', 'models', 'model_51107', 'model.pth') 
@@ -168,7 +164,7 @@ def main():
                 color = (255, 255, 255)
                 textcolor = (0, 0, 0)
 
-                print(classification['states'][i])
+                #print(classification['states'][i])
 
                 if classification['states'][i] == 'off':
                     color = (146, 146, 146)
@@ -187,8 +183,8 @@ def main():
                     textcolor = (0, 100, 0)
 
                 c1 = classification['bboxes_conf'][i]
-                c2 = max(classification['states_conf'][i])
-                confidence = c1 * c2
+                c2 = max(classification['states_conf'][i])   # TODO: Threshhold einbauen! und color dann ändern
+                confidence = c1 * c2   
 
                 class_dict = {
                     'frame' : frame,
@@ -210,24 +206,45 @@ def main():
            
                 frame = object.get_labeled_image()
 
-            #cv2.imshow('TrafficLightDetection Visualized', frame)
-            cv2.imwrite(os.path.join(save_dir , 'frame_'+str(frame_count)+'.jpg'), frame)
+            if show_status == True:
+                cv2.imshow('TrafficLightDetection Visualized', frame)
+
+                if cv2.waitKey(1) == ord('q'):  # Quit Visualization using 'q' key. This quits the entire Pipeline!
+                    break
+            
+            if save_status == True:
+                cv2.imwrite(os.path.join(save_dir , 'frame_'+str(frame_count)+'.jpg'), frame)
         
             frame_count += 1
-
-            # Quit Camera / Video using 'q' key
-            if cv2.waitKey(1) == ord('q'):
-                break
             
         else:
-            if cv2.waitKey(1) == ord('q'):
+            task = todo_next()
+
+            if task == 'play':
+                video = TrafficLightVideo(save_dir)
+                video.make_video()
+                video.play_video()
+
+            elif task == 'new':
+
+                input_type, file_path, cam_num, show_status, save_status, save_dir = get_input()
+                frame_count = 0
+
+                if input_type == 0:
+                    cap = cv2.VideoCapture(cam_num)  # TODO: Noch testen !!!
+                elif input_type == 1:
+                    cap = cv2.VideoCapture(file_path)
+                
+            elif task == 'close':
                 break
+            else:
+                print('Do not know what to do')
+
 
 
     cap.release()
     cv2.destroyAllWindows()
-    print('End of video.')
-
+    print('The End.')
 
 
 if __name__ == '__main__':

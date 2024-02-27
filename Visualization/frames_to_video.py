@@ -8,14 +8,14 @@ print(os.getcwd())
 
 # Folder which contains all the images 
 # from which video is to be generated 
-os.chdir("/Users/nadia/Documents/Uni/WS23/ProgrammierPraktikum/VizExamples/Frankfurt") 
-path = "/Users/nadia/Documents/Uni/WS23/ProgrammierPraktikum/VizExamples/Frankfurt"
+os.chdir("/Users/nadia/Documents/Uni/WS23/ProgrammierPraktikum/Daten/Koeln/Fahrt1") 
+path = "/Users/nadia/Documents/Uni/WS23/ProgrammierPraktikum/Daten/Koeln/Fahrt1"
 
 mean_height = 0
 mean_width = 0
 
 num_of_images = len(os.listdir('.')) 
-# print(num_of_images) 
+
 
 for file in os.listdir('.'):
 	if file.endswith(".jpg") or file.endswith(".jpeg") or file.endswith("png"): 
@@ -23,21 +23,14 @@ for file in os.listdir('.'):
 		width, height = im.size 
 		mean_width += width 
 		mean_height += height 
-        # im.show() # uncomment this for displaying the image 
 
 # Finding the mean height and width of all images. 
-# This is required because the video frame needs 
-# to be set with same width and height. Otherwise 
-# images not equal to that width height will not get 
-# embedded into the video 
+
 mean_width = int(mean_width / num_of_images) 
 mean_height = int(mean_height / num_of_images) 
 
-# print(mean_height) 
-# print(mean_width) 
-
 # Resizing of the images to give 
-# them same width and height 
+
 print('Resizing frames...')
 for file in os.listdir('.'): 
 	if file.endswith(".jpg") or file.endswith(".jpeg") or file.endswith("png"): 
@@ -59,8 +52,8 @@ for file in os.listdir('.'):
 def generate_video(): 
 	print('Generating Video...')
 	image_folder = '.' # make sure to use your folder 
-	video_name = 'Frankfurt.avi'
-	os.chdir("/Users/nadia/Documents/Uni/WS23/ProgrammierPraktikum/VizExamples/Frankfurt") 
+	video_name = 'Fahrt1.avi'
+	os.chdir("/Users/nadia/Documents/Uni/WS23/ProgrammierPraktikum/Daten/Koeln/Fahrt1") 
 	
 	images = [img for img in os.listdir(image_folder) 
 			if img.endswith(".jpg") or
@@ -95,7 +88,7 @@ generate_video()
 
 print('Play Video:')
 
-vid_reader = cv2.VideoCapture('/Users/nadia/Documents/Uni/WS23/ProgrammierPraktikum/VizExamples/Frankfurt/Frankfurt.avi') 
+vid_reader = cv2.VideoCapture('/Users/nadia/Documents/Uni/WS23/ProgrammierPraktikum/Daten/Koeln/Fahrt1/Fahrt1.avi') 
 while True:
     ret, frame = vid_reader.read()
     if not ret:
