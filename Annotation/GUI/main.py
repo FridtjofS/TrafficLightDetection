@@ -363,6 +363,15 @@ class MainWindow(QWidget):
         shutil.copy(path, input_path)
         self.load_image(path)
 
+        self.annotated = []
+        self.bbox = {
+            'x1': None,
+            'y1': None,
+            'x2': None,
+            'y2': None,
+            'state': None
+        }
+
         # delete txt file with the same name as the image in od_output_path + annotations
         if os.path.exists(os.path.join(od_output_path, "annotations", Path(path).stem + ".txt")):
             # read in the txt file and count the number of annotations
@@ -420,6 +429,10 @@ class MainWindow(QWidget):
                 os.remove(tf_path + ".json")
 
 
+        if len(os.listdir(self.settings_window.input_folder.text())) >= 1:
+            self.next.setEnabled(True)
+
+
 
 
         
@@ -461,6 +474,11 @@ class MainWindow(QWidget):
             self.settings_error("The input directory you selected is empty,\nplease select a different directory")
             return None
         else:
+            if len(os.listdir(image_dir)) == 1:
+                self.next.setEnabled(False)
+            else:
+                self.next.setEnabled(True)
+
             images = os.listdir(image_dir)
             image = os.path.join(image_dir, images[0])
             ending = Path(image).suffix
@@ -478,10 +496,13 @@ class MainWindow(QWidget):
     
     # load image into GUI
     def load_image(self, path):
-
         # load image
         if path == None:
+            print("No image to load")
             self.pixmap = QPixmap()
+            self.label.setPixmap(self.pixmap)
+            self.settings_error("The input directory you selected is empty,\nplease select a different directory")
+            return
         else:
             self.pixmap = QPixmap(path)
 

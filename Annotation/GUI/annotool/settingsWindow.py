@@ -116,24 +116,27 @@ class SettingsWindow(QWidget):
 
     def open_folder_dialog_input(self):
         folder = QFileDialog.getExistingDirectory(self, "Select Directory")
-        # get relative path to annotool folder 
-        relative_path = os.path.relpath(folder, os.getcwd())
-        # update button text
-        self.input_folder.setText(relative_path)
+        if folder:
+            # get relative path to annotool folder 
+            relative_path = os.path.relpath(folder, os.getcwd())
+            # update button text
+            self.input_folder.setText(relative_path)
 
     def open_folder_dialog_od_output(self):
         folder = QFileDialog.getExistingDirectory(self, "Select Directory")
+        if folder:
         # get relative path to annotool folder 
-        relative_path = os.path.relpath(folder, os.getcwd())
-        # update button text
-        self.od_output_folder.setText(relative_path)
+            relative_path = os.path.relpath(folder, os.getcwd())
+            # update button text
+            self.od_output_folder.setText(relative_path)
 
     def open_folder_dialog_sd_output(self):
         folder = QFileDialog.getExistingDirectory(self, "Select Directory")
-        # get relative path to annotool folder 
-        relative_path = os.path.relpath(folder, os.getcwd())
-        # update button text
-        self.sd_output_folder.setText(relative_path)
+        if folder:
+            # get relative path to annotool folder 
+            relative_path = os.path.relpath(folder, os.getcwd())
+            # update button text
+            self.sd_output_folder.setText(relative_path)
 
     def save_settings(self):
         # get user settings

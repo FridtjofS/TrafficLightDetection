@@ -58,6 +58,15 @@
 - To open the Settings Window again, press the small Gear Icon in the lower left corner.
 - To End the Annotation Tool press **End Session** in the lower left corner. Here the Statistic Window will appear, and you can compareyourself to your fellow annotators.
 
+---
+
+## Annotation Guidelines
+
+- Annotate all fully visible traffic lights in the image, even if they are off.
+- Only annotate traffic lights that are mostly front facing.
+- Do not annotate traffic lights that are occluded more than 30%, or not all lights are visible.
+- Draw the bounding box as tightly as possible around the traffic light, but include some background rather than cutting off the traffic light.
+- Only annotate traffic lights with 3 lights, but include ones with arrows or different shapes.
 
 
 

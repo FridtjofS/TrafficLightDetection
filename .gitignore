@@ -133,6 +133,12 @@ dmypy.json
 *.err
 *.out
 
+# weights
+*.pth
+
+# venv
+/traffic_light_venv/
+
 
 /StateDetection/data/
 .vscode/launch.json
