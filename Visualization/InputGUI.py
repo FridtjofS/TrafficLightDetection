@@ -112,7 +112,8 @@ class InputGUI(QMainWindow):
 
         global input_type, file_path, cam_num, show_status, save_status, save_dir
 
-        if self.input_type:
+        input_type = None
+        if self.input_type == 0 or 1:
             input_type = self.input_type
         else:
             QMessageBox.warning(self, "Warning", "No input selected. Please choose input to proceed.")
@@ -122,6 +123,7 @@ class InputGUI(QMainWindow):
         show_status = self.show_status
         save_status = self.save_status
 
+        save_dir = None
         if input_type:
             if self.save_status:
                 if self.save_dir:
