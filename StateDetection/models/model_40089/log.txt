@@ -1,0 +1,79 @@
+
+Original Distribution: 
+off 12
+red 697
+red_yellow 211
+yellow 288
+green 1286
+
+ 
+Distribution BEFORE keeping max_keep samples per class: 
+off 9
+red 557
+red_yellow 168
+yellow 230
+green 1028
+off 3
+red 140
+red_yellow 43
+yellow 58
+green 258
+
+ 
+Distribution AFTER keeping max_keep samples per class: 
+off 960
+red 960
+red_yellow 960
+yellow 960
+green 960
+off 240
+red 240
+red_yellow 240
+yellow 240
+green 240
+
+ 
+Train dataset shape:  (4800, 128, 128, 3)
+Val dataset shape:  (1200, 128, 128, 3)
+Train dataset labels shape:  4800
+Val dataset labels shape:  1200
+Train transform:  Compose(
+    RandomHorizontalFlip(p=0.5)
+    ColorJitter(brightness=(0.9, 1.1), contrast=(0.9, 1.1), saturation=(0.6, 1.4), hue=None)
+    Pad(padding=64, fill=0, padding_mode=edge)
+    RandomRotation(degrees=[-15.0, 15.0], interpolation=nearest, expand=False, fill=0)
+    RandomPerspective(p=0.1)
+    RandomResizedCrop(size=(128, 128), scale=(0.5, 0.5), ratio=(1, 1), interpolation=bilinear, antialias=warn)
+    ToTensor()
+    Normalize(mean=(0.1307,), std=(0.3081,))
+)
+
+Total number of parameters:  4911237 
+
+
+Arguments:
+
+mode: train
+save_model_dir: C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\models\model_40089
+load_model_dir: C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\models
+data_dir: TrafficLight
+resnet_layers: [1, 1, 1, 1]
+resnet_output_channels: [64, 128, 256, 512]
+resnet_block: simple
+batch_size: 32
+num_epochs: 30
+lr: 0.001
+num_workers: 1
+log_interval: 1
+seed: 0
+device: cpu
+input_sizes: (128, 128)
+num_classes: 5
+channel_size: 3
+predefined_model: None
+max_keep: 1200
+custom_id: 40089
+logf: <_io.TextIOWrapper name='C:\\Users\\Magnus\\OneDrive\\Studium\\3. Semester WS2324\\Praktikum BV\\TrafficLightDetection\\StateDetection\\models\\model_40089\\log.txt' mode='w' encoding='cp1252'>
+
+
+

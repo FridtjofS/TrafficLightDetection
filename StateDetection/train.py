@@ -28,36 +28,33 @@ from dataset import StateDetectionDataset
 from utils import *
 
 
-import cv2
-import numpy as np
-import torchvision.transforms as transforms
-import torchvision.transforms.functional as F
-from PIL import Image
+#import cv2
 
-class RandomAffineNearest(transforms.RandomAffine):
-    def __init__(self, degrees, translate=None, scale=None, shear=None, resample=False, fillcolor=None):
-        super().__init__(degrees, translate, scale, shear, resample, fillcolor)
 
-    def __call__(self, img):
-        """
-        Args:
-            img (PIL Image): Image to be transformed.
-
-        Returns:
-            PIL Image: Affine transformed image.
-        """
-        angle, translations, scale, shear = self.get_params(self.degrees, self.translate, self.scale, self.shear, img.size)
-        center = (img.size[0] / 2, img.size[1] / 2)
-        matrix = F._get_inverse_affine_matrix(center, angle, translations, scale, shear)
-        
-        # Convert PIL Image to OpenCV format (numpy array)
-        img_np = np.array(img)
-        
-        # Apply affine transformation using OpenCV
-        transformed_img = cv2.warpAffine(img_np, np.array(matrix).reshape(2, 3), dsize=img.size, flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
-        
-        # Convert back to PIL Image
-        return Image.fromarray(transformed_img)
+#class RandomAffineNearest(transforms.RandomAffine):
+#    def __init__(self, degrees, translate=None, scale=None, shear=None, resample=False, fillcolor=None):
+#        super().__init__(degrees, translate, scale, shear, resample, fillcolor)
+#
+#    def __call__(self, img):
+#        """
+#        Args:
+#            img (PIL Image): Image to be transformed.
+#
+#        Returns:
+#            PIL Image: Affine transformed image.
+#        """
+#        angle, translations, scale, shear = self.get_params(self.degrees, self.translate, self.scale, self.shear, img.size)
+#        center = (img.size[0] / 2, img.size[1] / 2)
+#        matrix = F._get_inverse_affine_matrix(center, angle, translations, scale, shear)
+#        
+#        # Convert PIL Image to OpenCV format (numpy array)
+#        img_np = np.array(img)
+#        
+#        # Apply affine transformation using OpenCV
+#        transformed_img = cv2.warpAffine(img_np, np.array(matrix).reshape(2, 3), dsize=img.size, flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
+#        
+#        # Convert back to PIL Image
+#        return Image.fromarray(transformed_img)
         
 
 def train(args, logf):
@@ -135,21 +132,22 @@ def train(args, logf):
         print2way(logf, "Train dataset shape: ", train_dataset.data.shape) # (50000, 32, 32, 3)
         print2way(logf, "Train dataset labels shape: ", len(train_dataset.targets)) # 50000
     elif args.data_dir == "TrafficLight":
-        
-        train_dataset = StateDetectionDataset(train=True, data_dir=os.path.join(cwd, "sd_train_data"), transform=transforms.Compose([
-            #transforms.Resize((224, 224)),
-            ### working ###
+        train_transform = transforms.Compose([
+    
             transforms.RandomHorizontalFlip(),
-            #transforms.RandomRotation(15),
-            transforms.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.2, hue=0),
-            ### until here ###
-            #RandomAffineNearest(degrees=0, translate=(0.3, 0.3))
-            transforms.Pad(64 , padding_mode="edge"), # image = 64 + 128 + 64 = 256
-            transforms.RandomRotation(10),
-            transforms.RandomResizedCrop(size=(128, 128), scale=(0.4, 0.6), ratio=(1, 1)), 
+            transforms.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.4, hue=0),
+            
+            #transforms.Pad(64 , padding_mode="constant", fill= (255, 0, 0)), # for visualization
+            transforms.Pad(64 , padding_mode="edge"), 
+            transforms.RandomRotation(15),
+            transforms.RandomPerspective(distortion_scale=0.5, p=0.1),
+            transforms.RandomResizedCrop(size=(128, 128), scale=(0.5, 0.5), ratio=(1, 1)), 
+
             transforms.ToTensor(),
             transforms.Normalize((0.1307,), (0.3081,)),
-        ]), args=args)
+        ])
+
+        train_dataset = StateDetectionDataset(train=True, data_dir=os.path.join(cwd, "sd_train_data"), transform=train_transform, args=args)
         val_dataset = StateDetectionDataset(train=False, data_dir=os.path.join(cwd, "sd_train_data"), transform=transforms.Compose([
             #transforms.Resize((224, 224)),
             transforms.ToTensor(),
@@ -162,6 +160,7 @@ def train(args, logf):
         print2way(logf, "Val dataset shape: ", val_dataset.data.shape) # (40, 128, 128, 3)
         print2way(logf, "Train dataset labels shape: ", len(train_dataset.label)) # 40
         print2way(logf, "Val dataset labels shape: ", len(val_dataset.label))
+        print2way(logf, "Train transform: ", train_transform)
         
 
 
@@ -224,7 +223,7 @@ def train(args, logf):
     plt.imshow(np.transpose(img_grid, (1, 2, 0)))
     plt.savefig(os.path.join(args.save_model_dir, "sample_images.png"))
     plt.close()
-    exit()
+    
 
     #print2way(logf, summary(model, (args.channel_size, 224, 224)))
     # Define optimizer
@@ -605,7 +604,7 @@ def main():
     parser.add_argument("--num_classes", type=int, default=10, help="Number of classes")
     parser.add_argument("--channel_size", type=int, default=3, help="Number of channels")
     parser.add_argument("--predefined_model", type=str, default=None, help="Predefined model")
-    parser.add_argument("--max_keep", type=int, default=300, help="Maximum number of samples per class")
+    parser.add_argument("--max_keep", type=int, default=1200, help="Maximum number of samples per class")
 
     args = parser.parse_args()
 
