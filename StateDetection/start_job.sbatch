@@ -29,9 +29,9 @@
 #nvidia-smi
 
 #singularity run-help /common/singularityImages/TCML-CUDA12_0_TF2_12_PT1_13.simg
-cd /home/stud468/TrafficLightDetection/StateDetection
+cd /home/stud125/TrafficLightDetection/StateDetection
 
-singularity exec --nv /home/stud468/sdc_gym_amd64.simg python -u /home/stud468/TrafficLightDetection/StateDetection/train.py 
+singularity exec --nv /home/stud125/sdc_gym_amd64.simg python -u /home/stud125/TrafficLightDetection/StateDetection/train.py --max_keep 1200 --num_epochs 15 --log_interval 5000 --device "cuda"
 
 #source /home/stud468/TrafficLightDetection/traffic_light_venv/bin/activate
 
