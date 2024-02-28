@@ -2,7 +2,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from utils import print2way
+import sys
+sys.path.append('/Users/nadia/TrafficLightDetection')
+
+from StateDetection.utils import print2way
 
 '''
 Create a ResNet model which can work with both simple and bottleneck blocks.
