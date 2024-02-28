@@ -146,6 +146,9 @@ def main():
     while(cap.isOpened()):
 
         ret, frame = cap.read()
+        frame_width = cap.get(3)
+        frame_height = cap.get(4)
+
         if(ret == True):
 
             detector_path = os.path.join('ObjectDetection', 'checkpoints', 'yolo_nas_s', 'RUN_20240223_132442_026334', 'ckpt_best.pth') 
@@ -183,11 +186,16 @@ def main():
                     textcolor = (0, 100, 0)
 
                 c1 = classification['bboxes_conf'][i]
-                c2 = max(classification['states_conf'][i])   # TODO: Threshhold einbauen! und color dann ändern
+                c2 = max(classification['states_conf'][i])  
                 confidence = c1 * c2   
+
+                if c2 <= 0.6: # State Detection Threshold
+                    color = (255, 255, 255)
 
                 class_dict = {
                     'frame' : frame,
+                    'heigth' : frame_height,
+                    'width' : frame_width,
                     'bbox' : classification['bboxes'][i],
                     'color' : color,
                     'textcolor' : textcolor,
