@@ -132,7 +132,7 @@ def main():
         print('Video / camera stream could not be opened.')
 
     cwd = os.getcwd()
-    detector_path = os.path.join(cwd, 'ObjectDetection', 'checkpoints', 'ckpt_best.pth') 
+    detector_path = os.path.join(cwd, 'ObjectDetection', 'checkpoints', 'yolo_nas_l', 'ckpt_best.pth') 
     detector = TrafficLightObjectDetector(detector_path, device=device)
     
     predictor_path = os.path.join('StateDetection', 'models', '_model_best3', 'model.pth') 
