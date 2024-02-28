@@ -126,6 +126,7 @@ def main():
         if input_type == 0:
             video_name = 'CameraStream_processed'
             i = 0
+            print(save_dir)
             while os.path.exists(os.path.join(save_dir, video_name + '.avi')):
                 video_name = 'CameraStream_processed_' + str(i)
                 i += 1
@@ -172,6 +173,7 @@ def main():
 
     classifier = TrafficLightClassifier(detector, predictor, device)
 
+    fps = 1
     while(cap.isOpened()):
 
         ret, frame = cap.read()
@@ -179,6 +181,7 @@ def main():
         frame_height = cap.get(4)
 
         if(ret == True):
+            fps = cap.get(cv2.CAP_PROP_FPS)
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             
             classification = classifier.classify(frame) 
@@ -257,7 +260,7 @@ def main():
             task = todo_next()
 
             if task == 'play':
-                video = TrafficLightVideo(save_dir, temp_dir)
+                video = TrafficLightVideo(save_dir, temp_dir, fps)
                 video.make_video()
                 video.play_video()
 
@@ -279,7 +282,7 @@ def main():
     # compile Video if save_status is True
     if save_status == True:
         if os.path.exists(temp_dir):
-            video = TrafficLightVideo(save_dir, temp_dir)
+            video = TrafficLightVideo(save_dir, temp_dir, fps)
             video.make_video()
 
     cap.release()
