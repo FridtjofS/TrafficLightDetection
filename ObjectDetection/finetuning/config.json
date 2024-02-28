@@ -10,11 +10,10 @@
     "classes": [
         "traffic light"
     ],
-    "epochs": 100,
-    "batch_size": 2,
+    "epochs": 200,
+    "batch_size": 4,
     "workers": 1,
     "models": [
-        "yolo_nas_s",
         "yolo_nas_l"
     ]
 }

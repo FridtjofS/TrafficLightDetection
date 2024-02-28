@@ -15,7 +15,7 @@ from super_gradients.training.metrics import (
 )
 from super_gradients.training.models.detection_models.pp_yolo_e import PPYoloEPostPredictionCallback
 
-with open('ObjectDetection/config.json', 'r') as json_file:
+with open('ObjectDetection/finetuning/config.json', 'r') as json_file:
     params = json.load(json_file)
 
 EPOCHS = params['epochs']
