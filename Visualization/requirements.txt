@@ -1,1 +1,6 @@
-PyQt6
+PyQt6
+Pillow
+opencv-python
+torch
+torchvision
+utils

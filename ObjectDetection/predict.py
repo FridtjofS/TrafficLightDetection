@@ -77,4 +77,10 @@ if __name__ == "__main__":
     # predict
     checkpoint = os.path.join(dir, 'checkpoints/yolo_nas_s', 'RUN_20240223_132442_026334', 'ckpt_best.pth')
     predictor = TrafficLightObjectDetector(checkpoint, device=device)
+    
     predictor.show(imgs)
+
+    for img in imgs:
+        bboxes_xyxy, confidences = predictor.predict(img)
+        print(bboxes_xyxy, confidences)
+        print(len(bboxes_xyxy))
