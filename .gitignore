@@ -142,3 +142,6 @@ dmypy.json
 .vscode/launch.json
 
 .DS_Store
+ObjectDetection/checkpoints/yolo_nas_s/RUN_20240223_132442_026334/ckpt_best.pth
+ObjectDetection/checkpoints/ckpt_best.pth
+ObjectDetection/checkpoints/yolo_nas_l/ckpt_best.pth

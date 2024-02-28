@@ -3,6 +3,7 @@
 from PIL import Image
 
 
+
 # TrafficLightClassifier
 
 class TrafficLightClassifier:
@@ -71,22 +72,8 @@ def main():
     import cv2
     import torch
 
-
-    ################### Set system path -> Needs to be specified !!! #################
-
-    sys.path.append('/Users/nadia/TrafficLightDetection')
-    print('sys path:', sys.path)
-
-
-    ############### Set working directory -> Needs to be specified !!! ###############
-    
-    current_dir = os.getcwd()
-    print("Current working directory:", current_dir)
-    os.chdir("/Users/nadia/TrafficLightDetection")
-    working_dir = os.getcwd()
-    print("New working directory:", working_dir)
-
-    ###################################################################################
+    # Add parent directory to path
+    sys.path.insert(1, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 
     # Imports 
 
@@ -110,6 +97,7 @@ def main():
         try:
             import torch_directml
             device = torch_directml.device(torch_directml.default_device())
+            #device = torch.device("cpu")
         except:
             device = torch.device("cpu")
 
@@ -143,21 +131,26 @@ def main():
     if (cap.isOpened() == False):
         print('Video / camera stream could not be opened.')
 
+    cwd = os.getcwd()
+    detector_path = os.path.join(cwd, 'ObjectDetection', 'checkpoints', 'ckpt_best.pth') 
+    detector = TrafficLightObjectDetector(detector_path, device=device)
+    
+    predictor_path = os.path.join('StateDetection', 'models', '_model_best3', 'model.pth') 
+    predictor = TrafficLightStatePredictor(predictor_path, device=device)
+
+    classifier = TrafficLightClassifier(detector, predictor, device)
+
     while(cap.isOpened()):
 
         ret, frame = cap.read()
         frame_width = cap.get(3)
         frame_height = cap.get(4)
 
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+
         if(ret == True):
-
-            detector_path = os.path.join('ObjectDetection', 'checkpoints', 'yolo_nas_s', 'RUN_20240223_132442_026334', 'ckpt_best.pth') 
-            detector = TrafficLightObjectDetector(detector_path, device=device)
-
-            predictor_path = os.path.join('StateDetection', 'models', 'model_51107', 'model.pth') 
-            predictor = TrafficLightStatePredictor(predictor_path, device=device)
-
-            classifier = TrafficLightClassifier(detector, predictor, device)
+            
             classification = classifier.classify(frame) 
 
             num_lights = classification['lights']
@@ -173,21 +166,21 @@ def main():
                     color = (146, 146, 146)
                     textcolor = (30, 30, 30)
                 elif classification['states'][i] == 'red':
-                    color = (60, 20, 220)  
-                    textcolor = (0, 0, 139) 
+                    color = (220, 20, 60)  
+                    textcolor = (139, 0, 0) 
                 elif classification['states'][i] == 'red_yellow':
-                    color = (0, 165, 255)  
-                    textcolor = (0, 140, 255) 
+                    color = (255, 165, 0)  
+                    textcolor = (255, 140, 0) 
                 elif classification['states'][i] == 'yellow':
-                    color = (0, 215, 255) 
-                    textcolor = (0, 255, 255)  
+                    color = (255, 215, 0) 
+                    textcolor = (255, 255, 0)  
                 elif classification['states'][i] == 'green':
                     color = (0, 100, 0)   
                     textcolor = (0, 100, 0)
 
                 c1 = classification['bboxes_conf'][i]
                 c2 = max(classification['states_conf'][i])  
-                confidence = c1 * c2   
+                confidence = c1 #* c2   
 
                 if c2 <= 0.6: # State Detection Threshold
                     color = (255, 255, 255)
@@ -215,6 +208,7 @@ def main():
                 frame = object.get_labeled_image()
 
             if show_status == True:
+                frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
                 cv2.imshow('TrafficLightDetection Visualized', frame)
 
                 if cv2.waitKey(1) == ord('q'):  # Quit Visualization using 'q' key. This quits the entire Pipeline!

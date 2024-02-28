@@ -26,7 +26,7 @@ class TrafficLightStatePredictor:
             num_classes=5,
             input_size=self.input_size,
             channel_size=3,
-            layers=[2, 2, 2, 2],
+            layers=[2, 2, 2, 2], #[1, 1, 1, 1],#[2, 2, 2, 2],
             out_channels=[64, 128, 256, 512],
             blocktype="simple",
             device=device,
@@ -49,6 +49,7 @@ class TrafficLightStatePredictor:
             probs: probability of the predicted state
             names: name of the predicted state
         '''
+
         imgs = [img.convert('RGB') for img in imgs]
 
         # Preprocess image
