@@ -37,6 +37,9 @@ class TrafficLightClassifier:
         for i in range(num_tl):
             bboxes_coordinates_int = [int(x) for x in bboxes_coordinates[i]]
             img_crop = image.crop(bboxes_coordinates_int)
+            if img_crop.size[0] >= 64 or img_crop.size[1] >= 64:
+                img_crop = img_crop.resize((64, 64))
+                print('Resized image to 64x64')
             #img_crop.show()
             tl_imgs.append(img_crop)
 
@@ -71,6 +74,7 @@ def main():
     import sys
     import cv2
     import torch
+    from pathlib import Path
 
     # Add parent directory to path
     sys.path.insert(1, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
@@ -80,6 +84,7 @@ def main():
     from PIL import Image
     from PyQt6.QtGui import QIcon
     from PyQt6.QtWidgets import QApplication
+    import random
 
     from StateDetection.predict import TrafficLightStatePredictor
     from ObjectDetection.predict import TrafficLightObjectDetector  
@@ -114,6 +119,33 @@ def main():
     print("Save porcessed video:", save_status)
     print("Save Video to:", save_dir)
 
+    temp_dir = save_dir
+    video_name = ""
+
+    if save_status == True:
+        if input_type == 0:
+            video_name = 'CameraStream_processed'
+            i = 0
+            while os.path.exists(os.path.join(save_dir, video_name + '.avi')):
+                video_name = 'CameraStream_processed_' + str(i)
+                i += 1
+        elif input_type == 1:
+            video_name = Path(os.path.basename(file_path)).stem + '_processed'
+            i = 0
+            while os.path.exists(os.path.join(save_dir, video_name + '.avi')):
+                video_name = Path(os.path.basename(file_path)).stem + '_processed_' + str(i)
+                i += 1
+
+        # create temp directory to save frames
+        if not os.path.exists(save_dir):
+            print('Save Directory does not exist. end.')
+            return
+        # create random directory name
+        temp_dir = os.path.join(save_dir, 'temp_' + str(random.randint(0, 1000000)))
+        os.makedirs(temp_dir)
+
+
+
     # Capture input 
     if input_type == 0:
         
@@ -146,10 +178,8 @@ def main():
         frame_width = cap.get(3)
         frame_height = cap.get(4)
 
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-
         if(ret == True):
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             
             classification = classifier.classify(frame) 
 
@@ -211,11 +241,15 @@ def main():
                 frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
                 cv2.imshow('TrafficLightDetection Visualized', frame)
 
-                if cv2.waitKey(1) == ord('q'):  # Quit Visualization using 'q' key. This quits the entire Pipeline!
+                if cv2.waitKey(1) == ord('q') or cv2.waitKey(1) == 27:  # Quit Visualization using 'q' key. This quits the entire Pipeline!
+                    break
+                if cv2.getWindowProperty('TrafficLightDetection Visualized', cv2.WND_PROP_VISIBLE) < 1:
                     break
             
             if save_status == True:
-                cv2.imwrite(os.path.join(save_dir , 'frame_'+str(frame_count)+'.jpg'), frame)
+                #cv2.imwrite(os.path.join(save_dir , 'frame_'+str(frame_count)+'.jpg'), frame)
+                #cv2.imwrite(os.path.join(temp_dir , 'frame_'+str(frame_count)+'.jpg'), frame)
+                cv2.imwrite(os.path.join(temp_dir , (video_name + '_frame_'+str(frame_count)+'.jpg')), frame)
         
             frame_count += 1
             
@@ -223,7 +257,7 @@ def main():
             task = todo_next()
 
             if task == 'play':
-                video = TrafficLightVideo(save_dir)
+                video = TrafficLightVideo(save_dir, temp_dir)
                 video.make_video()
                 video.play_video()
 
@@ -242,7 +276,11 @@ def main():
             else:
                 print('Do not know what to do')
 
-
+    # compile Video if save_status is True
+    if save_status == True:
+        if os.path.exists(temp_dir):
+            video = TrafficLightVideo(save_dir, temp_dir)
+            video.make_video()
 
     cap.release()
     cv2.destroyAllWindows()
