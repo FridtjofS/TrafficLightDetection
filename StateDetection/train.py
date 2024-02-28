@@ -150,7 +150,7 @@ def train(args, logf):
         train_transform = transforms.Compose([
             transforms.RandomHorizontalFlip(),
             transforms.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.4, hue=0),
-            #transforms.RandomRotation(15),
+            transforms.RandomRotation(15),
             #transforms.RandomPerspective(distortion_scale=0.5, p=0.1),
             transforms.RandomResizedCrop(size=args.input_sizes, scale=(0.5, 0.5), ratio=(1, 1)), 
             transforms.ToTensor(),
@@ -190,8 +190,11 @@ def train(args, logf):
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
     val_loader = DataLoader(val_dataset, batch_size=args.batch_size, 
                             shuffle=False, num_workers=args.num_workers)
-
-    if args.predefined_model == "resnet18":
+    if args.predefined_model == "resnet10":
+        args.resnet_layers = [1, 1, 1, 1]
+        args.resnet_output_channels = [64, 128, 256, 512]
+        args.resnet_block = "simple"
+    elif args.predefined_model == "resnet18":
         args.resnet_layers = [2, 2, 2, 2]
         args.resnet_output_channels = [64, 128, 256, 512]
         args.resnet_block = "simple"
@@ -263,7 +266,14 @@ def train(args, logf):
     #optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
     optimizer = torch.optim.SGD(model.parameters(), lr=args.lr, momentum=0.9, weight_decay=5e-4)
     criterion = nn.CrossEntropyLoss()
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.num_epochs, eta_min=0.0001)
+    if args.annealer == "cosine":
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.num_epochs, eta_min=0.0001)
+    elif args.annealer == "exponential":
+        scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.95)
+    elif args.annealer == "linear":
+        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
+    else:
+        raise Exception("Invalid annealer")
     model.to(device)
 
     # Initialize best validation accuracy
@@ -667,13 +677,14 @@ def main():
     parser.add_argument("--lr", type=float, default=1e-3, help="Learning rate")
     parser.add_argument("--num_workers", type=int, default=1, help="Number of workers")
     parser.add_argument("--log_interval", type=int, default=1, help="Logging interval")
-    parser.add_argument("--seed", type=int, default=0, help="Random seed")
+    parser.add_argument("--seed", type=int, default=1, help="Random seed")
     parser.add_argument("--device", type=str, default="cpu", help="Device")
     parser.add_argument("--input_sizes", type=tuple, default=(64, 64), help="Input image size")
     parser.add_argument("--num_classes", type=int, default=10, help="Number of classes")
     parser.add_argument("--channel_size", type=int, default=3, help="Number of channels")
     parser.add_argument("--predefined_model", type=str, default=None, help="Predefined model")
     parser.add_argument("--max_keep", type=int, default=1200, help="Maximum number of samples per class")
+    parser.add_argument("--annealer", type=str, default="cosine", help="Learning rate annealer")
 
     args = parser.parse_args()
 
@@ -681,17 +692,19 @@ def main():
     custom_id = np.random.randint(0, 100000)
 
     # prepare grid search
-    lrs = [0.0005]
-    batch_sizes = [32, ]
-    premodels = ["resnet18"]
+    lrs = [0.0001]
+    batch_sizes = [32]
+    premodels = ["resnet34"]
+    annealers = ["cosine"]
 
     best_params = {
         "lr": 0,
         "batch_size": 0,
         "premodel": "",
+        "annealer": "",
     }
 
-    total_combinations = len(lrs) * len(batch_sizes) * len(premodels)
+    total_combinations = len(lrs) * len(batch_sizes) * len(premodels) * len(annealers)
     i = 0
 
     save_model_dir = args.save_model_dir
@@ -701,13 +714,13 @@ def main():
     
     for lr in lrs:
         for batch_size in batch_sizes:
-            #for resnet_block in resnet_blocks:
+            for annealer in annealers:
                 for premodel in premodels:
                     i += 1
                     args.lr = lr
                     args.batch_size = batch_size
                     args.predefined_model = premodel
-                    
+                    args.annealer = annealer
 
                     ### end of grid search    
                     ### Un-indent the following code to run normal training
@@ -718,7 +731,7 @@ def main():
                     args.save_model_dir = exp_dir
                     args.custom_id = custom_id
 
-                    args.save_model_dir = os.path.join(args.save_model_dir, f"lr{lr}_batch{batch_size}_premodel{premodel}")
+                    args.save_model_dir = os.path.join(args.save_model_dir, f"lr{lr}_batch{batch_size}_premodel{premodel}_annealer{annealer}")
                     os.makedirs(args.save_model_dir)
                     
 
@@ -748,6 +761,7 @@ def main():
                         best_params["lr"] = lr
                         best_params["batch_size"] = batch_size
                         best_params["premodel"] = premodel
+                        best_params["annealer"] = annealer
 
 
                     logf.close()
