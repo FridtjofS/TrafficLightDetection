@@ -22,6 +22,8 @@ sdist/
 var/
 wheels/
 pip-wheel-metadata/
+StateDetection/models/model_secret_full
+StateDetection/models/model_secret_smol
 share/python-wheels/
 *.egg-info/
 .installed.cfg
