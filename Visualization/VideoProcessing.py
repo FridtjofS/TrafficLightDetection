@@ -5,10 +5,11 @@ from PIL import Image
 
 class TrafficLightVideo:
 
-    def __init__(self, save_path, temp_path=None):
+    def __init__(self, save_path, temp_path=None, fps=1):
 
         self.save_path = save_path
         self.temp_path = temp_path
+        self.fps = fps
 
 
     def make_video(self):
@@ -58,9 +59,8 @@ class TrafficLightVideo:
         
         frame = cv2.imread(os.path.join(image_folder, images[0])) 
         
-        height, width, layers = frame.shape 
-        fps = 1
-        video = cv2.VideoWriter(self.video_name, cv2.VideoWriter_fourcc(*"DIVX"), fps, (width, height)) 
+        height, width, layers = frame.shape
+        video = cv2.VideoWriter(self.video_name, cv2.VideoWriter_fourcc(*"DIVX"), self.fps, (width, height)) 
         
         for image in images: 
               video.write(cv2.imread(os.path.join(image_folder, image)))

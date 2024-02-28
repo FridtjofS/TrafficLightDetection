@@ -19,6 +19,7 @@ class InputGUI(QMainWindow):
         self.save_dir = None
         
         self.initUI()
+
         
     def initUI(self):
         self.live_button = QPushButton('Capture Live Video', self)
@@ -124,15 +125,14 @@ class InputGUI(QMainWindow):
         save_status = self.save_status
 
         save_dir = None
-        if input_type:
-            if self.save_status:
-                if self.save_dir:
-                    save_dir = self.save_dir
-                else:
-                    QMessageBox.warning(self, "Warning", "Please specify a directory to save processed video.")
+        
+        if self.save_status:
+            if self.save_dir:
+                save_dir = self.save_dir
+            else:
+                QMessageBox.warning(self, "Warning", "Please specify a directory to save processed video.")
 
         self.close()
-
 
         
 
@@ -145,6 +145,9 @@ def get_input():
     window = InputGUI()
     window.show()
     app.exec()
+
+    if save_dir == None:
+        save_dir = os.getcwd()
 
     return input_type, file_path, cam_num, show_status, save_status, save_dir
 

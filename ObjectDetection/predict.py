@@ -22,7 +22,7 @@ class TrafficLightObjectDetector:
         self.model.eval()
         self.device = device
 
-    def predict(self, img):
+    def predict(self, img, conf=0.45):
         '''
         Predict bbox of traffic lights
         
@@ -36,27 +36,21 @@ class TrafficLightObjectDetector:
         
         # Predict
         with torch.no_grad():
-            output = self.model.predict(img)       
+            output = self.model.predict(img, conf=conf)       
         
             confidences = output.prediction.confidence
             bboxes_xyxy = output.prediction.bboxes_xyxy
             
         return bboxes_xyxy, confidences
     
-    def show(self, imgs):
+    def show(self, imgs, conf = 0.45):
 
         with torch.no_grad():
-            outputs = self.model.predict(imgs)
+            outputs = self.model.predict(imgs, conf=conf)
 
         for output in outputs._images_prediction_lst:
             output.show()
-            
-def make_bboxes_relative(bboxes_xyxy, img):
-    #TODO maybe
-    pass
-    
-    
-            
+
 
 if __name__ == "__main__":
     # choosing 3 random images from "od_train_data" folder 
@@ -75,13 +69,6 @@ if __name__ == "__main__":
         device = torch.device("cpu")
 
     # predict
-    #checkpoint = os.path.join(dir, 'checkpoints/yolo_nas_s', 'RUN_20240223_132442_026334', 'ckpt_best.pth')
-    checkpoint = os.path.join(os.getcwd(), 'ObjectDetection', 'checkpoints', 'yolo_nas_l', 'ckpt_best.pth') 
+    checkpoint = os.path.join(dir, 'checkpoints', 'yolo_nas_l', 'ckpt_best.pth')
     predictor = TrafficLightObjectDetector(checkpoint, device=device)
-    
-    predictor.show(imgs)
-
-    for img in imgs:
-        bboxes_xyxy, confidences = predictor.predict(img)
-        print(bboxes_xyxy, confidences)
-        print(len(bboxes_xyxy))
+    predictor.show(imgs, conf = 0.45)

@@ -125,6 +125,7 @@ def main():
         if input_type == 0:
             video_name = 'CameraStream_processed'
             i = 0
+            print(save_dir)
             while os.path.exists(os.path.join(save_dir, video_name + '.avi')):
                 video_name = 'CameraStream_processed_' + str(i)
                 i += 1
@@ -175,6 +176,7 @@ def main():
 
     classifier = TrafficLightClassifier(detector, predictor, device)
 
+    fps = 1
     while(cap.isOpened()):
 
         ret, frame = cap.read()
@@ -182,6 +184,7 @@ def main():
         frame_height = cap.get(4)
 
         if(ret == True):
+            fps = cap.get(cv2.CAP_PROP_FPS)
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             
             classification = classifier.classify(frame) 
@@ -196,19 +199,19 @@ def main():
                 #print(classification['states'][i])
 
                 if classification['states'][i] == 'off':
-                    color = (146, 146, 146)
+                    color = (20, 20, 86)
                     textcolor = (30, 30, 30)
                 elif classification['states'][i] == 'red':
-                    color = (220, 20, 60)  
+                    color = (245, 86, 86)  
                     textcolor = (139, 0, 0) 
                 elif classification['states'][i] == 'red_yellow':
-                    color = (255, 165, 0)  
+                    color = (245, 150, 86)  
                     textcolor = (255, 140, 0) 
                 elif classification['states'][i] == 'yellow':
-                    color = (255, 215, 0) 
+                    color = (245, 245, 86) 
                     textcolor = (255, 255, 0)  
                 elif classification['states'][i] == 'green':
-                    color = (0, 100, 0)   
+                    color = (100, 245, 86)   
                     textcolor = (0, 100, 0)
 
                 c1 = classification['bboxes_conf'][i]
@@ -260,7 +263,7 @@ def main():
             task = todo_next()
 
             if task == 'play':
-                video = TrafficLightVideo(save_dir, temp_dir)
+                video = TrafficLightVideo(save_dir, temp_dir, fps)
                 video.make_video()
                 video.play_video()
 
@@ -282,7 +285,7 @@ def main():
     # compile Video if save_status is True
     if save_status == True:
         if os.path.exists(temp_dir):
-            video = TrafficLightVideo(save_dir, temp_dir)
+            video = TrafficLightVideo(save_dir, temp_dir, fps)
             video.make_video()
 
     cap.release()
