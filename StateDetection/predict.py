@@ -26,12 +26,17 @@ class TrafficLightStatePredictor:
             num_classes=5,
             input_size=self.input_size,
             channel_size=3,
-            layers=[2, 2, 2, 2], #[1, 1, 1, 1],#[2, 2, 2, 2],
+            layers=[1, 1, 1, 1], #[1, 1, 1, 1],#[2, 2, 2, 2],
             out_channels=[64, 128, 256, 512],
             blocktype="simple",
             device=device,
         )
-        self.model.load_state_dict(torch.load(model_path, map_location=device))
+        if device == 'cpu':
+            self.model.load_state_dict(torch.load(model_path, map_location=device))
+        elif device == 'cuda':
+            self.model.load_state_dict(torch.load(model_path, map_location=device))
+        else:
+            self.model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
         self.model.to(device)
         self.model.eval()
         self.device = device

@@ -102,7 +102,6 @@ def main():
         try:
             import torch_directml
             device = torch_directml.device(torch_directml.default_device())
-            #device = torch.device("cpu")
         except:
             device = torch.device("cpu")
 
@@ -167,7 +166,11 @@ def main():
     detector_path = os.path.join(cwd, 'ObjectDetection', 'checkpoints', 'yolo_nas_l', 'ckpt_best.pth') 
     detector = TrafficLightObjectDetector(detector_path, device=device)
     
-    predictor_path = os.path.join('StateDetection', 'models', '_model_best3', 'model.pth') 
+    if device == torch.device("cpu") or device == torch.device("cuda"):
+        model_dir = "_model_best4_cpu"
+    else:
+        model_dir = "_model_best5_dml"
+    predictor_path = os.path.join('StateDetection', 'models', model_dir, 'model.pth')  
     predictor = TrafficLightStatePredictor(predictor_path, device=device)
 
     classifier = TrafficLightClassifier(detector, predictor, device)

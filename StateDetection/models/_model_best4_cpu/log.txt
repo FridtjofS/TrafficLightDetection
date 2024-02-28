@@ -1,0 +1,408 @@
+
+Original Distribution: 
+off 12
+red 697
+red_yellow 211
+yellow 288
+green 1286
+
+ 
+Distribution BEFORE keeping max_keep samples per class: 
+off 9
+red 557
+red_yellow 168
+yellow 230
+green 1028
+off 3
+red 140
+red_yellow 43
+yellow 58
+green 258
+
+ 
+Distribution AFTER keeping max_keep samples per class: 
+off 960
+red 960
+red_yellow 960
+yellow 960
+green 960
+off 240
+red 240
+red_yellow 240
+yellow 240
+green 240
+
+ 
+Train dataset shape:  (4800, 128, 128, 3)
+Val dataset shape:  (1200, 128, 128, 3)
+Train dataset labels shape:  4800
+Val dataset labels shape:  1200
+Train transform:  Compose(
+    RandomHorizontalFlip(p=0.5)
+    ColorJitter(brightness=(0.9, 1.1), contrast=(0.9, 1.1), saturation=(0.6, 1.4), hue=None)
+    RandomRotation(degrees=[-15.0, 15.0], interpolation=nearest, expand=False, fill=0)
+    RandomResizedCrop(size=(64, 64), scale=(0.5, 0.5), ratio=(1, 1), interpolation=bilinear, antialias=warn)
+    ToTensor()
+    Normalize(mean=(0.1307,), std=(0.3081,))
+)
+
+Total number of parameters:  4911237 
+
+
+Arguments:
+
+mode: train
+save_model_dir: /home/stud125/TrafficLightDetection/StateDetection/models/model_34410/lr0.0003_batch32_premodelresnet10_annealercosine
+load_model_dir: /home/stud125/TrafficLightDetection/StateDetection/models/model_34410/lr0.0001_batch32_premodelresnet10_annealerlinear
+data_dir: TrafficLight
+train_data_dir: augmented_dataset
+resnet_layers: [1, 1, 1, 1]
+resnet_output_channels: [64, 128, 256, 512]
+resnet_block: simple
+batch_size: 32
+num_epochs: 100
+lr: 0.0003
+num_workers: 1
+log_interval: 5000
+seed: 1
+device: cuda
+input_sizes: (64, 64)
+num_classes: 5
+channel_size: 3
+predefined_model: resnet10
+max_keep: 1200
+annealer: cosine
+custom_id: 34410
+logf: <_io.TextIOWrapper name='/home/stud125/TrafficLightDetection/StateDetection/models/model_34410/lr0.0003_batch32_premodelresnet10_annealercosine/log.txt' mode='w' encoding='UTF-8'>
+
+
+
+
+Epoch: 0	Train Loss: 1.569086	Train Acc: 0.295417	Val Loss: 1.561935 	Val Acc: 0.300987	Time: 12.71s
+
+Model saved to /home/stud125/TrafficLightDetection/StateDetection/models/model_34410/lr0.0003_batch32_premodelresnet10_annealercosine
+
+Epoch: 1	Train Loss: 1.483313	Train Acc: 0.391667	Val Loss: 1.482852 	Val Acc: 0.388980	Time: 12.95s
+
+Model saved to /home/stud125/TrafficLightDetection/StateDetection/models/model_34410/lr0.0003_batch32_premodelresnet10_annealercosine
+
+Epoch: 2	Train Loss: 1.410349	Train Acc: 0.452917	Val Loss: 1.394777 	Val Acc: 0.455592	Time: 12.83s
+
+Model saved to /home/stud125/TrafficLightDetection/StateDetection/models/model_34410/lr0.0003_batch32_premodelresnet10_annealercosine
+
+Epoch: 3	Train Loss: 1.345186	Train Acc: 0.489375	Val Loss: 1.301438 	Val Acc: 0.523026	Time: 12.78s
+
+Model saved to /home/stud125/TrafficLightDetection/StateDetection/models/model_34410/lr0.0003_batch32_premodelresnet10_annealercosine
+
+Epoch: 4	Train Loss: 1.283267	Train Acc: 0.537708	Val Loss: 1.230012 	Val Acc: 0.555921	Time: 12.93s
+
+Model saved to /home/stud125/TrafficLightDetection/StateDetection/models/model_34410/lr0.0003_batch32_premodelresnet10_annealercosine
+
+Epoch: 5	Train Loss: 1.215126	Train Acc: 0.573958	Val Loss: 1.147335 	Val Acc: 0.610197	Time: 12.88s
+
+Model saved to /home/stud125/TrafficLightDetection/StateDetection/models/model_34410/lr0.0003_batch32_premodelresnet10_annealercosine
+
+Epoch: 6	Train Loss: 1.147961	Train Acc: 0.613125	Val Loss: 1.040369 	Val Acc: 0.648026	Time: 12.98s
+
+Model saved to /home/stud125/TrafficLightDetection/StateDetection/models/model_34410/lr0.0003_batch32_premodelresnet10_annealercosine
+
+Epoch: 7	Train Loss: 1.085137	Train Acc: 0.644375	Val Loss: 0.978644 	Val Acc: 0.661184	Time: 12.86s
+
+Model saved to /home/stud125/TrafficLightDetection/StateDetection/models/model_34410/lr0.0003_batch32_premodelresnet10_annealercosine
+
+Epoch: 8	Train Loss: 1.036633	Train Acc: 0.656458	Val Loss: 0.895835 	Val Acc: 0.691612	Time: 12.99s
+
+Model saved to /home/stud125/TrafficLightDetection/StateDetection/models/model_34410/lr0.0003_batch32_premodelresnet10_annealercosine
+
+Epoch: 9	Train Loss: 0.974011	Train Acc: 0.676875	Val Loss: 0.829272 	Val Acc: 0.705592	Time: 12.95s
+
+Model saved to /home/stud125/TrafficLightDetection/StateDetection/models/model_34410/lr0.0003_batch32_premodelresnet10_annealercosine
+
+Epoch: 10	Train Loss: 0.916604	Train Acc: 0.708125	Val Loss: 0.765255 	Val Acc: 0.792763	Time: 12.89s
+
+Model saved to /home/stud125/TrafficLightDetection/StateDetection/models/model_34410/lr0.0003_batch32_premodelresnet10_annealercosine
+
+Epoch: 11	Train Loss: 0.864758	Train Acc: 0.730208	Val Loss: 0.727868 	Val Acc: 0.800164	Time: 12.94s
+
+Model saved to /home/stud125/TrafficLightDetection/StateDetection/models/model_34410/lr0.0003_batch32_premodelresnet10_annealercosine
+
+Epoch: 12	Train Loss: 0.826034	Train Acc: 0.752083	Val Loss: 0.653380 	Val Acc: 0.805921	Time: 12.93s
+
+Model saved to /home/stud125/TrafficLightDetection/StateDetection/models/model_34410/lr0.0003_batch32_premodelresnet10_annealercosine
+
+Epoch: 13	Train Loss: 0.775064	Train Acc: 0.768125	Val Loss: 0.621825 	Val Acc: 0.812500	Time: 12.94s
+
+Model saved to /home/stud125/TrafficLightDetection/StateDetection/models/model_34410/lr0.0003_batch32_premodelresnet10_annealercosine
+
+Epoch: 14	Train Loss: 0.733588	Train Acc: 0.781250	Val Loss: 0.612445 	Val Acc: 0.810033	Time: 13.21s
+
+
+Epoch: 15	Train Loss: 0.690240	Train Acc: 0.800833	Val Loss: 0.545345 	Val Acc: 0.819901	Time: 13.26s
+
+Model saved to /home/stud125/TrafficLightDetection/StateDetection/models/model_34410/lr0.0003_batch32_premodelresnet10_annealercosine
+
+Epoch: 16	Train Loss: 0.653474	Train Acc: 0.808542	Val Loss: 0.527934 	Val Acc: 0.824836	Time: 13.47s
+
+Model saved to /home/stud125/TrafficLightDetection/StateDetection/models/model_34410/lr0.0003_batch32_premodelresnet10_annealercosine
+
+Epoch: 17	Train Loss: 0.622078	Train Acc: 0.818958	Val Loss: 0.499001 	Val Acc: 0.815789	Time: 12.89s
+
+
+Epoch: 18	Train Loss: 0.582797	Train Acc: 0.836250	Val Loss: 0.474547 	Val Acc: 0.828125	Time: 12.83s
+
+Model saved to /home/stud125/TrafficLightDetection/StateDetection/models/model_34410/lr0.0003_batch32_premodelresnet10_annealercosine
+
+Epoch: 19	Train Loss: 0.553729	Train Acc: 0.841250	Val Loss: 0.466939 	Val Acc: 0.833059	Time: 12.96s
+
+Model saved to /home/stud125/TrafficLightDetection/StateDetection/models/model_34410/lr0.0003_batch32_premodelresnet10_annealercosine
+
+Epoch: 20	Train Loss: 0.538539	Train Acc: 0.848125	Val Loss: 0.440395 	Val Acc: 0.816612	Time: 12.88s
+
+
+Epoch: 21	Train Loss: 0.503650	Train Acc: 0.858958	Val Loss: 0.434667 	Val Acc: 0.829770	Time: 13.02s
+
+
+Epoch: 22	Train Loss: 0.481230	Train Acc: 0.861250	Val Loss: 0.407617 	Val Acc: 0.821546	Time: 13.44s
+
+
+Epoch: 23	Train Loss: 0.467209	Train Acc: 0.869583	Val Loss: 0.390792 	Val Acc: 0.837171	Time: 13.31s
+
+Model saved to /home/stud125/TrafficLightDetection/StateDetection/models/model_34410/lr0.0003_batch32_premodelresnet10_annealercosine
+
+Epoch: 24	Train Loss: 0.436645	Train Acc: 0.883750	Val Loss: 0.367081 	Val Acc: 0.837171	Time: 13.17s
+
+
+Epoch: 25	Train Loss: 0.421609	Train Acc: 0.883333	Val Loss: 0.369974 	Val Acc: 0.830592	Time: 12.89s
+
+
+Epoch: 26	Train Loss: 0.406471	Train Acc: 0.891458	Val Loss: 0.366573 	Val Acc: 0.834704	Time: 12.89s
+
+
+Epoch: 27	Train Loss: 0.392335	Train Acc: 0.895000	Val Loss: 0.346714 	Val Acc: 0.832237	Time: 12.79s
+
+
+Epoch: 28	Train Loss: 0.387103	Train Acc: 0.897083	Val Loss: 0.325254 	Val Acc: 0.834704	Time: 12.87s
+
+
+Epoch: 29	Train Loss: 0.373335	Train Acc: 0.901042	Val Loss: 0.329763 	Val Acc: 0.837171	Time: 13.06s
+
+
+Epoch: 30	Train Loss: 0.353491	Train Acc: 0.908333	Val Loss: 0.331940 	Val Acc: 0.902961	Time: 12.90s
+
+Model saved to /home/stud125/TrafficLightDetection/StateDetection/models/model_34410/lr0.0003_batch32_premodelresnet10_annealercosine
+
+Epoch: 31	Train Loss: 0.346430	Train Acc: 0.912500	Val Loss: 0.322455 	Val Acc: 0.838816	Time: 12.92s
+
+
+Epoch: 32	Train Loss: 0.327944	Train Acc: 0.913958	Val Loss: 0.324736 	Val Acc: 0.897204	Time: 12.81s
+
+
+Epoch: 33	Train Loss: 0.316439	Train Acc: 0.919167	Val Loss: 0.316106 	Val Acc: 0.840461	Time: 12.88s
+
+
+Epoch: 34	Train Loss: 0.312790	Train Acc: 0.922083	Val Loss: 0.314985 	Val Acc: 0.898026	Time: 12.93s
+
+
+Epoch: 35	Train Loss: 0.318880	Train Acc: 0.917083	Val Loss: 0.313475 	Val Acc: 0.845395	Time: 12.88s
+
+
+Epoch: 36	Train Loss: 0.292086	Train Acc: 0.927292	Val Loss: 0.338548 	Val Acc: 0.844572	Time: 12.83s
+
+
+Epoch: 37	Train Loss: 0.279351	Train Acc: 0.933958	Val Loss: 0.301549 	Val Acc: 0.841283	Time: 12.76s
+
+
+Epoch: 38	Train Loss: 0.283535	Train Acc: 0.924167	Val Loss: 0.260447 	Val Acc: 0.902961	Time: 12.86s
+
+
+Epoch: 39	Train Loss: 0.281249	Train Acc: 0.926042	Val Loss: 0.289395 	Val Acc: 0.901316	Time: 12.91s
+
+
+Epoch: 40	Train Loss: 0.269251	Train Acc: 0.932292	Val Loss: 0.272366 	Val Acc: 0.901316	Time: 12.88s
+
+
+Epoch: 41	Train Loss: 0.258589	Train Acc: 0.938750	Val Loss: 0.273378 	Val Acc: 0.907072	Time: 12.91s
+
+Model saved to /home/stud125/TrafficLightDetection/StateDetection/models/model_34410/lr0.0003_batch32_premodelresnet10_annealercosine
+
+Epoch: 42	Train Loss: 0.258669	Train Acc: 0.934792	Val Loss: 0.272024 	Val Acc: 0.906250	Time: 12.84s
+
+
+Epoch: 43	Train Loss: 0.251745	Train Acc: 0.937292	Val Loss: 0.311851 	Val Acc: 0.842105	Time: 12.92s
+
+
+Epoch: 44	Train Loss: 0.248102	Train Acc: 0.940208	Val Loss: 0.249425 	Val Acc: 0.902138	Time: 12.84s
+
+
+Epoch: 45	Train Loss: 0.240135	Train Acc: 0.945000	Val Loss: 0.274482 	Val Acc: 0.900493	Time: 12.88s
+
+
+Epoch: 46	Train Loss: 0.235494	Train Acc: 0.944583	Val Loss: 0.248745 	Val Acc: 0.906250	Time: 12.91s
+
+
+Epoch: 47	Train Loss: 0.228932	Train Acc: 0.944167	Val Loss: 0.267894 	Val Acc: 0.907072	Time: 12.84s
+
+
+Epoch: 48	Train Loss: 0.232254	Train Acc: 0.943542	Val Loss: 0.270701 	Val Acc: 0.902138	Time: 12.91s
+
+
+Epoch: 49	Train Loss: 0.231464	Train Acc: 0.947708	Val Loss: 0.263304 	Val Acc: 0.907072	Time: 13.42s
+
+
+Epoch: 50	Train Loss: 0.221413	Train Acc: 0.945625	Val Loss: 0.275859 	Val Acc: 0.899671	Time: 13.27s
+
+
+Epoch: 51	Train Loss: 0.233777	Train Acc: 0.941042	Val Loss: 0.276477 	Val Acc: 0.898849	Time: 13.29s
+
+
+Epoch: 52	Train Loss: 0.217058	Train Acc: 0.947292	Val Loss: 0.254027 	Val Acc: 0.902961	Time: 12.79s
+
+
+Epoch: 53	Train Loss: 0.213607	Train Acc: 0.946458	Val Loss: 0.261877 	Val Acc: 0.905428	Time: 12.93s
+
+
+Epoch: 54	Train Loss: 0.204144	Train Acc: 0.950417	Val Loss: 0.281710 	Val Acc: 0.899671	Time: 12.91s
+
+
+Epoch: 55	Train Loss: 0.209398	Train Acc: 0.951042	Val Loss: 0.279710 	Val Acc: 0.906250	Time: 12.84s
+
+
+Epoch: 56	Train Loss: 0.203827	Train Acc: 0.948958	Val Loss: 0.262987 	Val Acc: 0.898026	Time: 12.95s
+
+
+Epoch: 57	Train Loss: 0.206985	Train Acc: 0.951875	Val Loss: 0.271442 	Val Acc: 0.893914	Time: 12.75s
+
+
+Epoch: 58	Train Loss: 0.207972	Train Acc: 0.951042	Val Loss: 0.265254 	Val Acc: 0.905428	Time: 12.93s
+
+
+Epoch: 59	Train Loss: 0.194304	Train Acc: 0.955417	Val Loss: 0.263199 	Val Acc: 0.902138	Time: 12.87s
+
+
+Epoch: 60	Train Loss: 0.198380	Train Acc: 0.951458	Val Loss: 0.247736 	Val Acc: 0.908717	Time: 13.00s
+
+Model saved to /home/stud125/TrafficLightDetection/StateDetection/models/model_34410/lr0.0003_batch32_premodelresnet10_annealercosine
+
+Epoch: 61	Train Loss: 0.196711	Train Acc: 0.953542	Val Loss: 0.277308 	Val Acc: 0.840461	Time: 12.97s
+
+
+Epoch: 62	Train Loss: 0.186519	Train Acc: 0.958333	Val Loss: 0.254519 	Val Acc: 0.898849	Time: 12.78s
+
+
+Epoch: 63	Train Loss: 0.193905	Train Acc: 0.954583	Val Loss: 0.293229 	Val Acc: 0.895559	Time: 12.85s
+
+
+Epoch: 64	Train Loss: 0.193001	Train Acc: 0.954375	Val Loss: 0.268831 	Val Acc: 0.898026	Time: 12.96s
+
+
+Epoch: 65	Train Loss: 0.185153	Train Acc: 0.957917	Val Loss: 0.289135 	Val Acc: 0.842928	Time: 12.83s
+
+
+Epoch: 66	Train Loss: 0.188331	Train Acc: 0.952917	Val Loss: 0.287534 	Val Acc: 0.841283	Time: 12.93s
+
+
+Epoch: 67	Train Loss: 0.195902	Train Acc: 0.952292	Val Loss: 0.281627 	Val Acc: 0.842928	Time: 12.84s
+
+
+Epoch: 68	Train Loss: 0.176546	Train Acc: 0.956458	Val Loss: 0.284041 	Val Acc: 0.845395	Time: 12.79s
+
+
+Epoch: 69	Train Loss: 0.182997	Train Acc: 0.951250	Val Loss: 0.274327 	Val Acc: 0.842105	Time: 12.93s
+
+
+Epoch: 70	Train Loss: 0.180172	Train Acc: 0.959375	Val Loss: 0.256230 	Val Acc: 0.905428	Time: 12.98s
+
+
+Epoch: 71	Train Loss: 0.180506	Train Acc: 0.959583	Val Loss: 0.299175 	Val Acc: 0.845395	Time: 12.91s
+
+
+Epoch: 72	Train Loss: 0.179634	Train Acc: 0.960417	Val Loss: 0.301645 	Val Acc: 0.834704	Time: 12.86s
+
+
+Epoch: 73	Train Loss: 0.170114	Train Acc: 0.961667	Val Loss: 0.270017 	Val Acc: 0.903783	Time: 12.84s
+
+
+Epoch: 74	Train Loss: 0.172852	Train Acc: 0.960417	Val Loss: 0.302376 	Val Acc: 0.842928	Time: 12.87s
+
+
+Epoch: 75	Train Loss: 0.175129	Train Acc: 0.960833	Val Loss: 0.277336 	Val Acc: 0.842928	Time: 12.81s
+
+
+Epoch: 76	Train Loss: 0.176558	Train Acc: 0.955833	Val Loss: 0.323173 	Val Acc: 0.842928	Time: 12.86s
+
+
+Epoch: 77	Train Loss: 0.176903	Train Acc: 0.957292	Val Loss: 0.290999 	Val Acc: 0.845395	Time: 12.86s
+
+
+Epoch: 78	Train Loss: 0.169238	Train Acc: 0.962083	Val Loss: 0.292063 	Val Acc: 0.840461	Time: 12.84s
+
+
+Epoch: 79	Train Loss: 0.172938	Train Acc: 0.960625	Val Loss: 0.251672 	Val Acc: 0.903783	Time: 12.79s
+
+
+Epoch: 80	Train Loss: 0.171545	Train Acc: 0.960417	Val Loss: 0.298375 	Val Acc: 0.845395	Time: 12.74s
+
+
+Epoch: 81	Train Loss: 0.166536	Train Acc: 0.961458	Val Loss: 0.267746 	Val Acc: 0.899671	Time: 12.88s
+
+
+Epoch: 82	Train Loss: 0.165690	Train Acc: 0.963750	Val Loss: 0.293800 	Val Acc: 0.844572	Time: 12.91s
+
+
+Epoch: 83	Train Loss: 0.165606	Train Acc: 0.957292	Val Loss: 0.274680 	Val Acc: 0.845395	Time: 12.90s
+
+
+Epoch: 84	Train Loss: 0.173228	Train Acc: 0.956875	Val Loss: 0.272746 	Val Acc: 0.844572	Time: 12.92s
+
+
+Epoch: 85	Train Loss: 0.163350	Train Acc: 0.961875	Val Loss: 0.245912 	Val Acc: 0.905428	Time: 12.82s
+
+
+Epoch: 86	Train Loss: 0.161922	Train Acc: 0.962500	Val Loss: 0.269289 	Val Acc: 0.905428	Time: 12.89s
+
+
+Epoch: 87	Train Loss: 0.161917	Train Acc: 0.962708	Val Loss: 0.282747 	Val Acc: 0.842928	Time: 12.86s
+
+
+Epoch: 88	Train Loss: 0.163211	Train Acc: 0.961458	Val Loss: 0.287002 	Val Acc: 0.905428	Time: 12.81s
+
+
+Epoch: 89	Train Loss: 0.151647	Train Acc: 0.966875	Val Loss: 0.299802 	Val Acc: 0.842928	Time: 12.88s
+
+
+Epoch: 90	Train Loss: 0.165657	Train Acc: 0.962083	Val Loss: 0.280264 	Val Acc: 0.844572	Time: 12.80s
+
+
+Epoch: 91	Train Loss: 0.158532	Train Acc: 0.962917	Val Loss: 0.259275 	Val Acc: 0.906250	Time: 12.86s
+
+
+Epoch: 92	Train Loss: 0.162420	Train Acc: 0.963542	Val Loss: 0.284511 	Val Acc: 0.837993	Time: 12.88s
+
+
+Epoch: 93	Train Loss: 0.158115	Train Acc: 0.961875	Val Loss: 0.278911 	Val Acc: 0.845395	Time: 12.88s
+
+
+Epoch: 94	Train Loss: 0.151063	Train Acc: 0.966667	Val Loss: 0.302013 	Val Acc: 0.839638	Time: 12.84s
+
+
+Epoch: 95	Train Loss: 0.159880	Train Acc: 0.958958	Val Loss: 0.289889 	Val Acc: 0.846217	Time: 12.90s
+
+
+Epoch: 96	Train Loss: 0.159732	Train Acc: 0.964583	Val Loss: 0.261789 	Val Acc: 0.905428	Time: 12.82s
+
+
+Epoch: 97	Train Loss: 0.163938	Train Acc: 0.959583	Val Loss: 0.285687 	Val Acc: 0.845395	Time: 12.88s
+
+
+Epoch: 98	Train Loss: 0.164238	Train Acc: 0.961042	Val Loss: 0.257860 	Val Acc: 0.842105	Time: 12.85s
+
+
+Epoch: 99	Train Loss: 0.171139	Train Acc: 0.961250	Val Loss: 0.296011 	Val Acc: 0.842928	Time: 12.81s
+
+Total training time:  00:23:25
+
+Total number of parameters:  4911237 
+
+Average inference time:  0.17567645562322518 ms
+Final Validation Accuracy:  0.91
+Final prediction saved to /home/stud125/TrafficLightDetection/StateDetection/models/model_34410/lr0.0003_batch32_premodelresnet10_annealercosine/final_prediction.png
