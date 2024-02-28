@@ -199,19 +199,19 @@ def main():
                 #print(classification['states'][i])
 
                 if classification['states'][i] == 'off':
-                    color = (146, 146, 146)
+                    color = (20, 20, 86)
                     textcolor = (30, 30, 30)
                 elif classification['states'][i] == 'red':
-                    color = (220, 20, 60)  
+                    color = (245, 86, 86)  
                     textcolor = (139, 0, 0) 
                 elif classification['states'][i] == 'red_yellow':
-                    color = (255, 165, 0)  
+                    color = (245, 150, 86)  
                     textcolor = (255, 140, 0) 
                 elif classification['states'][i] == 'yellow':
-                    color = (255, 215, 0) 
+                    color = (245, 245, 86) 
                     textcolor = (255, 255, 0)  
                 elif classification['states'][i] == 'green':
-                    color = (0, 100, 0)   
+                    color = (100, 245, 86)   
                     textcolor = (0, 100, 0)
 
                 c1 = classification['bboxes_conf'][i]
