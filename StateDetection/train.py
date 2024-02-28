@@ -692,9 +692,9 @@ def main():
     custom_id = np.random.randint(0, 100000)
 
     # prepare grid search
-    lrs = [0.0001]
+    lrs = [0.00025]
     batch_sizes = [32]
-    premodels = ["resnet34"]
+    premodels = ["resnet10"]
     annealers = ["cosine"]
 
     best_params = {

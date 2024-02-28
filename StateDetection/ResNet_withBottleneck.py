@@ -2,11 +2,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-import sys
-sys.path.append('/Users/nadia/TrafficLightDetection')
-
-from StateDetection.utils import print2way
-
+# to access from either training or the Viztool
+try:
+    from utils import print2way
+except:
+    from StateDetection.utils import print2way
 '''
 Create a ResNet model which can work with both simple and bottleneck blocks.
 
