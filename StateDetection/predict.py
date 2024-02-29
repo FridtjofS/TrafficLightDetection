@@ -5,6 +5,7 @@ import torchvision
 import torchvision.transforms as transforms
 import numpy as np
 import random
+import time 
 
 sys.path.append('/Users/nadia/TrafficLightDetection')
 
@@ -69,11 +70,14 @@ class TrafficLightStatePredictor:
 
         # Predict
         with torch.no_grad():
+            #start_time = time.time()
             outputs = self.model(imgs)
+            #end_time = time.time()
             state = torch.argmax(outputs, dim=1)
             predicted = state.cpu().numpy() 
             probs = torch.nn.functional.softmax(outputs, dim=1).cpu().numpy()
             names = [LABELS[i] for i in predicted]
+            #print(f"SD Prediction time: {end_time - start_time} seconds")  
 
         return names, probs, predicted
     

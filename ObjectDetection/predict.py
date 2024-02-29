@@ -3,6 +3,7 @@ import torch
 import random
 from super_gradients.training import models
 from PIL import Image
+import time
 
 
 LABELS = ['traffic_light']
@@ -36,7 +37,10 @@ class TrafficLightObjectDetector:
         
         # Predict
         with torch.no_grad():
-            output = self.model.predict(img, conf=conf)       
+            #start_time = time.time()
+            output = self.model.predict(img, conf=conf, fuse_model=False)
+            #end_time = time.time()
+            #print(f"OD Prediction time: {end_time - start_time} seconds")       
         
             confidences = output.prediction.confidence
             bboxes_xyxy = output.prediction.bboxes_xyxy

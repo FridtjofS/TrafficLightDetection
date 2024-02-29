@@ -39,7 +39,6 @@ class TrafficLightClassifier:
             img_crop = image.crop(bboxes_coordinates_int)
             if img_crop.size[0] >= 64 or img_crop.size[1] >= 64:
                 img_crop = img_crop.resize((64, 64))
-                print('Resized image to 64x64')
             #img_crop.show()
             tl_imgs.append(img_crop)
 
@@ -260,11 +259,11 @@ def main():
             frame_count += 1
             
         else:
+            video = TrafficLightVideo(save_dir, temp_dir, fps)
+            video.make_video()
             task = todo_next()
 
             if task == 'play':
-                video = TrafficLightVideo(save_dir, temp_dir, fps)
-                video.make_video()
                 video.play_video()
 
             elif task == 'new':

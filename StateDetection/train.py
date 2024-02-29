@@ -479,6 +479,7 @@ def plot_final_prediction(args, val_loader, val_dataset, logf):
             output = model(data)
             end_time = time.time()
             
+            print("end_time - epoch_start_time", end_time - epoch_start_time, "seconds")
             total_time += (end_time - epoch_start_time) * 1000 / len(data)
             pred = torch.argmax(output, dim=1)
             # also use the certainty of the prediction (softmax has not yet been applied inside the model)

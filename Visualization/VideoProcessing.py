@@ -12,46 +12,12 @@ class TrafficLightVideo:
         self.fps = fps
 
 
-    def make_video(self):
-		
-        save_path = self.save_path
-
-        mean_width = 0
-        mean_height = 0
-		
-        working_dir = os.getcwd()
-        os.chdir(save_path)
-
-        num_of_images = len(os.listdir('.')) 
-			
-        for file in os.listdir('.'):
-            if file.endswith(".jpg") or file.endswith(".jpeg") or file.endswith("png"): 
-                im = Image.open(os.path.join(save_path, file)) 
-                width, height = im.size 
-                mean_width += width 
-                mean_height += height 
-
-        # Finding the mean height and width of all images.  
-                
-        mean_width = int(mean_width / num_of_images) 
-        mean_height = int(mean_height / num_of_images) 
-
-        # Resizing 
-
-        print('Resizing frames...')
-        for file in os.listdir('.'): 
-            if file.endswith(".jpg") or file.endswith(".jpeg") or file.endswith("png"): 
-                im = Image.open(os.path.join(save_path, file)) 
-                width, height = im.size 
-                imResize = im.resize((mean_width, mean_height), Image.ANTIALIAS) 
-                imResize.save( file, 'JPEG', quality = 95)
-            
+    def make_video(self):      
 
         # Video Generation
-                
+                        
         print('Generating Video...')
         image_folder = self.temp_path
-        #video_name = 'ProcessedVideo.avi'
         
         images = [img for img in os.listdir(image_folder) if img.endswith(".jpg") or img.endswith(".jpeg") or img.endswith("png")] 
         images.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
@@ -60,7 +26,7 @@ class TrafficLightVideo:
         frame = cv2.imread(os.path.join(image_folder, images[0])) 
         
         height, width, layers = frame.shape
-        video = cv2.VideoWriter(self.video_name, cv2.VideoWriter_fourcc(*"DIVX"), self.fps, (width, height)) 
+        video = cv2.VideoWriter(os.path.join(self.save_path, self.video_name), cv2.VideoWriter_fourcc(*"DIVX"), self.fps, (width, height)) 
         
         for image in images: 
               video.write(cv2.imread(os.path.join(image_folder, image)))
@@ -76,7 +42,6 @@ class TrafficLightVideo:
         video.release() 
         print('Done Processing.')
 
-        os.chdir(working_dir)
 
     def play_video(self):
 
