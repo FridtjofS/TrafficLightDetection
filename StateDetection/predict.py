@@ -7,11 +7,11 @@ import numpy as np
 import random
 import time 
 
-sys.path.append('/Users/nadia/TrafficLightDetection')
+# fix relative imports
+path = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(1, path)
+from ResNet import ResNet
 
-from StateDetection.utils import set_seed
-from StateDetection.utils import print2way
-from StateDetection.ResNet_withBottleneck import ResNet
 
 LABELS = ['off', 'red', 'red_yellow', 'yellow', 'green']
 
@@ -90,44 +90,40 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
     from PIL import Image
 
-    current_dir = os.getcwd()
-    print("Current working directory:", current_dir)
-    os.chdir("/Users/nadia/TrafficLightDetection")
-    working_dir = os.getcwd()
-    print("New current working directory:", working_dir)
+    ### Assume your working directory is in StateDetection folder
 
 
 
     # choosing 3 random images from "sd_train_data" folder 
-    filtered_list = [os.path.join('StateDetection', "sd_train_data", f) for f in os.listdir(os.path.join('StateDetection', "sd_train_data")) if f.endswith('.jpg')]
+    filtered_list = [os.path.join(os.path.abspath(__file__), '..', "sd_train_data", f) for f in os.listdir(os.path.join(os.path.abspath(__file__), '..',"sd_train_data")) if f.endswith('.jpg')]
     imgs = random.sample(filtered_list, 3)
     
     
-    img1 = r"StateDetection/examples/yellow.jpg"
-    img2 = r"StateDetection/examples/green.jpg"
-    img3 = r"StateDetection/examples/red_yellow.jpg"
+    img1 = os.path.join(os.path.abspath(__file__), '..', "examples/yellow.jpg")
+    img2 = os.path.join(os.path.abspath(__file__), '..',"examples/green.jpg")
+    img3 = os.path.join(os.path.abspath(__file__), '..',"examples/red_yellow.jpg")
     imgs = [img1, img2, img3]
 
     # load images
     imgs = [Image.open(img) for img in imgs]
     
     
-
-
-    
     # set device
+    model_name = "_model_best4_cpu"
     if torch.cuda.is_available():
         device = torch.device("cuda")
     else:
         try:
             import torch_directml
             device = torch_directml.device(torch_directml.default_device())
+            model_name = "_model_best6_tubi_dml"
+            print("Using DirectML")
         except:
             device = torch.device("cpu")
 
     ########################## THIS IS THE MAIN PART ###############################
     # predict
-    predictor = TrafficLightStatePredictor(os.path.join('StateDetection', 'models', '_model_best3', 'model.pth'), device=device)
+    predictor = TrafficLightStatePredictor(os.path.join(os.path.abspath(__file__), '..', 'models', model_name, 'model.pth'), device=device)
     pred_states, pred_probs, pred_idxs = predictor.predict(imgs)
     ################################################################################
     

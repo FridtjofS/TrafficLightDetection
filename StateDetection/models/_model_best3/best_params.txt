@@ -1,6 +1,0 @@
-
-
-Best validation accuracy:  0.8691666666666666
-lr: 0.0005
-batch_size: 32
-premodel: resnet18

@@ -1,0 +1,7 @@
+
+
+Best validation accuracy:  0.918
+lr: 0.00025
+batch_size: 32
+premodel: resnet10
+annealer: cosine

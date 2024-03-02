@@ -22,8 +22,6 @@ sdist/
 var/
 wheels/
 pip-wheel-metadata/
-StateDetection/models/model_secret_full
-StateDetection/models/model_secret_smol
 share/python-wheels/
 *.egg-info/
 .installed.cfg
@@ -147,3 +145,5 @@ dmypy.json
 ObjectDetection/checkpoints/yolo_nas_s/RUN_20240223_132442_026334/ckpt_best.pth
 ObjectDetection/checkpoints/ckpt_best.pth
 ObjectDetection/checkpoints/yolo_nas_l/ckpt_best.pth
+ObjectDetection/checkpoints/yolo_nas_l/ckpt_best_1.pth
+StateDetection/start_job.sbatch

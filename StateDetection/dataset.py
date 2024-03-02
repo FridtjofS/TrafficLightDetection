@@ -16,10 +16,8 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import json
 
-
 from utils import print2way
 
-# load a predefined dataset
 class StateDetectionDataset(Dataset):
     def __init__(self, train=True, input_size=(128,128), num_classes=5, data_dir=".\..\StateDetection\sd_train_data", transform=None, args=None):
         '''
@@ -203,33 +201,6 @@ class StateDetectionDataset(Dataset):
             data = random.sample(list(data), max_keep)
             label = [label[0]] * max_keep
             return data, label
-        
-    def bootstrap_data_old(self, data, label, max_keep, train, logf):
-
-        self.data = []
-        self.label = []
-        # if a class has more than max_keep samples, randomly choose max_keep samples
-        # if a class has less than max_keep samples, randomly choose samples with replacement
-        # if a class has no samples, skip it
-        for i in range(self.num_classes):
-            if len(data_grouped_by_label[i]) > max_keep:
-                # randomly choose max_keep samples
-                self.data += random.sample(data_grouped_by_label[i], max_keep)
-                self.label += [i] * max_keep
-            elif len(data_grouped_by_label[i]) > 0:
-                # randomly choose samples with replacement
-                self.data += random.choices(data_grouped_by_label[i], k=max_keep)
-                self.label += [i] * max_keep
-            else:
-                # skip this class
-                continue
-                
-
-        if train:
-            print2way(logf, "Distribution after keeping max_keep samples per class: ")
-            for i in range(self.num_classes):
-                print2way(logf, self.label_names[i], self.label.count(i))
-            print2way(logf, "\n ")
 
     def split_data(self, data, label, train_ratio):
         '''
@@ -268,8 +239,6 @@ class StateDetectionDataset(Dataset):
         val_label = label[num_train:]
 
         # convert list to numpy array
-        #train_data = np.array(train_data)
-        #val_data = np.array(val_data)
         train_data_arr = np.zeros((len(train_data), self.input_size[0]*2, self.input_size[1]*2, 3))
         val_data_arr = np.zeros((len(val_data), self.input_size[0]*2, self.input_size[1]*2, 3))
         for i in range(len(train_data)):
@@ -373,52 +342,7 @@ class StateDetectionDataset(Dataset):
             lb = label_dict['state']
             # add the label to the list
             label.append(lb)
-
-            
-        
-        
-
-        #connvert list to numpy array
-        #data = np.array(data)
-        #label = np.array(label)
-        #print("type of data: ", type(data))
-        #print("type of label: ", type(label))
-        #print("type of data[0]: ", type(data[0]))
-        #print("type of label[0]: ", type(label[0]))
             
         return data, label
     
 
-if __name__ == "__main__":
-    # test the dataset
-    import argparse
-    parser = argparse.ArgumentParser(description='Test the dataset')
-    parser.add_argument('--device', type=str, default='cuda', help='Device to use for PyTorch computation')
-    args = parser.parse_args()
-
-    dataset = StateDetectionDataset(args=args, transform=transforms.Compose([
-            transforms.Resize((224, 224)),
-            transforms.ToTensor(),
-            #transforms.Normalize((0.1307,), (0.3081,)),
-        ]))
-    from torch.utils.data import DataLoader
-    
-    dataloader = DataLoader(dataset, batch_size=4, shuffle=True, num_workers=1)
-    
-    
-        
-    print(len(dataset))
-    print("Samples per class: ")
-    for i in range(dataset.num_classes):
-        print(dataset.label_names[i], dataset.label.count(i))
-
-
-    sample, label = next(iter(dataloader))
-    for i in range(4):
-        plt.subplot(2,2,i+1)
-        sample_i = sample[i].clone()
-        
-        plt.imshow(sample_i.permute(1,2,0))
-        plt.title(dataset.label_names[torch.argmax(label[i])])
-        plt.axis('off')
-    plt.show()

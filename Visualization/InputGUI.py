@@ -146,8 +146,8 @@ def get_input():
     window.show()
     app.exec()
 
-    if save_dir == None:
-        save_dir = os.getcwd()
+    #if save_dir == None:
+    #    save_dir = os.getcwd()
 
     return input_type, file_path, cam_num, show_status, save_status, save_dir
 

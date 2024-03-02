@@ -115,7 +115,8 @@ def main():
     print("Camera Index:", cam_num)
     print("Show processed video:", show_status)
     print("Save porcessed video:", save_status)
-    print("Save Video to:", save_dir)
+    if save_status == True:
+        print("Save Video to:", save_dir)
 
     temp_dir = save_dir
     video_name = ""
@@ -163,14 +164,14 @@ def main():
         print('Video / camera stream could not be opened.')
 
     cwd = os.getcwd()
-    detector_path = os.path.join(cwd, 'ObjectDetection', 'checkpoints', 'yolo_nas_l', 'ckpt_best.pth') 
+    detector_path = os.path.join(os.path.dirname(os.path.abspath(__file__)) , '..', 'ObjectDetection', 'checkpoints', 'yolo_nas_l', 'ckpt_best_1.pth') 
     detector = TrafficLightObjectDetector(detector_path, device=device)
     
     if device == torch.device("cpu") or device == torch.device("cuda"):
         model_dir = "_model_best4_cpu"
     else:
-        model_dir = "_model_best5_dml"
-    predictor_path = os.path.join('StateDetection', 'models', model_dir, 'model.pth')  
+        model_dir = "_model_best6_tubi_dml"
+    predictor_path = os.path.join(os.path.dirname(os.path.abspath(__file__)) , '..', 'StateDetection', 'models', model_dir, 'model.pth')  
     predictor = TrafficLightStatePredictor(predictor_path, device=device)
 
     classifier = TrafficLightClassifier(detector, predictor, device)
