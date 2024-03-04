@@ -1,0 +1,19 @@
+{
+    "data_dir": "ObjectDetection/od_train_data/dataset",
+    "checkpoint_dir": "/home/jakob/uni/TrafficLightDetection/ObjectDetection/checkpoints",
+    "train_images_dir": "images/train",
+    "train_labels_dir": "labels/train",
+    "val_images_dir": "images/val",
+    "val_labels_dir": "labels/val",
+    "test_images_dir": "images/test",
+    "test_labels_dir": "labels/test",
+    "classes": [
+        "traffic light"
+    ],
+    "epochs": 400,
+    "batch_size": 4,
+    "workers": 1,
+    "models": [
+        "yolo_nas_l"
+    ]
+}
