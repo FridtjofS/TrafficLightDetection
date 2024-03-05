@@ -81,7 +81,7 @@ In case you face problems installing the Pipeline following the steps above, you
 
 1. Launch the annotation tool by running the `VizPipeline.py` script.
 
-2. Upon starting the tool, the Input GUI will open. The user has the following options to customize the processing:
+2. Upon starting the tool, the Input GUI will open. The user has the following options to customize the process:
     - **Capture Live Video:** Choose to use camera input and specify the camera to be used. 
     - **Load Video from file:** Coose to use a video from file and select the respective file from your directory.
     - **Show annotated frames:** Check this box if you want to display each processed file in realtime. 
