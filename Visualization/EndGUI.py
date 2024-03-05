@@ -1,15 +1,17 @@
 import os
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QMessageBox
 from PyQt6.QtGui import QIcon
 
 
 class EndGUI(QMainWindow):
-    def __init__(self):
+    def __init__(self, save_status):
         super().__init__()
         
         self.setWindowTitle("Traffic Light Detection - Visualizer")
         self.setGeometry(100, 100, 370, 110)
+
+        self.save_status = save_status
 
         self.initUI()
         
@@ -34,9 +36,13 @@ class EndGUI(QMainWindow):
     def play_video(self):
 
         global task
-        task = 'play'
 
-        self.close()
+        if self.save_status == True:
+            task = 'play'
+            self.close()
+
+        else:
+            QMessageBox.warning(self, "Warning", "Cannot play video since you did not save processed images!")
 
     def new_video(self):
 
@@ -62,7 +68,7 @@ def todo_next():
     global task
 
     app = QApplication(sys.argv)
-    window = EndGUI()
+    window = EndGUI(save_status)
     app.setWindowIcon(QIcon(os.path.join('Visualization', 'TL_icon.png')))
     window.show()
     app.exec()

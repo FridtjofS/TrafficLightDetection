@@ -73,6 +73,7 @@ def main():
     import sys
     import cv2
     import torch
+    from tqdm import tqdm
     from pathlib import Path
 
     # Add parent directory to path
@@ -146,14 +147,18 @@ def main():
 
 
 
-    # Capture input 
+    # Capture input and initialize progress bar
+        
     if input_type == 0:
         
-        cap = cv2.VideoCapture(cam_num)  # TODO: Noch testen !!!
+        cap = cv2.VideoCapture(cam_num)
+        progress_bar = tqdm(desc='Processing video')
             
     elif input_type == 1:
 
         cap = cv2.VideoCapture(file_path)
+        vid_length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        progress_bar = tqdm(range(vid_length), desc='Processing video')
 
 
     # Process input video
@@ -258,24 +263,35 @@ def main():
                 cv2.imwrite(os.path.join(temp_dir , (video_name + '_frame_'+str(frame_count)+'.jpg')), frame)
         
             frame_count += 1
+            progress_bar.update(1)
             
         else:
-            video = TrafficLightVideo(save_dir, temp_dir, fps)
-            video.make_video()
-            task = todo_next()
+            progress_bar.close()
+
+            if save_status == True:
+                video = TrafficLightVideo(save_dir, temp_dir, fps)
+                video.make_video()
+
+            task = todo_next(save_status)
 
             if task == 'play':
                 video.play_video()
 
             elif task == 'new':
 
+                cap.release()
+
                 input_type, file_path, cam_num, show_status, save_status, save_dir = get_input()
                 frame_count = 0
 
                 if input_type == 0:
-                    cap = cv2.VideoCapture(cam_num)  # TODO: Noch testen !!!
+                    cap = cv2.VideoCapture(cam_num)  
+                    progress_bar = tqdm(desc='Processing video')
+
                 elif input_type == 1:
                     cap = cv2.VideoCapture(file_path)
+                    vid_length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+                    progress_bar = tqdm(range(vid_length), desc='Processing video')
                 
             elif task == 'close':
                 break
