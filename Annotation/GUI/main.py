@@ -429,8 +429,7 @@ class MainWindow(QWidget):
                 os.remove(tf_path + ".json")
 
 
-        if len(os.listdir(self.settings_window.input_folder.text())) >= 1:
-            self.next.setEnabled(True)
+        
 
 
 
@@ -474,10 +473,6 @@ class MainWindow(QWidget):
             self.settings_error("The input directory you selected is empty,\nplease select a different directory")
             return None
         else:
-            if len(os.listdir(image_dir)) == 1:
-                self.next.setEnabled(False)
-            else:
-                self.next.setEnabled(True)
 
             images = os.listdir(image_dir)
             image = os.path.join(image_dir, images[0])

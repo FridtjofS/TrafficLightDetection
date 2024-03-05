@@ -51,7 +51,7 @@ This tool is used to annotate traffic lights in images for the purpose of traini
 2. Upon starting the tool, the Settings Window will open.
     - **Login as:** Select your user name from the drop-down menu. Your Settings will be loaded automatically.
     - **Path to input folder:** Select the folder containing the images to be annotated.
-    - **Path to OD-output folder:** Select the folder where the annotations will be saved for Object Detection (OD), in the format of an Image and a JSON file with the same name, with a List of Traffic Light  Bounding Boxes and their respective colors.
+    - **Path to OD-output folder:** Select the folder where the annotations will be saved for Object Detection (OD), in the format of an Image and a txt file with the same name, with a List of Traffic Light  Bounding Boxes in the YOLO format.
     - **Path to SD-output folder:** Select the folder where the annotations will be saved for State Detection (SD), here every traffic light gets cropped and saved as a single image in 128x128 pixels, with a json  file containing the color of the traffic light.
     - **Output Image Size:** Select the size of the output images for Object Detection.
 

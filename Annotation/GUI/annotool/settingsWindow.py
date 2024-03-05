@@ -88,6 +88,11 @@ class SettingsWindow(QWidget):
     def add_users(self, directory):
         # get filenames in directory and parse them to get usernames
         users = (os.listdir(directory))
+        # sort users, starting with Guest
+        users.sort()
+        users.remove("Guest.json")
+        users.insert(0, "Guest.json")
+        
         for user in users:
             self.login.addItem(Path(user).stem)
 

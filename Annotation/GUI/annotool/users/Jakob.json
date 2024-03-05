@@ -4,14 +4,14 @@
   "sd_output_folder": "..\\..\\StateDetection\\sd_train_data",
   "output_size": "1024x440",
   "stats": {
-      "total_images": 0,
-      "total_annotations": 0,
-      "total_red": 0,
-      "total_red_yellow": 0,
-      "total_yellow": 0,
-      "total_green": 0,
-      "total_off": 0,
-      "total_time": 0,
-      "most_traffic_lights_in_one_image": 0
+    "total_images": 157,
+    "total_annotations": 289,
+    "total_red": 78,
+    "total_red_yellow": 12,
+    "total_yellow": 3,
+    "total_green": 221,
+    "total_off": 7,
+    "total_time": 4521.987654321,
+    "most_traffic_lights_in_one_image": 3
   }
 }
