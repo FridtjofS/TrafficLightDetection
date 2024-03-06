@@ -17,7 +17,7 @@ class EndGUI(QMainWindow):
         
     def initUI(self):
 
-        self.text = QLabel("Processing finished. How would you like to proceed?", self)
+        self.text = QLabel("Processing stopped. How would you like to proceed?", self)
         self.text.setGeometry(30, 20, 330, 15)
 
         self.playvid_button = QPushButton('Play Video', self)
@@ -63,7 +63,7 @@ class EndGUI(QMainWindow):
 
         
 
-def todo_next():
+def todo_next(save_status):
 
     global task
 
