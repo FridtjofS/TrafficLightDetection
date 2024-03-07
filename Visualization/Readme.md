@@ -87,7 +87,9 @@ In case you face problems installing the Pipeline following the steps above, you
     - **Show annotated frames:** Check this box if you want to display each processed file in realtime. 
     - **Save annotated frames:** Check this box if you want to save each processed frame to our computer. After processing, a video of the processed frames will be created and saved to the same directory. The default saving directory is your input directory (unless you use camera input). You can change the saving directory by clicking on the button under the checkbox. 
     - **Process Video:** Once you chose an input to be processed and specified your preferences, click this button to start processing.
+  
+3. Quitting the tool:If the 'show' option is turned on, you will be able to interruppt the processing pipeline by pressing either the 'q' key or the 'esc' key. This will stop the video capture and lead you directly to the end GUI, where you can decide how to proceed. In case the 'show' option is not activated, this is not possible as openCV does not support the waitKey() function when no window is opened. You can always quit processing using Ctrl+C. Note that in this second case, this will shut down the entire Visualization Tool though. You will not be lead to the end GUI.
 
-3. After processing, you will have the option to play the video in case you previously selected to save the frames. Also, you can process a new input or quit the Visualization tool. 
+4. After processing, you will have the option to play the video in case you previously selected to save the frames. Also, you can process a new input or quit the Visualization tool. 
 
 ---
