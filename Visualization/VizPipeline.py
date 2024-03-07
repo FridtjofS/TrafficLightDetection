@@ -1,3 +1,7 @@
+# For debugging only
+#import sys
+#sys.settrace
+
 # Imports used for TrafficLightClassifier class
 
 from PIL import Image
@@ -181,12 +185,19 @@ def main():
 
     classifier = TrafficLightClassifier(detector, predictor, device)
 
+    current_task = 'Process'
+
     fps = 1
+
     while(cap.isOpened()):
 
-        ret, frame = cap.read()
-        frame_width = cap.get(3)
-        frame_height = cap.get(4)
+        if current_task == 'Process':
+            ret, frame = cap.read()
+            frame_width = cap.get(3)
+            frame_height = cap.get(4)
+
+        elif current_task == 'Quit':
+            ret = False
 
         if(ret == True):
             fps = cap.get(cv2.CAP_PROP_FPS)
@@ -253,9 +264,9 @@ def main():
                 cv2.imshow('TrafficLightDetection Visualized', frame)
 
                 if cv2.waitKey(1) == ord('q') or cv2.waitKey(1) == 27:  # Quit Visualization using 'q' key. This quits the entire Pipeline!
-                    break
+                    current_task = 'Quit'
                 if cv2.getWindowProperty('TrafficLightDetection Visualized', cv2.WND_PROP_VISIBLE) < 1:
-                    break
+                    current_task = 'Quit'
             
             if save_status == True:
                 #cv2.imwrite(os.path.join(save_dir , 'frame_'+str(frame_count)+'.jpg'), frame)
@@ -267,10 +278,13 @@ def main():
             
         else:
             progress_bar.close()
+            cap.release()
+            cv2.destroyAllWindows()
 
             if save_status == True:
-                video = TrafficLightVideo(save_dir, temp_dir, fps)
-                video.make_video()
+                if os.path.exists(temp_dir):
+                    video = TrafficLightVideo(save_dir, temp_dir, fps)
+                    video.make_video()
 
             task = todo_next(save_status)
 
@@ -278,8 +292,6 @@ def main():
                 video.play_video()
 
             elif task == 'new':
-
-                cap.release()
 
                 input_type, file_path, cam_num, show_status, save_status, save_dir = get_input()
                 frame_count = 0
