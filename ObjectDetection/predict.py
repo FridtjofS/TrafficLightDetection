@@ -69,6 +69,6 @@ if __name__ == "__main__":
         device = torch.device("cpu")
 
     # predict
-    checkpoint = os.path.join(dir, 'checkpoints/yolo_nas_l', '0493', 'ckpt_best.pth')
+    checkpoint = os.path.join(dir, 'checkpoints/yolo_nas_l', '0500', 'ckpt_best.pth')
     predictor = TrafficLightObjectDetector(checkpoint, device=device)
     predictor.show(imgs, conf = 0.45)
