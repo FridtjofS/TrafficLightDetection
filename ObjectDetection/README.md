@@ -43,7 +43,7 @@ Check the distribution of traffic light counts in a given YOLO dataset.
 ```python analyze_dataset.py --input_folder 'path_to_ObjectDetection/od_train_data/<dataset_name>' --output_folder 'path_to_ObjectDetection/od_train_data/<dataset_name>'```
 
 **finetuning/finetune.py**    
-Start a finetuning RUN with the parameters set in config.json    
+Start a finetuning RUN with the parameters set in config.json. Specify the path to the weights to choose as a global one, as this is required.     
 ```python finetune.py```
 
 **finetuning/test.py**   

@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import numpy as np
 import json
 
@@ -56,12 +55,8 @@ val_data = coco_detection_yolo_format_val(
 )
 
 train_data.dataset.plot()
-	
-#train_data.dataset.transforms
-#train_data.dataset.transforms.pop(2)
  
 for model_to_train in MODELS:
-    #for threshold in THRESHOLDS:
     train_params = {
         'silent_mode': False,
         "average_best_models":True,
