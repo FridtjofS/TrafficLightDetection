@@ -17,7 +17,7 @@
 │   ├── config.json: config file that sets relevant parameters for finetuning   
 │   ├── finetune.py: script to finetune YOLO NAS   
 │   ├── split_dataset.py: script to create TRAIN-VAL-TEST split   
-│   └── test.py: script to infer and save test metrics for single finetuning RUNS within checkpoints/architecture/   
+│   └── test.py: script to infer and save test metrics for single finetuning RUNS within checkpoints/architecture/. Run from .../TrafficLightdetection 
 ├── od_train_data   
 │   ├── dataset: annotated data in YOLO dataset format   
 │   ├── dataset_stats: files that document the annotation distribution in the dataset   
@@ -31,14 +31,14 @@
 ## Usage
 
 In order to make use of the pipeline, please download the weights from checkpoints/yolo_nas_l/0500: https://drive.google.com/drive/folders/1-4o9YRjkEMhg8KZSAYL6zUqyrECsglz4?usp=sharing and save them to the respective folder in the repository. In order to make use of different weights uploaded, please see below how to adapt the scripts. 
-In general, run scripts from TrafficLightDetection folder in order to assure working paths. 
+In general, run scripts from TrafficLightDetection folder in order to assure working paths. All beside test.py should work from arbitrary directory though. 
 
 **predict.py**    
 Visualize finetuned model predictions for 3 random samples from the test set. 
 ```python predict.py```
 
 **finetuning/split_dataset.py**    
-Test a finetuning RUNs best wheights with the parameters set in config.json on the test set. Split retios and seed to be defined at top of script.    
+Test a finetuning RUNs best wheights with the parameters set in config.json on the test set. Split ratios and seed to be defined at top of script. 
 ```python split_dataset.py --datatset_folder 'path_to_ObjectDetection/od_train_data/raw_dataset' --output_folder 'path_to_ObjectDetection/od_train_data/<dataset_name>'```
 
 **assets/analyze_dataset.py**    
@@ -50,7 +50,8 @@ Start a finetuning RUN with the parameters set in config.json. Specify the path 
 ```python finetune.py```
 
 **finetuning/test.py**   
-Test a finetuning RUNs best wheights with the parameters set in config.json on the test set    
+Test a finetuning RUNs best wheights with the parameters set in config.json on the test set.
+Run from .../TrafficLightdetection!  
 ```python test.py --architecture 'yolo_nas_l' --run '<name_of_RUN_folder>'```
 
 **predict.py**   

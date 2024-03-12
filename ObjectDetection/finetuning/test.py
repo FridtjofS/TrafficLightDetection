@@ -2,6 +2,7 @@
 import argparse
 import os
 import json
+import sys
 
 from super_gradients.training import Trainer
 from super_gradients.training.dataloaders.dataloaders import (
@@ -14,7 +15,8 @@ from super_gradients.training.metrics import (
 )
 from super_gradients.training.models.detection_models.pp_yolo_e import PPYoloEPostPredictionCallback
 
-with open('ObjectDetection/finetuning/config.json', 'r') as json_file:
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+with open(os.path.join(CURRENT_DIR,'config.json'), 'r') as json_file:
     params = json.load(json_file)
 
 BATCH_SIZE = params['batch_size']
@@ -36,7 +38,6 @@ def test_yolo_nas(architecture, run):
             'num_workers':WORKERS
         }
     )
-    print(CHECKPOINT_DIR)
     trainer =  Trainer(
             experiment_name=architecture, 
             ckpt_root_dir=CHECKPOINT_DIR
