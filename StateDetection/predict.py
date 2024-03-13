@@ -62,7 +62,8 @@ class TrafficLightStatePredictor:
         transform =transforms.Compose([
                 transforms.Resize(self.input_size),
                 transforms.ToTensor(),
-                transforms.Normalize((0.1307,), (0.3081,)),
+                #transforms.Normalize((0.1307,), (0.3081,)),
+                transforms.Normalize((0.2998,), (0.2021,)),
             ])
         
         imgs = [transform(img) for img in imgs]
@@ -77,7 +78,7 @@ class TrafficLightStatePredictor:
             predicted = state.cpu().numpy() 
             probs = torch.nn.functional.softmax(outputs, dim=1).cpu().numpy()
             names = [LABELS[i] for i in predicted]
-            #print(f"SD Prediction time: {end_time - start_time} seconds")  
+            #print(f"SD Prediction time: {end_time - start_time} seconds on device {self.device}")
 
         return names, probs, predicted
     

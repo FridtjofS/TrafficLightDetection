@@ -46,7 +46,7 @@ class TrafficLightObjectDetector:
     def show(self, imgs, conf = 0.45):
 
         with torch.no_grad():
-            outputs = self.model.predict(imgs, conf=conf)
+            outputs = self.model.predict(imgs, conf=conf, fuse_model=False)
 
         for output in outputs._images_prediction_lst:
             output.show()
@@ -54,7 +54,7 @@ class TrafficLightObjectDetector:
 
 if __name__ == "__main__":
     # choosing 3 random images from "od_train_data" folder 
-    dir = os.path.dirname(os.path.abspath(__file__))
+    dir = os.path.dirname(os.path.abspath(__file__)[:-3])
     data_dir = os.path.join(dir,'od_train_data/dataset/images/test')
     filtered_list = [os.path.join(data_dir, f) for f in os.listdir(data_dir) if f.endswith('.jpg')]
     imgs_paths = random.sample(filtered_list, 3)

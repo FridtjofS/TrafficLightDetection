@@ -65,15 +65,20 @@ def train(args, logf):
             transforms.RandomRotation(15),
             transforms.RandomResizedCrop(size=args.input_sizes, scale=(0.5, 0.5), ratio=(1, 1)), 
             transforms.ToTensor(),
-            transforms.Normalize((0.1307,), (0.3081,)),
+            #transforms.Normalize((0.1307,), (0.3081,)),
+            transforms.Normalize((0.2998,), (0.2021,)), # mean and std of the standard dataset
+            #transforms.Normalize((0.3215,), (0.2159,)),  # mean and std of the plus_tubi dataset
         ])
         val_transform_centercrop = transforms.Compose([
             transforms.CenterCrop(args.input_sizes),
             transforms.ToTensor(),
-            transforms.Normalize((0.1307,), (0.3081,)),
+            #transforms.Normalize((0.1307,), (0.3081,)),
+            transforms.Normalize((0.2998,), (0.2021,)), # mean and std of the standard dataset
+            #transforms.Normalize((0.3215,), (0.2159,)),  # mean and std of the plus_tubi dataset
         ])
-        train_dataset = StateDetectionDataset(train=True, data_dir=os.path.join(os.path.dirname(os.path.abspath(__file__)), args.train_data_dir), transform=train_transform, input_size=args.input_sizes, args=args)
-        val_dataset = StateDetectionDataset(train=False, data_dir=os.path.join(os.path.dirname(os.path.abspath(__file__)), args.train_data_dir), transform=val_transform_centercrop, input_size=args.input_sizes, args=args)
+        train_dataset = StateDetectionDataset(train=True, data_dir=os.path.join(os.path.dirname(os.path.abspath(__file__)[:-3]), args.train_data_dir), transform=train_transform, input_size=args.input_sizes, args=args)
+        val_dataset = StateDetectionDataset(train=False, data_dir=os.path.join(os.path.dirname(os.path.abspath(__file__)[:-3]), args.train_data_dir), transform=val_transform_centercrop, input_size=args.input_sizes, args=args)
+        
         args.channel_size = train_dataset.data.shape[3]
         args.num_classes = 5
         print2way(logf, "Train dataset shape: ", train_dataset.data.shape) # (40, 128, 128, 3)
@@ -81,6 +86,10 @@ def train(args, logf):
         print2way(logf, "Train dataset labels shape: ", len(train_dataset.label)) # 40
         print2way(logf, "Val dataset labels shape: ", len(val_dataset.label))
         print2way(logf, "Train transform: ", train_transform)
+        print2way(logf, "mean of train dataset: ", train_dataset.data.mean())  # 0.2998
+        print2way(logf, "std of train dataset: ", train_dataset.data.std()) # 0.2021
+        print2way(logf, "mean of val dataset: ", val_dataset.data.mean()) # 0.3193
+        print2way(logf, "std of val dataset: ", val_dataset.data.std()) # 0.2039
         
 
 
@@ -326,14 +335,13 @@ def plot_final_prediction(args, val_loader, val_dataset, logf):
     with torch.no_grad():
         for batch_idx, (data, target) in enumerate(val_loader):
             data, target = data.to(device), target.to(device).long()
-            # measure time for inference (in milliseconds)
 
             epoch_start_time = time.time()
             output = model(data)
             end_time = time.time()
             
             #print("end_time - epoch_start_time", end_time - epoch_start_time, "seconds")
-            total_time += (end_time - epoch_start_time) * 1000 / len(data)
+            total_time += (end_time - epoch_start_time)
             pred = torch.argmax(output, dim=1)
             certainty = torch.max(F.softmax(output, dim=1), dim=1)
             correct += pred.eq(target.view_as(pred)).sum().item()
@@ -377,7 +385,7 @@ def plot_final_prediction(args, val_loader, val_dataset, logf):
                 plt.close()
             
 
-    print2way(logf, "Average inference time: ", total_time / len(val_loader), "s")
+    print2way(logf, "Average validation inference time: ", total_time / len(val_loader), "s")
 
     # Plot confusion matrix
     confusion_matrix_norm = confusion_matrix.astype('float') / (confusion_matrix.sum(axis=1)[:, np.newaxis]  + 1e-6)
@@ -397,7 +405,7 @@ def plot_final_prediction(args, val_loader, val_dataset, logf):
     ax.set_xlabel("Predicted")
     ax.set_ylabel("Actual")
     fig.tight_layout()
-    plt.savefig(os.path.join(args.save_model_dir, "confusion_matrix.png"))
+    plt.savefig(os.path.join(args.save_model_dir, "confusion_matrix.svg"), format='svg')
     plt.close()
 
     print2way(logf, "Final Validation Accuracy: ", val_acc)
@@ -419,8 +427,8 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", type=str, default="train", help="Mode: train or test")
-    parser.add_argument("--save_model_dir", type=str, default=os.path.join(os.path.abspath(__file__), '..', "models"), help="Directory to save model")
-    parser.add_argument("--load_model_dir", type=str, default=os.path.join(os.path.abspath(__file__), '..', "models"), help="Directory to load model")
+    parser.add_argument("--save_model_dir", type=str, default=os.path.join(os.path.abspath(__file__)[:-3], '..', "models"), help="Directory to save model")
+    parser.add_argument("--load_model_dir", type=str, default=os.path.join(os.path.abspath(__file__)[:-3], '..', "models"), help="Directory to load model")
     parser.add_argument("--dataset_name", type=str, default="TrafficLight", help="Training data directory")
     parser.add_argument("--train_data_dir", type=str, default="augmented_dataset", help="train data directory")
     parser.add_argument("--resnet_layers", type=list, default=[1,1,1,1], help="Number of layers in each block")
@@ -430,14 +438,14 @@ def main():
     parser.add_argument("--num_epochs", type=int, default=100, help="Number of epochs")
     parser.add_argument("--lr", type=float, default=0.0003, help="Learning rate")
     parser.add_argument("--num_workers", type=int, default=1, help="Number of workers")
-    parser.add_argument("--log_interval", type=int, default=20, help="Logging interval")
+    parser.add_argument("--log_interval", type=int, default=5000, help="Logging interval")
     parser.add_argument("--seed", type=int, default=1, help="Random seed")
     parser.add_argument("--device", type=str, default="cpu", help="Device")
     parser.add_argument("--input_sizes", type=tuple, default=(64, 64), help="Input image size")
     parser.add_argument("--num_classes", type=int, default=5, help="Number of classes")
     parser.add_argument("--channel_size", type=int, default=3, help="Number of channels")
     parser.add_argument("--predefined_model", type=str, default="resnet10", help="Predefined model")
-    parser.add_argument("--max_keep", type=int, default=1200, help="Maximum number of samples per class")
+    parser.add_argument("--max_keep", type=int, default=1400, help="Maximum number of samples per class")
     parser.add_argument("--annealer", type=str, default="cosine", help="Learning rate annealer")
     args = parser.parse_args()
 

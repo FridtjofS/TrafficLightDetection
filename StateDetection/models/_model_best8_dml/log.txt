@@ -1,0 +1,411 @@
+
+Original Distribution: 
+off 12
+red 697
+red_yellow 211
+yellow 288
+green 1286
+
+ 
+Distribution BEFORE keeping max_keep samples per class: 
+off 9
+red 557
+red_yellow 168
+yellow 230
+green 1028
+off 3
+red 140
+red_yellow 43
+yellow 58
+green 258
+
+ 
+Distribution AFTER keeping max_keep samples per class: 
+off 960
+red 960
+red_yellow 960
+yellow 960
+green 960
+off 240
+red 240
+red_yellow 240
+yellow 240
+green 240
+
+ 
+Train dataset shape:  (4800, 128, 128, 3)
+Val dataset shape:  (1200, 128, 128, 3)
+Train dataset labels shape:  4800
+Val dataset labels shape:  1200
+Train transform:  Compose(
+    RandomHorizontalFlip(p=0.5)
+    ColorJitter(brightness=(0.9, 1.1), contrast=(0.9, 1.1), saturation=(0.6, 1.4), hue=None)
+    RandomRotation(degrees=[-15.0, 15.0], interpolation=nearest, expand=False, fill=0)
+    RandomResizedCrop(size=(64, 64), scale=(0.5, 0.5), ratio=(1, 1), interpolation=bilinear, antialias=warn)
+    ToTensor()
+    Normalize(mean=(0.2998,), std=(0.2021,))
+)
+mean of train dataset:  0.29983280944740726
+std of train dataset:  0.20210859796788108
+mean of val dataset:  0.3193881502241639
+std of val dataset:  0.2038713179997851
+
+Total number of parameters:  4911237 
+
+
+Arguments:
+
+mode: train
+save_model_dir: C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\train.py\..\models\model_55891
+load_model_dir: C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\train.py\..\models
+dataset_name: TrafficLight
+train_data_dir: augmented_dataset
+resnet_layers: [1, 1, 1, 1]
+resnet_output_channels: [64, 128, 256, 512]
+resnet_block: simple
+batch_size: 32
+num_epochs: 100
+lr: 0.00025
+num_workers: 1
+log_interval: 5000
+seed: 1
+device: privateuseone:0
+input_sizes: (64, 64)
+num_classes: 5
+channel_size: 3
+predefined_model: resnet10
+max_keep: 1200
+annealer: cosine
+custom_id: 55891
+logf: <_io.TextIOWrapper name='C:\\Users\\Magnus\\OneDrive\\Studium\\3. Semester WS2324\\Praktikum BV\\TrafficLightDetection\\StateDetection\\train.py\\..\\models\\model_55891\\log.txt' mode='w' encoding='cp1252'>
+
+
+
+
+Epoch: 0	Train Loss: 1.556383	Train Acc: 0.315625	Val Loss: 1.532946 	Val Acc: 0.311667	Time: 11.92s
+
+Model saved to C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\train.py\..\models\model_55891
+
+Epoch: 1	Train Loss: 1.455939	Train Acc: 0.422292	Val Loss: 1.441030 	Val Acc: 0.430000	Time: 11.50s
+
+Model saved to C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\train.py\..\models\model_55891
+
+Epoch: 2	Train Loss: 1.363954	Train Acc: 0.487292	Val Loss: 1.335712 	Val Acc: 0.520000	Time: 11.96s
+
+Model saved to C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\train.py\..\models\model_55891
+
+Epoch: 3	Train Loss: 1.284905	Train Acc: 0.535000	Val Loss: 1.230378 	Val Acc: 0.580000	Time: 12.05s
+
+Model saved to C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\train.py\..\models\model_55891
+
+Epoch: 4	Train Loss: 1.197890	Train Acc: 0.592083	Val Loss: 1.117695 	Val Acc: 0.630833	Time: 11.75s
+
+Model saved to C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\train.py\..\models\model_55891
+
+Epoch: 5	Train Loss: 1.110970	Train Acc: 0.640625	Val Loss: 1.008808 	Val Acc: 0.670833	Time: 11.20s
+
+Model saved to C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\train.py\..\models\model_55891
+
+Epoch: 6	Train Loss: 1.023525	Train Acc: 0.685000	Val Loss: 0.888307 	Val Acc: 0.745000	Time: 11.88s
+
+Model saved to C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\train.py\..\models\model_55891
+
+Epoch: 7	Train Loss: 0.954991	Train Acc: 0.711042	Val Loss: 0.798419 	Val Acc: 0.771667	Time: 11.97s
+
+Model saved to C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\train.py\..\models\model_55891
+
+Epoch: 8	Train Loss: 0.891509	Train Acc: 0.738333	Val Loss: 0.702664 	Val Acc: 0.778333	Time: 12.31s
+
+Model saved to C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\train.py\..\models\model_55891
+
+Epoch: 9	Train Loss: 0.831935	Train Acc: 0.747708	Val Loss: 0.640985 	Val Acc: 0.788333	Time: 11.35s
+
+Model saved to C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\train.py\..\models\model_55891
+
+Epoch: 10	Train Loss: 0.774637	Train Acc: 0.776667	Val Loss: 0.587758 	Val Acc: 0.862500	Time: 12.42s
+
+Model saved to C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\train.py\..\models\model_55891
+
+Epoch: 11	Train Loss: 0.720669	Train Acc: 0.797917	Val Loss: 0.561003 	Val Acc: 0.801667	Time: 12.65s
+
+
+Epoch: 12	Train Loss: 0.670913	Train Acc: 0.818125	Val Loss: 0.486173 	Val Acc: 0.934167	Time: 12.47s
+
+Model saved to C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\train.py\..\models\model_55891
+
+Epoch: 13	Train Loss: 0.634090	Train Acc: 0.828125	Val Loss: 0.440116 	Val Acc: 0.945833	Time: 12.06s
+
+Model saved to C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\train.py\..\models\model_55891
+
+Epoch: 14	Train Loss: 0.590901	Train Acc: 0.840625	Val Loss: 0.427209 	Val Acc: 0.952500	Time: 12.02s
+
+Model saved to C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\train.py\..\models\model_55891
+
+Epoch: 15	Train Loss: 0.550697	Train Acc: 0.853333	Val Loss: 0.375669 	Val Acc: 0.958333	Time: 11.97s
+
+Model saved to C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\train.py\..\models\model_55891
+
+Epoch: 16	Train Loss: 0.519534	Train Acc: 0.857500	Val Loss: 0.349301 	Val Acc: 0.958333	Time: 11.46s
+
+
+Epoch: 17	Train Loss: 0.484749	Train Acc: 0.867083	Val Loss: 0.318915 	Val Acc: 0.967500	Time: 12.02s
+
+Model saved to C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\train.py\..\models\model_55891
+
+Epoch: 18	Train Loss: 0.454092	Train Acc: 0.883958	Val Loss: 0.317583 	Val Acc: 0.971667	Time: 11.87s
+
+Model saved to C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\train.py\..\models\model_55891
+
+Epoch: 19	Train Loss: 0.419383	Train Acc: 0.892292	Val Loss: 0.283046 	Val Acc: 0.967500	Time: 12.08s
+
+
+Epoch: 20	Train Loss: 0.407797	Train Acc: 0.894375	Val Loss: 0.268084 	Val Acc: 0.970833	Time: 11.56s
+
+
+Epoch: 21	Train Loss: 0.379466	Train Acc: 0.902917	Val Loss: 0.242611 	Val Acc: 0.980833	Time: 11.62s
+
+Model saved to C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\train.py\..\models\model_55891
+
+Epoch: 22	Train Loss: 0.362500	Train Acc: 0.903542	Val Loss: 0.237310 	Val Acc: 0.975833	Time: 11.58s
+
+
+Epoch: 23	Train Loss: 0.342831	Train Acc: 0.910625	Val Loss: 0.240102 	Val Acc: 0.975833	Time: 11.32s
+
+
+Epoch: 24	Train Loss: 0.323257	Train Acc: 0.917500	Val Loss: 0.201418 	Val Acc: 0.973333	Time: 11.37s
+
+
+Epoch: 25	Train Loss: 0.301947	Train Acc: 0.921250	Val Loss: 0.204834 	Val Acc: 0.984167	Time: 11.20s
+
+Model saved to C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\train.py\..\models\model_55891
+
+Epoch: 26	Train Loss: 0.296090	Train Acc: 0.921875	Val Loss: 0.208865 	Val Acc: 0.982500	Time: 11.21s
+
+
+Epoch: 27	Train Loss: 0.278031	Train Acc: 0.929583	Val Loss: 0.191246 	Val Acc: 0.985000	Time: 11.34s
+
+Model saved to C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\train.py\..\models\model_55891
+
+Epoch: 28	Train Loss: 0.276055	Train Acc: 0.928750	Val Loss: 0.202733 	Val Acc: 0.981667	Time: 11.24s
+
+
+Epoch: 29	Train Loss: 0.263170	Train Acc: 0.936458	Val Loss: 0.176982 	Val Acc: 0.985000	Time: 11.58s
+
+
+Epoch: 30	Train Loss: 0.241556	Train Acc: 0.938542	Val Loss: 0.184818 	Val Acc: 0.984167	Time: 11.99s
+
+
+Epoch: 31	Train Loss: 0.239135	Train Acc: 0.937917	Val Loss: 0.203488 	Val Acc: 0.975000	Time: 11.76s
+
+
+Epoch: 32	Train Loss: 0.222735	Train Acc: 0.943542	Val Loss: 0.192375 	Val Acc: 0.980833	Time: 12.15s
+
+
+Epoch: 33	Train Loss: 0.209621	Train Acc: 0.950833	Val Loss: 0.177796 	Val Acc: 0.982500	Time: 11.83s
+
+
+Epoch: 34	Train Loss: 0.204386	Train Acc: 0.950000	Val Loss: 0.177459 	Val Acc: 0.980833	Time: 11.14s
+
+
+Epoch: 35	Train Loss: 0.208905	Train Acc: 0.946042	Val Loss: 0.170293 	Val Acc: 0.981667	Time: 11.22s
+
+
+Epoch: 36	Train Loss: 0.185748	Train Acc: 0.956042	Val Loss: 0.229765 	Val Acc: 0.982500	Time: 11.76s
+
+
+Epoch: 37	Train Loss: 0.176236	Train Acc: 0.958958	Val Loss: 0.166789 	Val Acc: 0.983333	Time: 11.79s
+
+
+Epoch: 38	Train Loss: 0.183923	Train Acc: 0.951667	Val Loss: 0.161169 	Val Acc: 0.982500	Time: 11.55s
+
+
+Epoch: 39	Train Loss: 0.178364	Train Acc: 0.955625	Val Loss: 0.148119 	Val Acc: 0.980000	Time: 11.57s
+
+
+Epoch: 40	Train Loss: 0.169469	Train Acc: 0.959375	Val Loss: 0.153148 	Val Acc: 0.985000	Time: 11.62s
+
+
+Epoch: 41	Train Loss: 0.159261	Train Acc: 0.962500	Val Loss: 0.162995 	Val Acc: 0.985000	Time: 11.46s
+
+
+Epoch: 42	Train Loss: 0.159180	Train Acc: 0.959375	Val Loss: 0.148211 	Val Acc: 0.983333	Time: 11.19s
+
+
+Epoch: 43	Train Loss: 0.152466	Train Acc: 0.962500	Val Loss: 0.162740 	Val Acc: 0.985000	Time: 11.15s
+
+
+Epoch: 44	Train Loss: 0.150102	Train Acc: 0.963333	Val Loss: 0.147264 	Val Acc: 0.980000	Time: 11.11s
+
+
+Epoch: 45	Train Loss: 0.146707	Train Acc: 0.965208	Val Loss: 0.145496 	Val Acc: 0.983333	Time: 11.19s
+
+
+Epoch: 46	Train Loss: 0.140488	Train Acc: 0.965000	Val Loss: 0.149113 	Val Acc: 0.983333	Time: 11.27s
+
+
+Epoch: 47	Train Loss: 0.135765	Train Acc: 0.964167	Val Loss: 0.151135 	Val Acc: 0.980000	Time: 11.32s
+
+
+Epoch: 48	Train Loss: 0.133585	Train Acc: 0.966250	Val Loss: 0.164350 	Val Acc: 0.984167	Time: 11.22s
+
+
+Epoch: 49	Train Loss: 0.124777	Train Acc: 0.970833	Val Loss: 0.144606 	Val Acc: 0.985000	Time: 11.25s
+
+
+Epoch: 50	Train Loss: 0.128764	Train Acc: 0.967708	Val Loss: 0.177248 	Val Acc: 0.981667	Time: 11.72s
+
+
+Epoch: 51	Train Loss: 0.136889	Train Acc: 0.961458	Val Loss: 0.169841 	Val Acc: 0.981667	Time: 11.55s
+
+
+Epoch: 52	Train Loss: 0.119017	Train Acc: 0.970000	Val Loss: 0.148135 	Val Acc: 0.982500	Time: 11.79s
+
+
+Epoch: 53	Train Loss: 0.122446	Train Acc: 0.972292	Val Loss: 0.138241 	Val Acc: 0.984167	Time: 12.71s
+
+
+Epoch: 54	Train Loss: 0.117905	Train Acc: 0.970417	Val Loss: 0.172748 	Val Acc: 0.915833	Time: 11.85s
+
+
+Epoch: 55	Train Loss: 0.111823	Train Acc: 0.973958	Val Loss: 0.169482 	Val Acc: 0.918333	Time: 11.28s
+
+
+Epoch: 56	Train Loss: 0.112747	Train Acc: 0.972500	Val Loss: 0.163879 	Val Acc: 0.983333	Time: 11.11s
+
+
+Epoch: 57	Train Loss: 0.109888	Train Acc: 0.974583	Val Loss: 0.176939 	Val Acc: 0.916667	Time: 11.21s
+
+
+Epoch: 58	Train Loss: 0.109808	Train Acc: 0.972917	Val Loss: 0.181796 	Val Acc: 0.912500	Time: 11.15s
+
+
+Epoch: 59	Train Loss: 0.105436	Train Acc: 0.973125	Val Loss: 0.145608 	Val Acc: 0.985833	Time: 11.34s
+
+Model saved to C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\train.py\..\models\model_55891
+
+Epoch: 60	Train Loss: 0.108517	Train Acc: 0.973958	Val Loss: 0.145833 	Val Acc: 0.976667	Time: 11.32s
+
+
+Epoch: 61	Train Loss: 0.109139	Train Acc: 0.974792	Val Loss: 0.163549 	Val Acc: 0.914167	Time: 11.37s
+
+
+Epoch: 62	Train Loss: 0.097455	Train Acc: 0.976042	Val Loss: 0.143351 	Val Acc: 0.982500	Time: 11.57s
+
+
+Epoch: 63	Train Loss: 0.100874	Train Acc: 0.977292	Val Loss: 0.159158 	Val Acc: 0.915000	Time: 11.21s
+
+
+Epoch: 64	Train Loss: 0.098137	Train Acc: 0.974792	Val Loss: 0.146566 	Val Acc: 0.979167	Time: 11.15s
+
+
+Epoch: 65	Train Loss: 0.092886	Train Acc: 0.977708	Val Loss: 0.175529 	Val Acc: 0.918333	Time: 11.54s
+
+
+Epoch: 66	Train Loss: 0.097679	Train Acc: 0.975625	Val Loss: 0.179004 	Val Acc: 0.907500	Time: 11.59s
+
+
+Epoch: 67	Train Loss: 0.101608	Train Acc: 0.974792	Val Loss: 0.153924 	Val Acc: 0.983333	Time: 11.54s
+
+
+Epoch: 68	Train Loss: 0.089784	Train Acc: 0.977500	Val Loss: 0.165651 	Val Acc: 0.920000	Time: 11.31s
+
+
+Epoch: 69	Train Loss: 0.095923	Train Acc: 0.974583	Val Loss: 0.134782 	Val Acc: 0.983333	Time: 11.12s
+
+
+Epoch: 70	Train Loss: 0.088561	Train Acc: 0.978542	Val Loss: 0.145240 	Val Acc: 0.977500	Time: 11.08s
+
+
+Epoch: 71	Train Loss: 0.092685	Train Acc: 0.979375	Val Loss: 0.172656 	Val Acc: 0.915833	Time: 11.35s
+
+
+Epoch: 72	Train Loss: 0.095799	Train Acc: 0.975833	Val Loss: 0.170472 	Val Acc: 0.912500	Time: 11.43s
+
+
+Epoch: 73	Train Loss: 0.085454	Train Acc: 0.978958	Val Loss: 0.153449 	Val Acc: 0.915833	Time: 11.18s
+
+
+Epoch: 74	Train Loss: 0.083373	Train Acc: 0.978958	Val Loss: 0.184270 	Val Acc: 0.915000	Time: 11.07s
+
+
+Epoch: 75	Train Loss: 0.091400	Train Acc: 0.977083	Val Loss: 0.137703 	Val Acc: 0.918333	Time: 11.24s
+
+
+Epoch: 76	Train Loss: 0.091025	Train Acc: 0.977500	Val Loss: 0.177782 	Val Acc: 0.917500	Time: 11.54s
+
+
+Epoch: 77	Train Loss: 0.089965	Train Acc: 0.978750	Val Loss: 0.161205 	Val Acc: 0.915000	Time: 11.44s
+
+
+Epoch: 78	Train Loss: 0.084983	Train Acc: 0.980417	Val Loss: 0.173813 	Val Acc: 0.919167	Time: 11.26s
+
+
+Epoch: 79	Train Loss: 0.084021	Train Acc: 0.980417	Val Loss: 0.129313 	Val Acc: 0.983333	Time: 11.26s
+
+
+Epoch: 80	Train Loss: 0.081954	Train Acc: 0.979167	Val Loss: 0.194189 	Val Acc: 0.912500	Time: 11.17s
+
+
+Epoch: 81	Train Loss: 0.079998	Train Acc: 0.980625	Val Loss: 0.120921 	Val Acc: 0.982500	Time: 11.34s
+
+
+Epoch: 82	Train Loss: 0.082236	Train Acc: 0.980625	Val Loss: 0.178235 	Val Acc: 0.919167	Time: 11.19s
+
+
+Epoch: 83	Train Loss: 0.077699	Train Acc: 0.981042	Val Loss: 0.149489 	Val Acc: 0.912500	Time: 11.16s
+
+
+Epoch: 84	Train Loss: 0.082584	Train Acc: 0.980000	Val Loss: 0.145868 	Val Acc: 0.975000	Time: 11.36s
+
+
+Epoch: 85	Train Loss: 0.075813	Train Acc: 0.980208	Val Loss: 0.131963 	Val Acc: 0.982500	Time: 11.19s
+
+
+Epoch: 86	Train Loss: 0.074130	Train Acc: 0.981250	Val Loss: 0.140768 	Val Acc: 0.980833	Time: 11.24s
+
+
+Epoch: 87	Train Loss: 0.079685	Train Acc: 0.979583	Val Loss: 0.186761 	Val Acc: 0.920000	Time: 11.33s
+
+
+Epoch: 88	Train Loss: 0.077838	Train Acc: 0.981667	Val Loss: 0.170537 	Val Acc: 0.917500	Time: 11.35s
+
+
+Epoch: 89	Train Loss: 0.071966	Train Acc: 0.982708	Val Loss: 0.208589 	Val Acc: 0.919167	Time: 11.19s
+
+
+Epoch: 90	Train Loss: 0.075720	Train Acc: 0.982708	Val Loss: 0.192135 	Val Acc: 0.917500	Time: 11.16s
+
+
+Epoch: 91	Train Loss: 0.072191	Train Acc: 0.982292	Val Loss: 0.168946 	Val Acc: 0.920000	Time: 11.43s
+
+
+Epoch: 92	Train Loss: 0.075022	Train Acc: 0.983542	Val Loss: 0.195419 	Val Acc: 0.917500	Time: 12.02s
+
+
+Epoch: 93	Train Loss: 0.076286	Train Acc: 0.981875	Val Loss: 0.185459 	Val Acc: 0.917500	Time: 12.02s
+
+
+Epoch: 94	Train Loss: 0.070916	Train Acc: 0.981042	Val Loss: 0.185114 	Val Acc: 0.914167	Time: 12.23s
+
+
+Epoch: 95	Train Loss: 0.073627	Train Acc: 0.979583	Val Loss: 0.179722 	Val Acc: 0.916667	Time: 11.27s
+
+
+Epoch: 96	Train Loss: 0.073050	Train Acc: 0.982083	Val Loss: 0.135151 	Val Acc: 0.982500	Time: 11.13s
+
+
+Epoch: 97	Train Loss: 0.074429	Train Acc: 0.980208	Val Loss: 0.158858 	Val Acc: 0.918333	Time: 11.33s
+
+
+Epoch: 98	Train Loss: 0.073895	Train Acc: 0.980625	Val Loss: 0.143498 	Val Acc: 0.918333	Time: 11.27s
+
+
+Epoch: 99	Train Loss: 0.081376	Train Acc: 0.980000	Val Loss: 0.181308 	Val Acc: 0.915833	Time: 11.25s
+
+Total training time:  00:19:33
+
+Total number of parameters:  4911237 
+
+Average inference time:  0.047706655765834605 s
+Final Validation Accuracy:  0.9858333333333333
+Final prediction saved to C:\Users\Magnus\OneDrive\Studium\3. Semester WS2324\Praktikum BV\TrafficLightDetection\StateDetection\train.py\..\models\model_55891\final_prediction.png

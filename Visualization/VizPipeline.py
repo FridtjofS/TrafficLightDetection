@@ -173,14 +173,14 @@ def main():
         print('Video / camera stream could not be opened.')
 
     cwd = os.getcwd()
-    detector_path = os.path.join(os.path.dirname(os.path.abspath(__file__)) , '..', 'ObjectDetection', 'checkpoints', 'yolo_nas_l', 'ckpt_best_1.pth') 
+    detector_path = os.path.join(os.path.dirname(os.path.abspath(__file__)[:-3]) , '..', 'ObjectDetection', 'checkpoints', 'yolo_nas_l', 'ckpt_best_1.pth') 
     detector = TrafficLightObjectDetector(detector_path, device=device)
     
     if device == torch.device("cpu") or device == torch.device("cuda"):
-        model_dir = "_model_best4_cpu"
+        model_dir = "_model_best10_tubi_cpu"
     else:
-        model_dir = "_model_best6_tubi_dml"
-    predictor_path = os.path.join(os.path.dirname(os.path.abspath(__file__)) , '..', 'StateDetection', 'models', model_dir, 'model.pth')  
+        model_dir = "_model_best9_tubi_dml"
+    predictor_path = os.path.join(os.path.dirname(os.path.abspath(__file__)[:-3]) , '..', 'StateDetection', 'models', model_dir, 'model.pth')  
     predictor = TrafficLightStatePredictor(predictor_path, device=device)
 
     classifier = TrafficLightClassifier(detector, predictor, device)
@@ -232,7 +232,7 @@ def main():
 
                 c1 = classification['bboxes_conf'][i]
                 c2 = max(classification['states_conf'][i])  
-                confidence = c1 #* c2   
+                confidence = c1 * c2   
 
                 if c2 <= 0.6: # State Detection Threshold
                     color = (255, 255, 255)
