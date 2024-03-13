@@ -7,7 +7,7 @@ This directory is dedicated to training the State Detection model for our Traffi
 ## Table of Contents
 - [State Detection](#state-detection)
   - [Table of Contents](#table-of-contents)
-  - [General Notes:](#general-notes)
+  - [General Notes](#general-notes)
   - [Structure](#structure)
   - [Usage](#usage)
     - [Training](#training)
@@ -16,7 +16,7 @@ This directory is dedicated to training the State Detection model for our Traffi
     - [Data Augmentation](#data-augmentation)
 
 
-## General Notes:
+## General Notes
 - This script uses the experimental `DirectML` package for training models on GPUs that don't have CUDA support. This package is still in development and may not work on all systems, more info can be found [here](https://learn.microsoft.com/en-us/windows/ai/directml/gpu-pytorch-windows)
 The script will first try to use CUDA, then DirectML, and then automatically fall back to using the CPU if the DirectML package is not available.
     To install the DirectML package, run the following command:
