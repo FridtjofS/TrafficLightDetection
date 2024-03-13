@@ -36,7 +36,7 @@ class TrafficLightObjectDetector:
         
         # Predict
         with torch.no_grad():
-            output = self.model.predict(img, conf=conf)       
+            output = self.model.predict(img, conf=conf, fuse_model=False)       
         
             confidences = output.prediction.confidence
             bboxes_xyxy = output.prediction.bboxes_xyxy
