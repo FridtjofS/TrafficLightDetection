@@ -60,9 +60,6 @@ Run from .../TrafficLightdetection!
 Visualize finetuned model predictions for 3 random samples from the test set.    
 ```python analyze_dataset.py --input_folder path_to_ObjectDetection/od_train_data/dataset/labels --output_folder path_to_ObjectDetection/od_train_data/dataset_stats```
 
-**finetuning/viz.py**   
-Visualize finetuned model training progress in form of training & validation loss (IoU) as well as mAP (@0.50 & @0.5:0.95) based on downloaded tensorboard csv files.    
-```python viz.py --input_folder path_to_ObjectDetection/checkpoints/<RUN>/<data_dir> --output_folder path_to_ObjectDetection/checkpoints/<RUN>/<data_dir>```
 
 
 
