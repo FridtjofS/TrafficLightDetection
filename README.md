@@ -39,13 +39,17 @@ To install and use this project, follow these steps:
   ```bash
   pip install -r requirements.txt
   ```
+4. [linux only] Alternatively to 3., you can download our virtual environment [here](https://www.mediafire.com/file/t1paffl6hg13pta/myvenv.zip/file), place it in the root directory of this repository, and activate it:
+  ```bash
+  source myvenv/bin/activate
+  ```
 
-4. Follow the installation and usage instructions in the individual README files for each component of the pipeline:
+1. Follow the installation and usage instructions in the individual README files for each component of the pipeline:
   - [Annotation Tool Readme](Annotation/GUI/README.md)
   - [Dataset Readme](Dataset/Readme.md)
   - [Object Detection Readme](ObjectDetection/README.md)
   - [State Detection Readme](StateDetection/README.md)
   - [Visualization Readme](Visualization/README.md)
 
-5. Once all the dependencies are installed and the individual components are set up, you can run all the parts of the pipeline.
+2. Once all the dependencies are installed and the individual components are set up, you can run all the parts of the pipeline.
    
