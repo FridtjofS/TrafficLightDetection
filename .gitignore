@@ -149,4 +149,4 @@ ObjectDetection/checkpoints/yolo_nas_l/ckpt_best_1.pth
 StateDetection/start_job.sbatch
 
 #weights
-*.pth
+#*.pth
