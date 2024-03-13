@@ -27,7 +27,7 @@ To install and use this project, follow these steps:
 
 1. Clone the repository:
   ```bash
-  git clone https://github.com/your-username/TrafficLightDetection.git
+  git clone https://github.com/FridtjofS/TrafficLightDetection.git
   ```
 
 2. Navigate to the project directory:
@@ -38,10 +38,6 @@ To install and use this project, follow these steps:
 3. Install the required dependencies (the most important packages can be found in the requirements_manual.txt file):
   ```bash
   pip install -r requirements.txt
-  ```
-4. [linux only] Alternatively to 3., you can download our virtual environment [here](https://www.mediafire.com/file/t1paffl6hg13pta/myvenv.zip/file), place it in the root directory of this repository, and activate it:
-  ```bash
-  source myvenv/bin/activate
   ```
 
 1. Follow the installation and usage instructions in the individual README files for each component of the pipeline:
