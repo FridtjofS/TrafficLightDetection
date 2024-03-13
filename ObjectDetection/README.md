@@ -3,8 +3,7 @@
 
 ![the picture](assets/READMEtitle.png)
 
-<!--Hier ein kleiner Overview jakob?-->
-
+This Folder contains files to finetune, test and run inference with a YOLO NAS model for traffic light detection.
 To see an overview of the entire Traffic Light Detection Pipeline, please visit the [TrafficLightDetection Readme](../README.md).
 
 <!-- Structure -->
@@ -26,7 +25,7 @@ To see an overview of the entire Traffic Light Detection Pipeline, please visit 
 │   ├── dataset_stats: files that document the annotation distribution in the dataset   
 │   └── raw_dataset: unsplitted, annotated data   
 ├── assets   
-│   ├── analyze_dataset.py: script to output dataset distribution metrics for given YOLO dataset   
+│   ├── analyze_dataset.py: script to output dataset distribution of traffic light counts for given YOLO dataset   
 │   └── README_title.png: sample image for this README   
 └── predict.py: script containing a PREDICTOR class that provides a predict funktion for our pipeline   
 ```
@@ -41,11 +40,11 @@ Visualize finetuned model predictions for 3 random samples from the test set.
 ```python predict.py```
 
 **finetuning/split_dataset.py**    
-Test a finetuning RUNs best wheights with the parameters set in config.json on the test set. Split ratios and seed to be defined at top of script. 
+Carry out a train val test split on a given dataset of our structure. Split ratios and seed to be defined at top of script. 
 ```python split_dataset.py --datatset_folder 'path_to_ObjectDetection/od_train_data/raw_dataset' --output_folder 'path_to_ObjectDetection/od_train_data/<dataset_name>'```
 
 **assets/analyze_dataset.py**    
-Check the distribution of traffic light counts in a given YOLO dataset.   
+Check the distribution of traffic light counts per sample in a given YOLO dataset.   
 ```python analyze_dataset.py --input_folder 'path_to_ObjectDetection/od_train_data/<dataset_name>' --output_folder 'path_to_ObjectDetection/od_train_data/<dataset_name>'```
 
 **finetuning/finetune.py**    
@@ -53,17 +52,11 @@ Start a finetuning RUN with the parameters set in config.json. Specify the path 
 ```python finetune.py```
 
 **finetuning/test.py**   
-Test a finetuning RUNs best wheights with the parameters set in config.json on the test set.
+Test a finetuning RUNs wheights with the parameters set in config.json on the test set.
 Run from .../TrafficLightdetection!  
 ```python test.py --architecture 'yolo_nas_l' --run '<name_of_RUN_folder>'```
 
-**predict.py**   
-Visualize finetuned model predictions for 3 random samples from the test set.    
-```python analyze_dataset.py --input_folder path_to_ObjectDetection/od_train_data/dataset/labels --output_folder path_to_ObjectDetection/od_train_data/dataset_stats```
 
-**finetuning/viz.py**   
-Visualize finetuned model training progress in form of training & validation loss (IoU) as well as mAP (@0.50 & @0.5:0.95) based on downloaded tensorboard csv files.    
-```python viz.py --input_folder path_to_ObjectDetection/checkpoints/<RUN>/<data_dir> --output_folder path_to_ObjectDetection/checkpoints/<RUN>/<data_dir>```
 
 
 
