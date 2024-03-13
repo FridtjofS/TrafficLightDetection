@@ -25,7 +25,7 @@ To see an overview of the entire Traffic Light Detection Pipeline, please visit 
 │   ├── dataset_stats: files that document the annotation distribution in the dataset   
 │   └── raw_dataset: unsplitted, annotated data   
 ├── assets   
-│   ├── analyze_dataset.py: script to output dataset distribution metrics for given YOLO dataset   
+│   ├── analyze_dataset.py: script to output dataset distribution of traffic light counts for given YOLO dataset   
 │   └── README_title.png: sample image for this README   
 └── predict.py: script containing a PREDICTOR class that provides a predict funktion for our pipeline   
 ```
