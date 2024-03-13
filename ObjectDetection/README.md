@@ -3,8 +3,7 @@
 
 ![the picture](assets/READMEtitle.png)
 
-<!--Hier ein kleiner Overview jakob?-->
-
+This Folder contains files to finetune, test and run inference with a YOLO NAS model for traffic light detection.
 To see an overview of the entire Traffic Light Detection Pipeline, please visit the [TrafficLightDetection Readme](../README.md).
 
 <!-- Structure -->
