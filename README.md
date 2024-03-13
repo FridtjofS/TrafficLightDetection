@@ -35,7 +35,7 @@ To install and use this project, follow these steps:
   cd TrafficLightDetection
   ```
 
-3. Install the required dependencies:
+3. Install the required dependencies (the most important packages can be found in the requirements_manual.txt file):
   ```bash
   pip install -r requirements.txt
   ```

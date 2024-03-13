@@ -4,7 +4,6 @@ torchvision
 torch
 Pillow
 tqdm.auto
- 
 os
 cv2
 matplotlib

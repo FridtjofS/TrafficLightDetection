@@ -1,7 +1,5 @@
 # State Detection
-This directory is dedicated to training the State Detection model for our TrafficLightDetection tool. The model is a ResNet convolutional neural network that gets images of traffic lights and predicts one of five stated for them: off, red, red-yellow, yellow, or green. 
-
-To see an overview of the entire Traffic Light Detection Pipeline, please visit the [TrafficLightDetection Readme](../README.md).
+This directory is dedicated to training the State Detection model for our TrafficLightDetection tool. The model is a ResNet convolutional neural network that gets images of traffic lights as inputs and predicts one of five stated for them: off, red, red-yellow, yellow, or green. To see an overview of the entire Traffic Light Detection Pipeline, please visit the [TrafficLightDetection Readme](../README.md).
 
 ### General Notes:
 - This script uses the experimental `DirectML` package for training models on GPUs that don't have CUDA support. This package is still in development and may not work on all systems, more info can be found [here](https://learn.microsoft.com/en-us/windows/ai/directml/gpu-pytorch-windows)
@@ -43,7 +41,7 @@ The script will first try to use CUDA, then DirectML, and then automatically fal
 
 ### Training
 
-Assuming your working directory is the `StateDetection` folder, you can train a model by running the following command:
+Assuming your working directory is the `StateDetection` folder (or modify you python command accordinglys), you can train a model by running the following command:
 ```bash
 python train.py
 ```

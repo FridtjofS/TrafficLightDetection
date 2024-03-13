@@ -65,14 +65,12 @@ def train(args, logf):
             transforms.RandomRotation(15),
             transforms.RandomResizedCrop(size=args.input_sizes, scale=(0.5, 0.5), ratio=(1, 1)), 
             transforms.ToTensor(),
-            #transforms.Normalize((0.1307,), (0.3081,)),
             transforms.Normalize((0.2998,), (0.2021,)), # mean and std of the standard dataset
             #transforms.Normalize((0.3215,), (0.2159,)),  # mean and std of the plus_tubi dataset
         ])
         val_transform_centercrop = transforms.Compose([
             transforms.CenterCrop(args.input_sizes),
             transforms.ToTensor(),
-            #transforms.Normalize((0.1307,), (0.3081,)),
             transforms.Normalize((0.2998,), (0.2021,)), # mean and std of the standard dataset
             #transforms.Normalize((0.3215,), (0.2159,)),  # mean and std of the plus_tubi dataset
         ])
@@ -321,11 +319,14 @@ def plot_final_prediction(args, val_loader, val_dataset, logf):
         args=args,
 
     )
+
     model.load_state_dict(torch.load(os.path.join(args.load_model_dir, "model.pth")))
     model.to(device)
     model.eval()
     
     label_names = val_dataset.label_names
+    transform = val_dataset.transform # for unnormalizing the image, mean and std are stored in the dataset class
+
     confusion_matrix = np.zeros((args.num_classes, args.num_classes))
     val_acc = 0
     correct = 0
@@ -351,20 +352,23 @@ def plot_final_prediction(args, val_loader, val_dataset, logf):
                 confusion_matrix[target[i]][pred[i]] += 1
             
             # only plot the last batch
-            if  batch_idx == len(val_loader) - 1:
-                val_acc = correct / len(val_dataset)
+            if  batch_idx == len(val_loader) - 3:
+                #val_acc = correct / len(val_dataset)
                 # Plot final prediction
-                fig, ax = plt.subplots(2,4)
-                for i in range(8):
+                fig, ax = plt.subplots(3,6)
+                # fig size
+                fig.set_size_inches(17, 10)
+                for i in range(18):
                     try:
                         sample_img = data[i].permute(1, 2, 0).cpu().numpy()
                         # unnormalize
-                        sample_img *= 0.3081
-                        sample_img += 0.1307
+                        sample_img *= transform.transforms[-1].std
+                        sample_img += transform.transforms[-1].mean
                         sample_img *= 255
                         sample_img = sample_img.astype(np.uint8)
 
-                        ax[i//4][i%4].imshow(sample_img)
+                        ax[i//6][i%6].imshow(sample_img)
+                        ax[i//6][i%6].axis('off')
                         
                         pred_label = pred[i].item()
                         target_label = target[i].item()
@@ -373,14 +377,17 @@ def plot_final_prediction(args, val_loader, val_dataset, logf):
                         target_name = label_names[target_label]
 
                         color = "green" if pred_label == target_label else "black"
-                        ax[i//4][i%4].set_title(f"Pred: {pred_name}\nActual: {target_name}\nCertainty: {certainty[0][i]*100:.0f}%", color=color)
+                        ax[i//6][i%6].set_title(f"True: {target_name}\nPred: {pred_name}\n(Certainty: {certainty[0][i]*100:.0f}%)", color=color)#, fontsize=10)
                     except: 
                         # if last batch is smaller than 8
                         pass
                     ax.flat[i].axes.get_xaxis().set_visible(False)
                     ax.flat[i].axes.get_yaxis().set_visible(False)
-                fig.suptitle(f"Validation Accuracy: {val_acc:.6f}")
-                fig.tight_layout()
+            # only plot the last batch
+            if  batch_idx == len(val_loader) - 1:
+                val_acc = correct / len(val_dataset)
+                fig.suptitle(f"State Detection Model Validation Accuracy: {val_acc:.6f}", fontsize=20)
+                #fig.tight_layout()
                 plt.savefig(os.path.join(args.save_model_dir, "final_prediction.png"))
                 plt.close()
             
@@ -436,7 +443,7 @@ def main():
     parser.add_argument("--resnet_block", type=str, default="simple", help="Type of block")
     parser.add_argument("--batch_size", type=int, default=32, help="Batch size")
     parser.add_argument("--num_epochs", type=int, default=100, help="Number of epochs")
-    parser.add_argument("--lr", type=float, default=0.0003, help="Learning rate")
+    parser.add_argument("--lr", type=float, default=0.00025, help="Learning rate")
     parser.add_argument("--num_workers", type=int, default=1, help="Number of workers")
     parser.add_argument("--log_interval", type=int, default=5000, help="Logging interval")
     parser.add_argument("--seed", type=int, default=1, help="Random seed")
@@ -445,7 +452,7 @@ def main():
     parser.add_argument("--num_classes", type=int, default=5, help="Number of classes")
     parser.add_argument("--channel_size", type=int, default=3, help="Number of channels")
     parser.add_argument("--predefined_model", type=str, default="resnet10", help="Predefined model")
-    parser.add_argument("--max_keep", type=int, default=1400, help="Maximum number of samples per class")
+    parser.add_argument("--max_keep", type=int, default=1200, help="Maximum number of samples per class")
     parser.add_argument("--annealer", type=str, default="cosine", help="Learning rate annealer")
     args = parser.parse_args()
 
