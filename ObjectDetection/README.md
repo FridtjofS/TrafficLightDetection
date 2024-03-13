@@ -3,6 +3,9 @@
 
 ![the picture](assets/READMEtitle.png)
 
+<!--Hier ein kleiner Overview jakob?-->
+
+To see an overview of the entire Traffic Light Detection Pipeline, please visit the [TrafficLightDetection Readme](../README.md).
 
 <!-- Structure -->
 ## Structure

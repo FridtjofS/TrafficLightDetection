@@ -1,19 +1,21 @@
 # Traffic Light Annotation Tool
 ![Annotation Tool](img_Readme/Annotation.gif)
 
-This tool is used to annotate traffic lights in images for the purpose of training a traffic light detection model. The tool is designed to be user-friendly and efficient, and it is used to annotate traffic lights for both Object Detection and State Detection. The tool is designed to be used by multiple annotators, and it includes a user login system and a statistics window to compare the performance of the annotators.
+This tool is used to annotate traffic lights in images for the purpose of training a traffic light detection model. The tool is designed to be user-friendly and efficient, and it is used to annotate traffic lights for both Object Detection and State Detection. The tool is designed to be used by multiple annotators, and it includes a user login system and a statistics window to compare the performance of the annotators. To see an overview of the entire Traffic Light Detection Pipeline, please visit the [TrafficLightDetection Readme](../../README.md).
 
 ## Table of Contents
-- [Installation Guide](#installation-guide)
-  - [Prerequisites](#prerequisites)
-  - [Installation Steps](#installation-steps)
-- [Usage](#usage)
-  - [Annotation](#annotation)
-  - [Navigation](#navigation)
-- [Output Formats](#output-formats)
-  - [Object Detection (OD)](#object-detection-od)
-  - [State Detection (SD)](#state-detection-sd)
-- [Annotation Guidelines](#annotation-guidelines)
+- [Traffic Light Annotation Tool](#traffic-light-annotation-tool)
+  - [Table of Contents](#table-of-contents)
+  - [Installation Guide](#installation-guide)
+    - [Prerequisites](#prerequisites)
+    - [Installation Steps](#installation-steps)
+  - [Usage](#usage)
+    - [Annotation](#annotation)
+    - [Navigation](#navigation)
+  - [Output Formats](#output-formats)
+    - [Object Detection (OD)](#object-detection-od)
+    - [State Detection (SD)](#state-detection-sd)
+  - [Annotation Guidelines](#annotation-guidelines)
   
 
 

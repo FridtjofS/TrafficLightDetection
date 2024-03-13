@@ -1,4 +1,7 @@
 # State Detection
+<!--Magnus schreib hier mal wat geiles kleines intro-->
+
+To see an overview of the entire Traffic Light Detection Pipeline, please visit the [TrafficLightDetection Readme](../README.md).
 
 ### General Notes:
 - This script makes use of the experimental `DirectML` package for training models on GPUs which dont have CUDA support. This package is still in development and may not work on all systems, more info can be found [here](https://learn.microsoft.com/en-us/windows/ai/directml/gpu-pytorch-windows)

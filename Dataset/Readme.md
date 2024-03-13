@@ -4,6 +4,8 @@ For our project, we used the DTLD datset provided by driveU (Daimler Research In
 
 As we implemented out our Traffic Light Detection Pipeline, we did not make use of the labels provided by driveU. Instead, we only used the unlabeled RGB images included in the dataset. 
 
+To get further details about the entire Traffic Light Detection Pipeline, please visit the [TrafficLightDetection Readme](../README.md).
+
 ### Image Parsing
 
 1. In order to get the RGB images, first download the data from http://www.traffic-light-data.com/. As we do not use the labels, it is not necessary to download the label files.
