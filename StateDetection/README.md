@@ -1,4 +1,7 @@
 # State Detection
+
+![the picture](models/_model_best10_tubi_cpu/final_prediction.png)
+
 This directory is dedicated to training the State Detection model for our TrafficLightDetection tool. The model is a ResNet convolutional neural network that gets images of traffic lights as inputs and predicts one of five stated for them: off, red, red-yellow, yellow, or green. To see an overview of the entire Traffic Light Detection Pipeline, please visit the [TrafficLightDetection Readme](../README.md).
 
 ## Table of Contents
